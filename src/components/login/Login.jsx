@@ -1,7 +1,19 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './Login.css'
 
+import { BsEye, BsEyeSlash } from "react-icons/bs";
+
+
 const Login = () => {
+
+    const [show, setShow] = useState(false);
+
+    const handleClick = (e) => {
+        e.preventDefault(); // prevents form submit
+        setShow(!show);
+    };
+
+
     return (
         <div className='wrapper'>
             <div className="heading">
@@ -21,7 +33,12 @@ const Login = () => {
                 
                 <div className="input-box">
                     <label for="pwd">Password:</label>
-                    <input type="password" id="pwd" required />
+                    <div className="password-box">
+                        <input type={show ? "text" : "password"} id="pwd" required />
+                        <button className='password-eye' onClick={handleClick}>
+                            {show ? <BsEyeSlash /> : <BsEye />}
+                        </button>
+                    </div>
                 </div>
                
 
@@ -37,7 +54,11 @@ const Login = () => {
             </form>
 
         </div>
+
     );
 };
+
+
+
 
 export default Login;
