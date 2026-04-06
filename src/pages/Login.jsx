@@ -44,7 +44,7 @@ const Login = () => {
 
 
                 <div className="forgot">
-                    <a href="#">Forgot password?</a>
+                    <a href="./ForgotPassword.jsx">Forgot password?</a>
                 </div>
 
                 <button type="submit">Log in</button>
