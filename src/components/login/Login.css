@@ -3,23 +3,26 @@
     background: rgba(0, 0, 0, 0.48);
     backdrop-filter: blur(7px);
     color: #EDF2F4;
-    border: 1px solid #B6B6B6;
+    border: 0.5px solid #B6B6B6;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
+    border-radius: 24px;
     padding: 30px 40px;
 }
+
 .wrapper .heading {
     margin-bottom: 48px;
     margin-top: 12px;
 }
+
 .wrapper .heading h1 {
     font-size: 48px;
     font-weight: 700;
     text-align: left;
 }
+
 .wrapper .heading img {
     width: 16%;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .wrapper .heading p {
@@ -37,6 +40,10 @@
     margin: 20px 0;
 }
 
+.wrapper .input-box:not(:last-child) {
+    margin-top: 40px;
+}
+
 .wrapper form label {
     font-size: 16px;
     font-weight: 500;
@@ -51,11 +58,8 @@
     border-radius: 10px;
     color: #000;
     padding: 10px 20px;
+    margin-top: 4px;
     font-size: 18px;
-}
-
-.wrapper form .pwd-input {
-    margin-top: 20px;
 }
 
 .wrapper .forgot {

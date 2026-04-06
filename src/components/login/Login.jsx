@@ -18,12 +18,12 @@ const Login = () => {
                     <input type="text" id="email" required />
                 </div>
 
-                <div className="pwd-input">
-                    <div className="input-box">
-                        <label for="pwd">Password:</label>
-                        <input type="password" id="pwd" required />
-                    </div>
+                
+                <div className="input-box">
+                    <label for="pwd">Password:</label>
+                    <input type="password" id="pwd" required />
                 </div>
+               
 
 
                 <div className="forgot">

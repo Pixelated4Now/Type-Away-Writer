@@ -17,7 +17,7 @@ body {
   min-height: 100vh;
   background: url("./components/assets/blueBackground.jpg");
   background-repeat: no-repeat;
-  background-size: 102%;
+  background-size: cover;
   background-position: center;
   overflow-y: hidden;
 }
