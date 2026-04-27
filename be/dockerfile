@@ -1,0 +1,6 @@
+FROM node:24.0.0-alpine
+WORKDIR /fyprojectbe
+COPY package*.json ./
+RUN npm ci --omit=dev 
+COPY . .
+CMD ["npm", "run","devStart"]
