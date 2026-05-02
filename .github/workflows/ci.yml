@@ -1,0 +1,79 @@
+# CI workflow to catch broken code early.
+name: CI
+
+# Code runs on every push to any branch, and when a pull request targeting the main branch is opened.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+
+# Two jobs: back-end and front-end.
+# Download code onto temporary machine GitHub males to run the workflow.
+
+jobs:
+  # BACKEND
+  backend:
+    name: Backend — install & build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Node.js on that machine.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          # Speed up future runs by saving node_modules so they don't have to be re-downloaded.
+          cache: "npm"
+          cache-dependency-path: be/package-lock.json
+
+      # Run "npm ci".
+      - name: Install dependencies
+        working-directory: be
+        run: npm ci
+
+      - name: Build Docker image (backend)
+        run: |
+          docker build \
+            --target production \
+            -t taw-backend:ci \
+            ./be
+
+  # FRONTEND
+  frontend:
+    name: Frontend — install & build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: fe/package-lock.json
+
+      - name: Install dependencies
+        working-directory: fe
+        run: npm ci
+
+      # Make sure React App compiles without errors.
+      - name: Build React app
+        working-directory: fe
+        run: npm run build
+        env:
+          REACT_APP_API_URL: http://localhost:5000
+
+      # Build Docker image using production stage of Dockerfile just to verify it builds successfully.
+      - name: Build Docker image (frontend)
+        run: |
+          docker build \
+            --target production \
+            -t taw-frontend:ci \
+            ./fe

@@ -1,5 +1,7 @@
 const express = require("express");
 
+require('dotenv').config();
+
 // Initialise express app.
 const app = express();
 app.use(express.json());
@@ -12,7 +14,7 @@ const helloRoute = require('./routes/hello');
 app.use('/hello', helloRoute);  
 
 
-const PORT = 3000 || 8000;
+const PORT = process.env.PORT || 8000;
 
 
 // Port we run the server on.
