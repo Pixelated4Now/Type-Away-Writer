@@ -1,0 +1,63 @@
+# CD workflow to package website into Docker images, store them on GitHub, and deploy them.
+name: CD
+
+# Trigger CD workflow when code is pushed to main branch to deploy said code.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # Build and push Docker images to GitHub Container Registry.
+  build-and-push:
+    name: Build & push images
+    runs-on: ubuntu-latest
+
+    # Grant the workflow permission to read repository's code and write Docker images to GHCR.
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}       # GH username automatically given by GH.
+          password: ${{ secrets.GITHUB_TOKEN }}   #  Secret token by GitHub for every workflow run.
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./be
+          file: ./be/dockerfile
+          target: production
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/taw-backend:latest
+
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./fe
+          file: ./fe/dockerfile
+          target: production
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/taw-frontend:latest
+
+  # Deploy images after succesful build and push.
+  # This job is a placeholder. Replace the step below with the deployment steps for your chosen platform (Render, Railway, AWS...)
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Deploy to hosting platform
+        run: |
+          echo "Add your deployment steps here."
+          echo "Examples:"
+          echo "  - Render: trigger a deploy hook via curl"
+          echo "  - Railway: use the Railway CLI"
+          echo "  - AWS: use the AWS CLI to update ECS or Elastic Beanstalk"
