@@ -1,0 +1,93 @@
+# Tie all three containers (frontend, backend and DB) together.
+
+# Version of the Docker Compose file format.
+version: "3.9"
+
+# Each service is one container.
+services:
+  db:
+    # Pull a ready-made PostgreSQL image from Docker Hub.
+    image: postgres:15-alpine
+    container_name: taw_db
+    restart: unless-stopped
+
+    # DB credentials from env file.
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # Save DB data to a persistent volume called postgres_data.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+    # Checks whether the DB is ready to accept connections every 10 seconds, and retries up to 5 times.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+  backend:
+    container_name: taw_backend
+
+    # Builds the backend image.
+    build:
+      context: ./be
+      dockerfile: dockerfile
+      target: development
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${BE_PORT:-5000}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${BE_PORT:-5000}:5000"
+
+    # Start the backend after the DB service passes healthcheck to avoid crashing.
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Sync local be folder with container.
+      - ./be:/fyprojectbe
+
+      # Protect node_modules folder inside container from being overwritten by local files.
+      - /fyprojectbe/node_modules
+
+
+
+
+  frontend:
+    container_name: taw_frontend
+
+    # Builds the frontend image.
+    build:
+      context: ./fe
+      dockerfile: dockerfile
+      target: development
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000}
+    ports:
+      - "${FE_PORT:-3000}:3000"
+
+    # Start the frontend after backend is up.
+    depends_on:
+      - backend
+
+    volumes:
+      # Sync local fe folder with container.
+      - ./fe:/fyprojectfe
+      - /fyprojectfe/node_modules
+
+volumes:
+  postgres_data:
