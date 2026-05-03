@@ -8,17 +8,32 @@ CMD ["npm", "start"]
 
 
 # PRODUCTION BUILD
-FROM node:24.0.0-alpine AS build
-WORKDIR /fyprojectfe
-COPY package*.json ./
-RUN npm ci
-COPY . .
+#FROM node:24.0.0-alpine AS build
+#WORKDIR /fyprojectfe
+#COPY package*.json ./
+#RUN npm ci
+#COPY . .
 # RUN npm run build
 
 
 # PRODUCTION SERVE
+#FROM nginx:alpine AS production
+#COPY --from=build /fyprojectfe/build /usr/share/nginx/html
+#COPY nginx.conf /etc/nginx/conf.d/default.conf
+#EXPOSE 80
+#CMD ["nginx", "-g", "daemon off;"]
+
+# ─── Production stage ────────────────────────────────────────────────
+# NOTE: This is a temporary production stage until the app is complete.
+# Once complete:
+#   1. Uncomment RUN npm run build in the build stage below
+#   2. Uncomment COPY --from=build in this stage
+#   3. Delete the temporary COPY . . line
+
 FROM nginx:alpine AS production
-COPY --from=build /fyprojectfe/build /usr/share/nginx/html
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Temporary: serve source files directly until build is re-enabled
+COPY --from=development /fyprojectfe /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
