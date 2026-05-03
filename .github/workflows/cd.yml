@@ -39,7 +39,7 @@ jobs:
           file: ./be/dockerfile
           target: production
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/taw-backend:latest
+          tags: ghcr.io/${{ env.OWNER }}/taw-backend:latest
 
       - name: Build & push frontend image
         uses: docker/build-push-action@v5
@@ -48,7 +48,7 @@ jobs:
           file: ./fe/dockerfile
           target: production
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/taw-frontend:latest
+          tags: ghcr.io/${{ env.OWNER }}/taw-frontend:latest
 
   # Deploy images after succesful build and push.
   # This job is a placeholder. Replace the step below with the deployment steps for your chosen platform (Render, Railway, AWS...)
