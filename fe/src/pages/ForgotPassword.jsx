@@ -12,10 +12,11 @@ const ForgotPassword = () => {
 
 
     const [email, setEmail] = useState('');
+    const [emailSent, setEmailSent] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Logic for sending reset link goes here
+        setEmailSent(true);
         console.log("Reset link sent to:", email);
     };
 
@@ -38,6 +39,11 @@ const ForgotPassword = () => {
                         required 
                     />
                 </div>
+
+                {/* Confirmation message */}
+                {emailSent && (
+                    <p style={{ color: '#EDF2F4', fontSize: '14px', marginTop: '50px', marginBottom: '4px' }}> Instructions to reset your password have been emailed to you. Please check your email.</p>
+                )}
 
                 <div className="button-group">
                     <button type="button" className="btn-back password-back-button" onClick={() => navigate('/')}>Back</button>

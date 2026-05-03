@@ -8,16 +8,22 @@ const ResetPassword = () => {
         document.title = "Reset Password | Type-Away-Writer";
     }, []);
 
+
     const navigate = useNavigate();
     const [showNew, setShowNew] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Logic for resetting password goes here
-        console.log("Password reset submitted");
+        if (newPassword !== confirmPassword) {
+            setPasswordError(true);
+        } else {
+            setPasswordError(false);
+            navigate('/');
+        }
     };
 
     return (
@@ -30,7 +36,7 @@ const ResetPassword = () => {
             <form onSubmit={handleSubmit}>
                 <div className="input-box">
                     <label htmlFor="newPassword">New Password:</label>
-                    <div className="password-box">
+                    <div className="password-box" style={{ border: passwordError ? '1px solid #FF1212' : 'none' }}>
                         <input
                             type={showNew ? "text" : "password"}
                             id="newPassword"
@@ -46,7 +52,7 @@ const ResetPassword = () => {
 
                 <div className="input-box">
                     <label htmlFor="confirmPassword">Re-enter New Password:</label>
-                    <div className="password-box">
+                    <div className="password-box" style={{ border: passwordError ? '1px solid #FF1212' : 'none' }}>
                         <input
                             type={showConfirm ? "text" : "password"}
                             id="confirmPassword"
@@ -59,6 +65,13 @@ const ResetPassword = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Error message */}
+                {passwordError && (
+                    <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '50px', marginBottom: '24px' }}>
+                        <span style={{ fontWeight: 'bold' }}>Passwords don't match.</span> Make sure you've entered the same password in each field. Passwords are case-sensitive.
+                    </p>
+                )}
 
                 <button type="submit" style={{ width: '100%', marginTop: '32px' }}>Reset Password</button>
             </form>
