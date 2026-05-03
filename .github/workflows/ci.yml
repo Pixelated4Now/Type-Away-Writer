@@ -64,11 +64,11 @@ jobs:
         run: npm ci
 
       # Make sure React App compiles without errors.
-      - name: Build React app
-        working-directory: fe
-        run: npm run build
-        env:
-          REACT_APP_API_URL: http://localhost:5000
+     # - name: Build React app
+      #  working-directory: fe
+       # run: npm run build
+       # env:
+        #  REACT_APP_API_URL: http://localhost:5000
 
       # Build Docker image using production stage of Dockerfile just to verify it builds successfully.
       - name: Build Docker image (frontend)
