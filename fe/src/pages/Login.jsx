@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './Login.css'; 
+import './Auth.css'; 
 
    
 import { BsEye, BsEyeSlash } from "react-icons/bs";

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './Login.css'; // Reusing existing CSS file for consistency
+import './Auth.css'; // Reusing existing CSS file for consistency
 
 const ResetPassword = () => {
     useEffect(() => {
