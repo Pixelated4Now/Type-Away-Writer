@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import './Auth.css'; // Reusing existing CSS file for consistency
+import { useNavigate } from 'react-router-dom';
 
-const ResetPassword = () => {
+
+const ForgotPassword = () => {
     useEffect(() => {
-        document.title = "Reset Password | Type-Away-Writer";
+        document.title = "Forgot Password | Type-Away-Writer";
     }, []);
+
+    const navigate = useNavigate();
 
 
     const [email, setEmail] = useState('');
@@ -17,7 +21,7 @@ const ResetPassword = () => {
 
     return (
        
-        <div className='wrapper reset-wrapper'>
+        <div className='wrapper'>
             <div className="heading">
                 <h1>Reset Your Password</h1>
                 <p>Set a new password for your account.</p>
@@ -36,7 +40,7 @@ const ResetPassword = () => {
                 </div>
 
                 <div className="button-group">
-                    <button type="button" className="btn-back password-back-button">Back</button>
+                    <button type="button" className="btn-back password-back-button" onClick={() => navigate('/')}>Back</button>
                     <button type="submit" className="btn-reset">Reset Password</button>
                 </div>
             </form>
@@ -44,4 +48,4 @@ const ResetPassword = () => {
     );
 };
 
-export default ResetPassword;
+export default ForgotPassword;

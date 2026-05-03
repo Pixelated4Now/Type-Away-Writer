@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Auth.css'; 
+import { Link } from 'react-router-dom';
 
    
 import { BsEye, BsEyeSlash } from "react-icons/bs";
@@ -31,7 +32,7 @@ const Login = () => {
             <form action="">
         
                 <div className="input-box">
-                    <label for="email">Email Address:</label>
+                    <label htmlFor="email">Email Address:</label>
                     <input type="text" id="email" required />
                 </div>
 
@@ -49,7 +50,7 @@ const Login = () => {
 
 
                 <div className="forgot">
-                    <a href="./ForgotPassword.jsx">Forgot password?</a>
+                    <Link to="/forgot-password">Forgot password?</Link>
                 </div>
 
                 <button type="submit">Log in</button>
