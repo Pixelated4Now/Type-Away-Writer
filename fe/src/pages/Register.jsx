@@ -1,5 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import "./Auth.css";
+
+/* Import images from assets/ folder */
+import studentImg from "../assets/individual.png";
+import expertImg from "../assets/expert.png";
 
 
 const RegisterPage = () => {
@@ -20,8 +25,8 @@ const RegisterPage = () => {
       <div className="register-cards">
 
         <div className="register-card">
-          <div className="register-avatar">
-            <img src="../assets/individual.png" alt="Individual or Student" />
+          <div className="register-avatar student-avatar">
+            <img src={studentImg} alt="Individual or Student" />
           </div>
           <h2>Individual/ Student</h2>
           <p>Explore Type-Away-Writer! Read, write, and publish stories.</p>
@@ -30,7 +35,7 @@ const RegisterPage = () => {
 
         <div className="register-card">
           <div className="register-avatar expert">
-            <img src="../assets/expert.png" alt="Language Expert" />
+            <img src={expertImg} alt="Language Expert" />
           </div>
           <h2>Language Expert</h2>
           <p>
@@ -44,10 +49,10 @@ const RegisterPage = () => {
 
       <p className="register-footer">
         Already have an account?{" "}
-        <a href="/login">Log in</a>
+        <Link to="/">Log in</Link>
       </p>
     </div>
   );
 };
 
-export default RegisterPage;
+export default Register;
