@@ -23,7 +23,7 @@ const Login = () => {
     return (
         <div className='wrapper'>
             <div className="heading">
-                <img src="/favicon.png" />
+                <img src="/favicon.png" alt="Type-Away-Writer logo"/>
                 <h1>Welcome Back!</h1>
                 <p>Login to continue</p>
             </div>
