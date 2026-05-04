@@ -2,7 +2,11 @@
 /* Routes has all route definitions. */
 import { BrowserRouter, Routes, Route } from 'react-router-dom';   
 import Login from './pages/Login';
+
 import Register from './pages/Register';
+import RegisterStudent from './pages/RegisterStudent';
+
+
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
@@ -15,6 +19,7 @@ function App() {
         <Route path="/" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+        <Route path="/register/student" element={<RegisterStudent />} />
         
         
         <Route path="/forgot-password" element={<ForgotPassword />} />

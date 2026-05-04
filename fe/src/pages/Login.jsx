@@ -13,13 +13,56 @@ const Login = () => {
     }, []);
 
     const [show, setShow] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     const handleClick = (e) => {
         e.preventDefault(); // prevents form submit
         setShow(!show);
     };
 
+    // Format check for email address.
+    const validateEmail = (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
+    };
 
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+ 
+        let valid = true;
+ 
+        // Validate email.
+        if (!email) {
+            setEmailError('Please fill in this field.');
+            valid = false;
+        } else if (!validateEmail(email)) {
+            setEmailError('Please enter a valid email address.');
+            valid = false;
+        } else {
+            setEmailError('');
+        }
+ 
+        // Validate password.
+        if (!password) {
+            setPasswordError('Please fill in this field.');
+            valid = false;
+        } else {
+            setPasswordError('');
+        }
+ 
+        if (!valid) return;
+ 
+        // TODO: Connect to backend login route.
+        console.log("Logging in with:", email, password);
+    };
+ 
+
+
+    // Page starts here.
     return (
         <div className='wrapper'>
             <div className="heading">
@@ -33,18 +76,28 @@ const Login = () => {
         
                 <div className="input-box">
                     <label htmlFor="email">Email Address:</label>
-                    <input type="text" id="email" required />
+                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '2px solid red' : '' }} />
+                    {emailError && (
+                        <p style={{ color: 'red', fontSize: '14px', marginTop: '6px' }}>
+                            {emailError}
+                        </p>
+                    )}
                 </div>
 
                 
                 <div className="input-box">
-                    <label for="pwd">Password:</label>
-                    <div className="password-box">
-                        <input type={show ? "text" : "password"} id="pwd" required />
+                    <label htmlFor="pwd">Password:</label>
+                    <div className="password-box" style={{ border: passwordError ? '2px solid red' : '' }}>
+                        <input type={show ? "text" : "password"} id="pwd" value={password} onChange={(e) => setPassword(e.target.value)} />
                         <button className='password-eye' onClick={handleClick}>
                             {show ? <BsEyeSlash /> : <BsEye />}
                         </button>
                     </div>
+                    {passwordError && (
+                        <p style={{ color: 'red', fontSize: '14px', marginTop: '6px' }}>
+                            {passwordError}
+                        </p>
+                    )}
                 </div>
                
 

@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import "./Auth.css";
+import "./Register.css";
 
 /* Import images from assets/ folder */
 import studentImg from "../assets/individual.png";
 import expertImg from "../assets/expert.png";
 
 
-const RegisterPage = () => {
+const Register = () => {
   const navigate = useNavigate();
 
   const handleRegister = (role) => {
