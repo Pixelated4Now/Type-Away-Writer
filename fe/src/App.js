@@ -5,7 +5,7 @@ import Login from './pages/Login';
 
 import Register from './pages/Register';
 import RegisterStudent from './pages/RegisterStudent';
-
+import RegisterExpert from './pages/RegisterExpert';
 
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -20,7 +20,7 @@ function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/register/student" element={<RegisterStudent />} />
-        
+        <Route path="/register/expert" element={<RegisterExpert />} />        
         
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
