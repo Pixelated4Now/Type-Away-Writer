@@ -13,11 +13,29 @@ const ForgotPassword = () => {
 
     const [email, setEmail] = useState('');
     const [emailSent, setEmailSent] = useState(false);
+    const [emailError, setEmailError] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (!email) {
+            setEmailError('Please fill in this field.');
+            return;
+        } else if (!validateEmail(email)) {
+            setEmailError('Please enter a valid email address.');
+            return;
+        } else {
+            setEmailError('');
+        }
+
         setEmailSent(true);
         console.log("Reset link sent to:", email);
+    };
+
+    // Email format check.
+    const validateEmail = (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
     };
 
     return (
@@ -31,13 +49,12 @@ const ForgotPassword = () => {
             <form onSubmit={handleSubmit}>
                 <div className="input-box">
                     <label htmlFor="email">Your Email Address:</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required 
-                    />
+                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '1px solid #FF1212' : '' }} />
+                {emailError && (
+                    <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '6px' }}>
+                        {emailError}
+                    </p>
+                )}
                 </div>
 
                 {/* Confirmation message */}

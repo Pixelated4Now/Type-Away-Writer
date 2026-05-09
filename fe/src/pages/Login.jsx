@@ -72,13 +72,13 @@ const Login = () => {
             </div>
             
 
-            <form action="">
+            <form onSubmit={handleSubmit}>
         
                 <div className="input-box">
                     <label htmlFor="email">Email Address:</label>
-                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '2px solid red' : '' }} />
+                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '1px solid #FF1212' : '' }} />
                     {emailError && (
-                        <p style={{ color: 'red', fontSize: '14px', marginTop: '6px' }}>
+                        <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '6px', marginBottom: '0px' }}>
                             {emailError}
                         </p>
                     )}
@@ -87,14 +87,14 @@ const Login = () => {
                 
                 <div className="input-box">
                     <label htmlFor="pwd">Password:</label>
-                    <div className="password-box" style={{ border: passwordError ? '2px solid red' : '' }}>
+                    <div className="password-box" style={{ border: passwordError ? '1px solid #FF1212' : '' }}>
                         <input type={show ? "text" : "password"} id="pwd" value={password} onChange={(e) => setPassword(e.target.value)} />
                         <button className='password-eye' onClick={handleClick}>
                             {show ? <BsEyeSlash /> : <BsEye />}
                         </button>
                     </div>
                     {passwordError && (
-                        <p style={{ color: 'red', fontSize: '14px', marginTop: '6px' }}>
+                        <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '6px', marginBottom: '12px' }}>
                             {passwordError}
                         </p>
                     )}
