@@ -52,7 +52,7 @@
   margin: 0;
   padding: 0;
 }
-
+ 
 .navbar-links a {
   font-family: "Manrope", sans-serif;
   font-size: 15px;
@@ -61,11 +61,16 @@
   text-decoration: none;
   transition: color 0.15s ease;
 }
-
+ 
 .navbar-links a:hover {
   color: #0e72e5;
 }
-
+ 
+.navbar-links a.active {
+  font-weight: 800;
+  color: #111;
+}
+ 
 /* ── Actions ── */
 .navbar-actions {
   display: flex;
@@ -73,10 +78,10 @@
   gap: 12px;
   flex-shrink: 0;
 }
-
+ 
 .btn-signin {
   background: transparent;
-  border: 1px solid #B6B6B6;
+  border: none;
   font-family: "Manrope", sans-serif;
   font-size: 15px;
   font-weight: 600;
@@ -86,12 +91,12 @@
   border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
-
+ 
 .btn-signin:hover {
   background: #f0f4f8;
   color: #111;
 }
-
+ 
 .btn-signup {
   background: #111;
   border: none;
@@ -104,7 +109,7 @@
   border-radius: 8px;
   transition: background 0.15s ease;
 }
-
+ 
 .btn-signup:hover {
   background: #0e72e5;
 }
