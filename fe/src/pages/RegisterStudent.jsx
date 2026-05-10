@@ -12,7 +12,7 @@ const stepLabels = {
   4: "Email Verification",
 };
 
-const MONTHS = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+const MONTHS = [ "January", "February", "ch", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
  
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const YEARS = Array.from({ length: 10 }, (_, i) => 2011 + i); // 2011 to 2020
@@ -119,7 +119,7 @@ const RegisterStudent = () => {
   };
 
   return (
-    <div className="wrapper student-register" style={{ width: "500px", maxWidth: "500px" }}>
+   <div className="wrapper student-register">
       <div className="heading">
         <h1>Individual/ Student</h1>
         <p>Create an account to start reading and writing!</p>

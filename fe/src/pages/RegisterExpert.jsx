@@ -143,7 +143,7 @@ const handleFileRemove = (indexToRemove) => {
   });
 
   return (
-    <div className="wrapper student-register" style={{ width: "740px", maxWidth: "740px" }}>
+    <div className="wrapper student-register expert-register">
       <div className="heading">
         <h1>Language Expert</h1>
         <p>Create an account to start reading and reviewing!</p>

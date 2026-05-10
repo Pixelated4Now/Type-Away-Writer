@@ -310,7 +310,7 @@
   height: 48px;
   background: #111;
   color: #fff;
-  border: none;
+  border: 1px solid #111;
   border-radius: 10px;
   font-family: "Manrope", sans-serif;
   font-size: 13px;
@@ -338,7 +338,7 @@
  
 .like-btn.liked {
   background: #FCFFFF;
-  border: 1px solid 585757;
+  border: 1px solid #585757;
   color: #1A1A1A;
 }
  
@@ -492,6 +492,181 @@
 .reply-btn:hover {
   background: #f0f0f0;
 }
+
+
+/* ════════════════════════════
+   READING LIST DROPDOWN
+════════════════════════════ */
+ 
+.reading-list-wrapper {
+  position: relative;
+}
+ 
+.reading-list-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 220px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 30;
+  padding: 8px 0;
+}
+ 
+/* Section labels (Private Lists / Public Lists) */
+.list-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 14px 4px;
+  margin: 0;
+}
+ 
+/* Individual list item */
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+ 
+.list-item:hover {
+  background: #f5f5f5;
+}
+ 
+.list-item-saved {
+  cursor: default;
+}
+ 
+.list-item-saved:hover {
+  background: transparent;
+}
+ 
+.list-item-title {
+  flex: 1;
+}
+ 
+.list-checkmark {
+  font-size: 13px;
+  color: #111;
+  font-weight: 700;
+  margin-left: 8px;
+}
+ 
+/* Empty state */
+.list-empty-msg {
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+  padding: 10px 14px;
+  margin: 0;
+}
+ 
+/* Create New List trigger */
+.list-create-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  border-top: 1px solid #eee;
+  margin-top: 4px;
+  transition: background 0.15s ease;
+}
+ 
+.list-create-trigger:hover {
+  background: #f5f5f5;
+}
+ 
+.list-create-icon {
+  font-size: 16px;
+  line-height: 1;
+  color: #555;
+}
+ 
+/* Create New List form */
+.list-create-form {
+  padding: 10px 14px;
+  border-top: 1px solid #eee;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+ 
+.list-title-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 32px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+ 
+.list-title-input:focus {
+  border-color: #0e72e5;
+}
+ 
+.list-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+ 
+.list-public-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+}
+ 
+.list-public-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: #111;
+  cursor: pointer;
+}
+ 
+.list-add-btn {
+  height: 30px;
+  padding: 0 16px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+  margin-top: 0;
+  width: auto;
+}
+ 
+.list-add-btn:hover {
+  background: #0e72e5;
+}
  
 /* ── Responsive ── */
 @media (max-width: 768px) {
@@ -513,3 +688,4 @@
     gap: 12px;
   }
 }
+

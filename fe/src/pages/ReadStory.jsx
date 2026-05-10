@@ -104,6 +104,14 @@ Porttitor fermentum elit per luctus dictumst justo orci leo. Ullamcorper per tur
   ],
 };
 
+// ── Placeholder reading lists — replace with API fetch when backend is ready
+const PLACEHOLDER_LISTS = [
+  { id: 1, title: "To Read",        isPublic: false, storyIds: [] },
+  { id: 2, title: "Creepy Pasta",   isPublic: false, storyIds: [] },
+  { id: 3, title: "Miscellaneous",  isPublic: false, storyIds: [] },
+  { id: 4, title: "Me Likey",       isPublic: true,  storyIds: [] },
+];
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatDatetime = (isoString) => {
@@ -119,7 +127,8 @@ const formatDatetime = (isoString) => {
   });
 };
 
-const sortComments = (comments) => {
+// Sort top-level comments: experts first (most recent expert first), then others descending
+const sortTopLevel = (comments) => {
   const experts = comments
     .filter((c) => c.role === "expert")
     .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
@@ -128,116 +137,276 @@ const sortComments = (comments) => {
     .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
   return [...experts, ...others];
 };
+ 
+// Recursively collect all descendant IDs of a comment
+const collectDescendants = (commentId, allComments) => {
+  const children = allComments.filter((c) => c.parentId === commentId);
+  let ids = children.map((c) => c.id);
+  children.forEach((child) => {
+    ids = ids.concat(collectDescendants(child.id, allComments));
+  });
+  return ids;
+}
 
-// ── Sub-components ───────────────────────────────────────────────────────────
-
+// ── RoleBadge ────────────────────────────────────────────────────────────────
+ 
 const RoleBadge = ({ role }) => {
   if (role === "expert") return <span className="badge badge-expert">LANGUAGE EXPERT</span>;
   if (role === "author") return <span className="badge badge-author">AUTHOR</span>;
   return null;
 };
-
-const CommentItem = ({ comment, isReply = false }) => (
-  <div className={`comment-item ${isReply ? "comment-reply" : ""}`}>
-    <img src={comment.avatar} alt={comment.username} className="comment-avatar" />
-    <div className="comment-body">
-      <div className="comment-header">
-        <span className="comment-username">{comment.username}</span>
-        <RoleBadge role={comment.role} />
-        <span className="comment-datetime">{formatDatetime(comment.datetime)}</span>
+ 
+// ── CommentThread (recursive) ─────────────────────────────────────────────────
+ 
+const CommentThread = ({ comment, allComments, depth, onReply, onDelete, currentUser }) => {
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyText, setReplyText] = useState("");
+ 
+  const children = allComments
+    .filter((c) => c.parentId === comment.id)
+    .sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+ 
+  const handleSubmitReply = () => {
+    if (!replyText.trim()) return;
+    onReply(comment.id, replyText.trim());
+    setReplyText("");
+    setReplyOpen(false);
+  };
+ 
+  return (
+    <div className={`comment-thread ${depth > 0 ? "comment-indented" : ""}`}>
+      <div className="comment-item">
+        <img src={comment.avatar} alt={comment.username} className="comment-avatar" />
+        <div className="comment-body">
+          <div className="comment-header">
+            <span className="comment-username">{comment.username}</span>
+            <RoleBadge role={comment.role} />
+            <span className="comment-datetime">{formatDatetime(comment.datetime)}</span>
+          </div>
+          <p className="comment-text">{comment.text}</p>
+          <div className="comment-actions">
+            <button
+              className="reply-btn"
+              onClick={() => setReplyOpen((p) => !p)}
+            >
+              REPLY
+            </button>
+            {comment.username === currentUser && (
+              <button
+                className="delete-btn"
+                onClick={() => onDelete(comment.id)}
+              >
+                DELETE
+              </button>
+            )}
+          </div>
+ 
+          {/* Inline reply textarea */}
+          {replyOpen && (
+            <div className="reply-input-area">
+              <textarea
+                className="comment-textarea reply-textarea"
+                placeholder="Write a comment..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+              />
+              <div className="reply-submit-row">
+                <button
+                  className="comment-submit-btn"
+                  onClick={handleSubmitReply}
+                >
+                  REPLY
+                </button>
+                <button
+                  className="cancel-btn"
+                  onClick={() => {
+                    setReplyOpen(false);
+                    setReplyText("");
+                  }}
+                >
+                  CANCEL
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      <p className="comment-text">{comment.text}</p>
-      <button className="reply-btn">REPLY</button>
+ 
+      {/* Render children recursively */}
+      {children.map((child) => (
+        <CommentThread
+          key={child.id}
+          comment={child}
+          allComments={allComments}
+          depth={depth + 1}
+          onReply={onReply}
+          onDelete={onDelete}
+          currentUser={currentUser}
+        />
+      ))}
     </div>
-  </div>
-);
+  );
+};
+ 
 
 // Main page
-
+ 
 const ReadStory = () => {
   const { storyId } = useParams();
   const navigate = useNavigate();
-
-  // Replace with real API fetch when backend is ready
+ 
   const story = PLACEHOLDER_STORY;
   const totalChapters = story.chapters.length;
-
+ 
+  // ── Chapter state
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+ 
+  // ── Like state
   const [liked, setLiked] = useState(false);
+ 
+  // ── Comment state
   const [commentText, setCommentText] = useState("");
-
+ 
+  // ── Reading list state
+  const [readingLists, setReadingLists] = useState(PLACEHOLDER_LISTS);
+  const [listDropdownOpen, setListDropdownOpen] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newListTitle, setNewListTitle] = useState("");
+  const [newListPublic, setNewListPublic] = useState(false);
+ 
+  // ── Hero colour
+  const [heroColor, setHeroColor] = useState("rgba(201, 212, 232, 0.4)");
+ 
+  // ── Refs
+  const chapterDropdownRef = useRef(null);
+  const listDropdownRef = useRef(null);
+ 
   const chapter = story.chapters[currentChapterIndex];
   const isFirst = currentChapterIndex === 0;
   const isLast = currentChapterIndex === totalChapters - 1;
   const sortedComments = sortComments(chapter.comments);
-
+ 
+  // ── Close chapter dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+ 
+  // ── Close list dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (listDropdownRef.current && !listDropdownRef.current.contains(e.target)) {
+        setListDropdownOpen(false);
+        setShowCreateForm(false);
+        setNewListTitle("");
+        setNewListPublic(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+ 
+  // ── Extract dominant colour from cover
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = story.cover;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 40) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+      r = Math.round(r / count);
+      g = Math.round(g / count);
+      b = Math.round(b / count);
+      setHeroColor(`rgba(${r}, ${g}, ${b}, 0.35)`);
+    };
+  }, [story.cover]);
+ 
+  // ── Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+ 
+  // ── Handlers
   const goToChapter = (index) => {
     setCurrentChapterIndex(index);
     setDropdownOpen(false);
     setCommentText("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
+ 
   const handleLike = () => {
     setLiked((prev) => !prev);
     // TODO: send like/unlike to backend
   };
-
+ 
   const handleComment = () => {
     if (!commentText.trim()) return;
     // TODO: send comment to backend
     setCommentText("");
   };
-
-  const chapterDropdownRef = useRef(null);
-
-    useEffect(() => {
-    const handleClick = (e) => {
-        if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-        }
+ 
+  // ── Add story to an existing list
+  const handleAddToList = (listId) => {
+    const list = readingLists.find((l) => l.id === listId);
+    if (!list || list.storyIds.includes(story.id)) return; // already added, do nothing
+ 
+    // Optimistic UI update
+    setReadingLists((prev) =>
+      prev.map((l) =>
+        l.id === listId ? { ...l, storyIds: [...l.storyIds, story.id] } : l
+      )
+    );
+    // TODO: API call — POST /api/reading-lists/:listId/stories { storyId: story.id }
+  };
+ 
+  // ── Create a new list and immediately add the story
+  const handleCreateList = () => {
+    if (!newListTitle.trim()) return;
+ 
+    const newList = {
+      id: Date.now(), // temporary ID until backend returns real one
+      title: newListTitle.trim(),
+      isPublic: newListPublic,
+      storyIds: [story.id], // story is immediately added
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-    }, []);
-
-  const [heroColor, setHeroColor] = useState("rgba(201, 212, 232, 0.4)"); // fallback colour
-
-    useEffect(() => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = story.cover;
-        img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-            let r = 0, g = 0, b = 0, count = 0;
-            for (let i = 0; i < data.length; i += 40) { // sample every 10th pixel
-            r += data[i];
-            g += data[i + 1];
-            b += data[i + 2];
-            count++;
-            }
-            r = Math.round(r / count);
-            g = Math.round(g / count);
-            b = Math.round(b / count);
-            setHeroColor(`rgba(${r}, ${g}, ${b}, 0.35)`);
-        };
-    }, [story.cover]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
+ 
+    // Optimistic UI update
+    setReadingLists((prev) => [...prev, newList]);
+ 
+    // TODO: API call — POST /api/reading-lists { title, isPublic, storyId: story.id }
+    // On success, replace the temporary id with the one returned by the backend
+ 
+    // Reset form
+    setNewListTitle("");
+    setNewListPublic(false);
+    setShowCreateForm(false);
+  };
+ 
+  // ── Split lists into private and public
+  const privateLists = readingLists.filter((l) => !l.isPublic);
+  const publicLists  = readingLists.filter((l) =>  l.isPublic);
+ 
   return (
     <div className="story-page">
       <Navbar />
-
+ 
       {/* ── Story Hero ── */}
       <section className="story-hero" style={{ background: heroColor }}>
         <div className="story-hero-inner">
@@ -253,14 +422,14 @@ const ReadStory = () => {
         </div>
         <div className="story-hero-doodle" />
       </section>
-
+ 
       {/* ── Content Area ── */}
       <div className="story-content-area">
-
+ 
         {/* ── Left Sidebar ── */}
         <aside className="story-sidebar">
           <p className="sidebar-label">Chapters</p>
-
+ 
           {/* Chapter dropdown */}
           <div className="chapter-dropdown-wrapper" ref={chapterDropdownRef}>
             <button
@@ -284,33 +453,131 @@ const ReadStory = () => {
               </ul>
             )}
           </div>
-
-          <button className="sidebar-btn sidebar-btn-primary">
-            <img src={readingListImg} alt="Stack of books" /> Add to reading list
-          </button>
+ 
+          {/* ── Add to Reading List button + dropdown ── */}
+          <div className="reading-list-wrapper" ref={listDropdownRef}>
+            <button
+              className="sidebar-btn sidebar-btn-primary"
+              onClick={() => {
+                setListDropdownOpen((p) => !p);
+                setShowCreateForm(false);
+                setNewListTitle("");
+                setNewListPublic(false);
+              }}
+            >
+              <img src={readingListImg} alt="Reading list" />
+              Add to reading list
+            </button>
+ 
+            {listDropdownOpen && (
+              <div className="reading-list-dropdown">
+ 
+                {/* Private Lists */}
+                {privateLists.length > 0 && (
+                  <>
+                    <p className="list-section-label">Private Lists</p>
+                    {privateLists.map((list) => {
+                      const saved = list.storyIds.includes(story.id);
+                      return (
+                        <div
+                          key={list.id}
+                          className={`list-item ${saved ? "list-item-saved" : ""}`}
+                          onClick={() => handleAddToList(list.id)}
+                        >
+                          <span className="list-item-title">{list.title}</span>
+                          {saved && <span className="list-checkmark">✓</span>}
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+ 
+                {/* Public Lists */}
+                {publicLists.length > 0 && (
+                  <>
+                    <p className="list-section-label">Public Lists</p>
+                    {publicLists.map((list) => {
+                      const saved = list.storyIds.includes(story.id);
+                      return (
+                        <div
+                          key={list.id}
+                          className={`list-item ${saved ? "list-item-saved" : ""}`}
+                          onClick={() => handleAddToList(list.id)}
+                        >
+                          <span className="list-item-title">{list.title}</span>
+                          {saved && <span className="list-checkmark">✓</span>}
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+ 
+                {/* No lists at all */}
+                {privateLists.length === 0 && publicLists.length === 0 && !showCreateForm && (
+                  <p className="list-empty-msg">You have no reading lists yet.</p>
+                )}
+ 
+                {/* Create New List option */}
+                {!showCreateForm ? (
+                  <div
+                    className="list-create-trigger"
+                    onClick={() => setShowCreateForm(true)}
+                  >
+                    <span className="list-create-icon">⊕</span>
+                    <span>Create New List</span>
+                  </div>
+                ) : (
+                  <div className="list-create-form">
+                    <input
+                      type="text"
+                      className="list-title-input"
+                      placeholder="Reading List Title"
+                      value={newListTitle}
+                      onChange={(e) => setNewListTitle(e.target.value)}
+                    />
+                    <div className="list-form-row">
+                      <label className="list-public-label">
+                        <input
+                          type="checkbox"
+                          checked={newListPublic}
+                          onChange={(e) => setNewListPublic(e.target.checked)}
+                          className="list-public-checkbox"
+                        />
+                        Public
+                      </label>
+                      <button
+                        className="list-add-btn"
+                        onClick={handleCreateList}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+ 
           <button className="sidebar-btn sidebar-btn-secondary">
-            <img src={shareImg} alt="Stack of books" /> Share
+            <img src={shareImg} alt="Share" /> Share
           </button>
         </aside>
-
+ 
         {/* ── Main Reading Area ── */}
         <main className="story-main">
-
-          {/* Chapter title */}
+ 
           <h2 className="chapter-title">
             Chapter {currentChapterIndex + 1}: {chapter.name}
           </h2>
-
-          {/* Chapter content */}
+ 
           <div className="chapter-content">
             {chapter.content.split("\n\n").map((para, i) => (
               <p key={i}>{para}</p>
             ))}
           </div>
-
+ 
           <hr className="chapter-divider" />
-
-          {/* Chapter navigation buttons */}
+ 
           <div className={`chapter-nav ${isFirst ? "chapter-nav-end" : isLast ? "chapter-nav-start" : "chapter-nav-both"}`}>
             {!isFirst && (
               <button className="chapter-nav-btn" onClick={() => goToChapter(currentChapterIndex - 1)}>
@@ -323,16 +590,12 @@ const ReadStory = () => {
               </button>
             )}
           </div>
-
-          {/* Like button */}
-          <button
-            className={`like-btn ${liked ? "liked" : ""}`}
-            onClick={handleLike}
-          >
-            <img src={likeImg} alt="Like icon" /> {liked ? "LIKED" : "LIKE"}
+ 
+          <button className={`like-btn ${liked ? "liked" : ""}`} onClick={handleLike}>
+            <img src={liked ? likedImg : likeImg} alt="Like icon" />
+            {liked ? "LIKED" : "LIKE"}
           </button>
-
-          {/* Comment input */}
+ 
           <div className="comment-input-area">
             <textarea
               className="comment-textarea"
@@ -341,25 +604,22 @@ const ReadStory = () => {
               onChange={(e) => setCommentText(e.target.value)}
             />
             <div className="comment-submit-row">
-              <button className="comment-submit-btn" onClick={handleComment}>
-                COMMENT
-              </button>
+              <button className="comment-submit-btn" onClick={handleComment}>COMMENT</button>
             </div>
           </div>
-
-          {/* Comments */}
+ 
           <div className="comments-list">
             {sortedComments.map((comment) => (
               <CommentItem key={comment.id} comment={comment} />
             ))}
           </div>
-
+ 
         </main>
       </div>
-
+ 
       <Footer />
     </div>
   );
 };
-
+ 
 export default ReadStory;
