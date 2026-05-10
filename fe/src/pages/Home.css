@@ -1,0 +1,319 @@
+/* HomePage.css */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+body {
+    font-family: "Manrope", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.home-page {
+   width: 100vw;
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  background: #FBFFFE;
+  overflow-x: hidden;
+}
+
+/* HERO */
+.hero-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+.hero-text {
+  max-width: 480px;
+}
+
+.hero-text h1 {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 20px;
+  color: #111;
+}
+
+.hero-text p {
+  font-size: 16px;
+  font-weight: 500;
+  color: #444;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.hero-image {
+  flex-shrink: 0;
+  width: 600px;
+}
+
+.hero-image img {
+  width: 100%;
+  border-radius: 16px;
+  object-fit: cover;
+  height: 320px;
+}
+
+/* GET STARTED BANNER*/
+.get-started-banner {
+  background: #E7B47B;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 220px;
+}
+
+.banner-image {
+  width: 400px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.banner-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-text {
+  flex: 1;
+  padding: 48px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: right;
+}
+
+.banner-text h2 {
+  font-size: 40px;
+  font-weight: 900;
+  color: #111;
+  margin: 0 0 12px;
+}
+
+.banner-text p {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.55;
+  margin: 0 0 24px;
+  max-width: 380px;
+}
+
+.btn-start-writing {
+  background: #111;
+  color: #FBFFFE;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-start-writing:hover {
+  background: #0e72e5;
+}
+
+/* ════════════════════════════
+   HOW IT WORKS
+════════════════════════════ */
+.how-it-works {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 48px;
+}
+
+.how-it-works > h2 {
+  font-size: 34px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 64px;
+  color: #111;
+}
+
+/* ── Feature rows ── */
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  margin-bottom: 72px;
+}
+
+.feature-row.reverse {
+  flex-direction: row-reverse;
+}
+
+.feature-text {
+  flex: 1;
+}
+
+.feature-text h3 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 16px;
+}
+
+.feature-text p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.feature-image {
+  flex-shrink: 0;
+  width: 400px;
+}
+
+.feature-image img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+/* ── Join CTA ── */
+.join-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.btn-join {
+  background: #111;
+  color: #FBFFFE;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 32px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-join:hover {
+  background: #0e72e5;
+}
+
+/* ════════════════════════════
+   THERE'S MORE
+════════════════════════════ */
+.theres-more {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
+}
+
+.theres-more > h2 {
+  font-size: 34px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 32px;
+  color: #111;
+}
+
+.expert-review-card {
+  background: #fde8d8;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 48px;
+  gap: 32px;
+  overflow: hidden;
+}
+
+.expert-review-text h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 12px;
+}
+
+.expert-review-text p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+  line-height: 1.65;
+  max-width: 460px;
+  margin: 0;
+}
+
+.expert-review-image {
+  flex-shrink: 0;
+  width: 140px;
+}
+
+.expert-review-image img {
+  width: 100%;
+  object-fit: contain;
+}
+
+/* ════════════════════════════
+   RESPONSIVE
+════════════════════════════ */
+@media (max-width: 900px) {
+  .hero-section {
+    flex-direction: column;
+    padding: 48px 24px;
+  }
+
+  .hero-image {
+    width: 100%;
+  }
+
+  .get-started-banner {
+    flex-direction: column;
+  }
+
+  .banner-image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .banner-text {
+    align-items: flex-start;
+    text-align: left;
+    padding: 32px 24px;
+  }
+
+  .feature-row,
+  .feature-row.reverse {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .feature-image {
+    width: 100%;
+  }
+
+  .how-it-works,
+  .theres-more {
+    padding: 48px 24px;
+  }
+
+  .home-footer {
+    flex-direction: column;
+    padding: 48px 24px;
+  }
+}

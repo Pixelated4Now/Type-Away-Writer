@@ -1,0 +1,96 @@
+/* Footer.css */
+
+.home-footer {
+  background: #FBFFFE;
+  border-top: 1px solid #e8e8e8;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 48px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.footer-brand img {
+  width: 300px;
+  height: auto;
+  object-fit: fill;
+  margin: 0px;
+}
+
+.footer-left h3 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.3;
+  margin: 0 0 24px;
+}
+
+.btn-footer-signup {
+  background: #111;
+  color: #FBFFFE;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 28px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-footer-signup:hover {
+  background: #0e72e5;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.footer-links a {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-links a:hover {
+  color: #0e72e5;
+}
+
+.footer-doodle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: auto;
+  opacity: 0.15;
+  pointer-events: none;
+  object-fit: cover;
+  object-position: left;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 30%);
+  mask-image: linear-gradient(to right, transparent, black 30%);
+}
+
+@media (max-width: 900px) {
+  .home-footer {
+    flex-direction: column;
+    padding: 48px 24px;
+  }
+}
