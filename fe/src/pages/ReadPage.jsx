@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-import bannerImg from "../assets/readBanner.jpg"; // replace with your actual asset
+import bannerImg from "../assets/readBanner.jpg"; 
 
 // ── Placeholder category data ──────────────────────────────────────────────
 // Replace this with a useEffect fetch from your database when it's ready.
