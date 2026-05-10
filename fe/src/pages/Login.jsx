@@ -78,7 +78,7 @@ const Login = () => {
                     <label htmlFor="email">Email Address:</label>
                     <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '1px solid #FF1212' : '' }} />
                     {emailError && (
-                        <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '6px', marginBottom: '0px' }}>
+                        <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '3px' }}>
                             {emailError}
                         </p>
                     )}
@@ -94,7 +94,7 @@ const Login = () => {
                         </button>
                     </div>
                     {passwordError && (
-                        <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '6px', marginBottom: '12px' }}>
+                        <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '3px', marginBottom: '8px' }}>
                             {passwordError}
                         </p>
                     )}

@@ -119,7 +119,7 @@ const RegisterStudent = () => {
   };
 
   return (
-    <div className="wrapper student-register" style={{ width: "740px", maxWidth: "740px" }}>
+    <div className="wrapper student-register" style={{ width: "500px", maxWidth: "500px" }}>
       <div className="heading">
         <h1>Individual/ Student</h1>
         <p>Create an account to start reading and writing!</p>

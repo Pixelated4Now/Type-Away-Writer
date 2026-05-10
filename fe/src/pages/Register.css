@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 40px 20px 28px;
+  padding: 20px 10px 14px;
 }
 
 .register-cards {
@@ -22,9 +22,9 @@
   border: 0.5px solid #b6b6b6;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   border-radius: 24px;
-  padding: 64px 28px 64px;
-  width: 380px;
-  max-width: 565px;
+  padding: 32px 28px 32px;
+  width: 310px;
+  max-width: 500px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -38,8 +38,8 @@
 }
 
 .register-avatar {
-  width: 180px;
-  height: 180px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   background: #fbfffe;
   margin: 0 auto 36px;
@@ -62,13 +62,13 @@
 }
 
 .register-card h2 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 400;
   margin: 0 0 10px;
 }
 
 .register-card p {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 200;
   line-height: 1.55;
   margin: 0 0 28px;
@@ -77,13 +77,13 @@
 
 .register-card button {
   width: 100%;
-  height: 50px;
+  height: 40px;
   background-color: #0E72E5;
   border: 0.3px solid #EDF2F4;
   outline: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 14px;
   font-family: "Manrope", sans-serif;
   color: #fff;
   font-weight: 700;
@@ -97,7 +97,7 @@
 }
 
 .register-footer {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
   color: #edf2f4;
   margin: 0;
@@ -118,19 +118,19 @@
 
 /* RegisterStudent.css */
 .student-register {
-  max-width: 566px;
-  width: 100%;
+  width: 50%;
+  max-width: 500px;
 }
 
 .student-register .heading h1 {
-  font-size: 48px;
+  font-size: 24px;
   font-weight: 700;
 }
 
 .student-register .heading p {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  margin-top: 8px;
+  margin-top: 4px;
   color: #edf2f4;
 }
 
@@ -151,8 +151,8 @@
 }
 
 .step-circle {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 2px solid rgba(237, 242, 244, 0.5);
   color: rgba(237, 242, 244, 0.6);
@@ -177,10 +177,10 @@
 }
 
 .step-line {
-  width: 40px;
+  width: 30px;
   height: 1.5px;
   background: rgba(237, 242, 244, 0.3);
-  margin: 0 4px;
+  margin: 0 0px;
   transition: background 0.25s ease;
 }
 
@@ -429,9 +429,10 @@
 
 .btn-remove-file {
     background: transparent;
-    border: 1px solid #F64E4E;
+    border: 1.5px solid rgba(237, 242, 244, 0.5);
+    transition: background 0.2s ease;
     border-radius: 8px;
-    color: #F64E4E;
+    color: #edf2f4;
     font-size: 14px;
     font-family: "Manrope", sans-serif;
     font-weight: 700;
