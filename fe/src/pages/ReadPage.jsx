@@ -8,20 +8,20 @@ import bannerImg from "../assets/readBanner.jpg"; // replace with your actual as
 // Replace this with a useEffect fetch from your database when it's ready.
 // Each object needs: { id, name, image }
 const CATEGORIES = [
-  { id: 1,  name: "Adventure",       image: "../assets/categories/adventure.jpg" },
-  { id: 2,  name: "Animal Stories",  image: "../assets/categories/animals.jpg" },
-  { id: 3,  name: "Comedy",          image: "../assets/categories/comedy.jpg" },
-  { id: 4,  name: "Dreams",          image: "../assets/categories/dreams.jpg" },
-  { id: 5,  name: "Family",          image: "../assets/categories/family.jpg" },
-  { id: 6,  name: "Friendship",      image: "../assets/categories/friends.jpg" },
-  { id: 7,  name: "Horror",          image: "../assets/categories/horror.jpg" },
-  { id: 8,  name: "Magic",           image: "../assets/categories/magic.jpg" },
-  { id: 9,  name: "Mystery",         image: "../assets/categories/mystery.jpg" },
-  { id: 10, name: "Romance",         image: "../assets/categories/romance.jpg" },
-  { id: 11, name: "School Life",     image: "../assets/categories/schoolLife.jpg" },
-  { id: 12, name: "Science Fiction", image: "../assets/categories/scienceFiction.jpg" },
-  { id: 13, name: "Sports Fiction",  image: "../assets/categories/sports.jpg" },
-  { id: 14, name: "Superheroes",     image: "../assets/categories/superhero.jpg" },
+  { id: 1,  name: "Adventure",       image: "/assets/categories/adventure.jpg" },
+  { id: 2,  name: "Animal Stories",  image: "/assets/categories/animals.jpg" },
+  { id: 3,  name: "Comedy",          image: "/assets/categories/comedy.jpg" },
+  { id: 4,  name: "Dreams",          image: "/assets/categories/dreams.jpg" },
+  { id: 5,  name: "Family",          image: "/assets/categories/family.jpg" },
+  { id: 6,  name: "Friendship",      image: "/assets/categories/friends.jpg" },
+  { id: 7,  name: "Horror",          image: "/assets/categories/horror.jpg" },
+  { id: 8,  name: "Magic",           image: "/assets/categories/magic.jpg" },
+  { id: 9,  name: "Mystery",         image: "/assets/categories/mystery.jpg" },
+  { id: 10, name: "Romance",         image: "/assets/categories/romance.jpg" },
+  { id: 11, name: "School Life",     image: "/assets/categories/schoolLife.jpg" },
+  { id: 12, name: "Science Fiction", image: "/assets/categories/scienceFiction.jpg" },
+  { id: 13, name: "Sports Fiction",  image: "/assets/categories/sports.jpg" },
+  { id: 14, name: "Superheroes",     image: "/assets/categories/superhero.jpg" },
 ];
 
 const ReadPage = () => {
@@ -52,7 +52,7 @@ const ReadPage = () => {
         }
 
         .read-hero-image {
-          width: 300px;
+          width: 400px;
           flex-shrink: 0;
           overflow: hidden;
         }
@@ -151,7 +151,7 @@ const ReadPage = () => {
           height: 90px;
           flex-shrink: 0;
           overflow: hidden;
-          border-radius: 0 12px 12px 0;
+          border-radius: 35px 0 0 35px;
         }
 
         .category-image img {

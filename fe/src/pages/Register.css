@@ -122,8 +122,12 @@
   max-width: 500px;
 }
 
+.student-regsiter .heading {
+    margin-bottom: 4px;
+}
+
 .student-register .heading h1 {
-  font-size: 24px;
+  font-size: 44px;
   font-weight: 700;
 }
 
@@ -141,7 +145,6 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
@@ -180,7 +183,6 @@
   width: 30px;
   height: 1.5px;
   background: rgba(237, 242, 244, 0.3);
-  margin: 0 0px;
   transition: background 0.25s ease;
 }
 
@@ -191,7 +193,7 @@
 .step-label {
   width: 100%;
   text-align: center;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   color: rgba(237, 242, 244, 0.7);
   margin: 6px 0 0;
@@ -206,8 +208,12 @@
 
 /* ── Input overrides ── */
 .student-register .input-box {
-  margin: 16px 0 4px;
+  margin: 0px;
   height: auto;
+}
+
+.student-register .input-box label {
+  font-size: 14px;
 }
 
 .student-register .input-box input {
@@ -259,9 +265,9 @@
 
 /* ── Hint & Error text ── */
 .field-hint {
-  font-size: 13px;
+  font-size: 10px;
   color: rgba(237, 242, 244, 0.6);
-  margin-top: 6px;
+  margin-top: 4px;
   display: block;
   line-height: 1.4;
 }

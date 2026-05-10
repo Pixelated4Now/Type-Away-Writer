@@ -25,7 +25,7 @@ const Guidelines = () => {
         }
  
         .guidelines-hero-image {
-          width: 500px;
+          width: 400px;
           flex-shrink: 0;
           overflow: hidden;
         }
