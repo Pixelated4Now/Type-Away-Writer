@@ -17,6 +17,7 @@ import Guidelines from "./pages/Guidelines";
 
 import Read from "./pages/ReadPage";
 import ReadCategory from "./pages/ReadCategory";
+import ReadStory from "./pages/ReadStory";
 
 
 
@@ -39,6 +40,7 @@ function App() {
 
         <Route path="/read" element={<Read />} />
         <Route path="/read/:categoryId" element={<ReadCategory />} />
+        <Route path="/read/story/:storyId" element={<ReadStory />} />
       </Routes>
     </BrowserRouter>
   );

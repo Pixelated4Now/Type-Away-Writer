@@ -23,15 +23,27 @@ const PLACEHOLDER_STORIES = [
     title: "The Mystery of the Underground Laboratory",
     authors: ["hmrigs"],
     summary: "Vihas was an ordinary boy until he found a key. But the key leads to an underground science lab. Let's join him and see what he finds.",
-    tags: ["experiments", "science", "illegal", "scary", "danger", "discovery", "suspense", "dark", "drama", "fighting", "laboratory", "chemistry", "spooky", "weapons", "murder", "crime", "secrets", "hurt", "virus", "clues"],
+    tags: ["Experiments", "Science", "Illegal", "scary", "danger", "discovery", "suspense", "dark", "drama", "fighting", "laboratory", "chemistry", "spooky", "weapons", "murder", "crime", "secrets", "hurt", "virus", "clues"],
     status: "Complete",
     chapters: 57,
     likes: 327,
     comments: 108,
-    cover: "/assets/covers/mystery-lab.jpg",
+    cover: "/assets/covers/tmotul.png",
+  },
+    {
+    id: 5,
+    title: "Dreamer Girl",
+    authors: ["pascalChampionhehe"],
+    summary: "Ever since Lizzy's mother got sick, her life changed. Then relatives, the Dohl's, came to visit. But something's up with them, like they're trying to hide something.",
+    tags: ["Mystery", "Secrets", "Poison", "Suspense", "Magic", "School"],
+    status: "Complete",
+    chapters: 3,
+    likes: 17,
+    comments: 9,
+    cover: "/assets/covers/dg.png",
   },
   {
-    id: 2,
+    id: 3,
     title: "The Man at the Window",
     authors: ["duckboi0804"],
     summary: "Every day when Amaya comes home from school there is a man watching from the window of his apartment. He's always there. Every single day. He never moves. And one day, he waves at her. The next day, he's not there. But the light is still on in his room.",
@@ -40,10 +52,10 @@ const PLACEHOLDER_STORIES = [
     chapters: 22,
     likes: 12,
     comments: 5,
-    cover: "/assets/covers/man-window.jpg",
+    cover: "/assets/covers/tmatw.png",
   },
   {
-    id: 3,
+    id: 4,
     title: "The Just Right Detective Agency",
     authors: ["CyberKitty", "TimeBellaOfficial"],
     summary: "A story about four friends who decide to become detectives and solve many confusing cases.",
@@ -52,19 +64,19 @@ const PLACEHOLDER_STORIES = [
     chapters: 5,
     likes: 3,
     comments: 1,
-    cover: "/assets/covers/detective-agency.jpg",
+    cover: "/assets/covers/tjrda.png",
   },
   {
-    id: 4,
+    id: 5,
     title: "A CRIME",
     authors: ["deepfried_steak"],
     summary: "Just a simple murder mystery story for all to read.",
-    tags: ["crime", "murder", "detective", "fighting", "danger", "clues", "suspense"],
+    tags: ["Crime", "Murder", "Detective", "Fighting", "Danger", "Clues", "Suspense"],
     status: "Ongoing",
     chapters: 11,
     likes: 3,
     comments: 0,
-    cover: "/assets/covers/a-crime.jpg",
+    cover: "/assets/covers/ac.png",
   },
 ];
 
@@ -205,7 +217,7 @@ const ReadCategory = () => {
               <div
                 key={story.id}
                 className="story-card"
-                onClick={() => navigate(`/story/${story.id}`)}
+                onClick={() => navigate(`/read/story/${story.id}`)}
               >
                 <div className="story-cover">
                   <img src={story.cover} alt={story.title} />

@@ -25,7 +25,7 @@ const Navbar = () => {
             <Link to="/write" className={isActive("/write") ? "active" : ""}>Write</Link>
           </li>
           <li>
-            <Link to="/read" className={isActive("/read") ? "active" : ""}>Read</Link>
+            <Link to="/read" className={location.pathname.startsWith("/read") ? "active" : ""}>Read</Link>
           </li>
           <li>
             <Link to="/contact" className={isActive("/contact") ? "active" : ""}>Contact Us</Link>

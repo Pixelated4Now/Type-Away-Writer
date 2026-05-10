@@ -1,0 +1,484 @@
+.story-page {
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  background: #fff;
+  width: 100vw;
+}
+ 
+/* ── Story Hero ── */
+.story-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 0;
+}
+ 
+.story-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+ 
+.story-hero-cover {
+  width: auto;
+  height: 250px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+ 
+.story-hero-info {
+  flex: 1;
+}
+ 
+.story-hero-meta {
+  font-size: 13px;
+  font-weight: 400;
+  color: #444;
+  margin: 0 0 8px;
+}
+ 
+.story-hero-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 6px;
+  line-height: 1.2;
+}
+ 
+.story-hero-author {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 14px;
+}
+ 
+.story-hero-summary {
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  line-height: 1.65;
+  max-width: 520px;
+  margin: 0;
+}
+ 
+/* Doodle watermark in hero */
+.story-hero-doodle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 260px;
+  background: url("../assets/footerDoodles.png") center/cover no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+  mask-image: linear-gradient(to right, transparent, black 40%);
+}
+ 
+/* ── Content Area Layout ── */
+.story-content-area {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 40px 72px;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+ 
+/* ── Left Sidebar ── */
+.story-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+ 
+.sidebar-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+ 
+/* Chapter dropdown */
+.chapter-dropdown-wrapper {
+  position: relative;
+}
+ 
+.chapter-dropdown-trigger {
+  width: 100%;
+  height: 36px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111;
+  padding: 0 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  text-align: left;
+  box-shadow: none;
+  margin-top: 0;
+  outline: none;
+}
+ 
+.chapter-dropdown-trigger:hover {
+  background: #f5f5f5;
+}
+ 
+.chapter-arrow {
+  font-size: 11px;
+  color: #666;
+  flex-shrink: 0;
+}
+ 
+.chapter-dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 200px;
+  overflow-y: auto;
+}
+ 
+.chapter-dropdown-item {
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+}
+ 
+.chapter-dropdown-item:hover {
+  background: #f0f4ff;
+}
+ 
+.chapter-dropdown-item.active {
+  font-weight: 700;
+  background: #f0f4ff;
+}
+ 
+/* Sidebar buttons */
+.sidebar-btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  box-shadow: none;
+  margin-top: 0;
+}
+ 
+.sidebar-btn-primary {
+  background: #111;
+  color: #fff;
+  border: none;
+}
+ 
+.sidebar-btn-primary:hover {
+  background: #0e72e5;
+}
+ 
+.sidebar-btn-secondary {
+  background: transparent;
+  color: #111;
+  border: 1.5px solid #ccc;
+}
+ 
+.sidebar-btn-secondary:hover {
+  background: #f5f5f5;
+}
+ 
+/* ── Main Reading Area ── */
+.story-main {
+  flex: 1;
+  min-width: 0;
+}
+ 
+.chapter-title {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 40px;
+  color: #111;
+}
+ 
+.chapter-content p {
+  font-size: 12px;
+  font-weight: 400;
+  color: #222;
+  line-height: 1.8;
+  margin: 0 0 16px;
+}
+ 
+.chapter-divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 32px 0 24px;
+}
+ 
+/* ── Chapter Nav Buttons ── */
+.chapter-nav {
+  display: flex;
+  margin-bottom: 20px;
+}
+ 
+.chapter-nav-end {
+  justify-content: flex-end;
+}
+ 
+.chapter-nav-both {
+  justify-content: space-between;
+}
+ 
+.chapter-nav-btn {
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 6px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border: 1.5px solid #ccc;
+  background: #fff;
+  color: #111;
+  transition: background 0.2s ease;
+  box-shadow: none;
+  margin-top: 0;
+}
+ 
+.chapter-nav-btn:hover {
+  background: #f0f0f0;
+}
+ 
+.chapter-nav-btn-dark {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+ 
+.chapter-nav-btn-dark:hover {
+  background: #0e72e5;
+  border-color: #0e72e5;
+}
+ 
+/* ── Like Button ── */
+.like-btn {
+  width: 100%;
+  height: 48px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background 0.2s ease;
+  margin-top: 0;
+}
+ 
+.like-btn:hover {
+  background: #333;
+}
+ 
+.like-btn.liked {
+  background: #c0392b;
+}
+ 
+/* ── Comment Input ── */
+.comment-input-area {
+  margin-bottom: 32px;
+}
+ 
+.comment-textarea {
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #111;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+ 
+.comment-textarea:focus {
+  border-color: #0e72e5;
+}
+ 
+.comment-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+ 
+.comment-submit-btn {
+  height: 38px;
+  padding: 0 24px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 0;
+  box-shadow: none;
+}
+ 
+.comment-submit-btn:hover {
+  background: #0e72e5;
+}
+ 
+/* ── Comments List ── */
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+ 
+.comment-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+ 
+.comment-reply {
+  margin-left: 48px;
+}
+ 
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #ddd;
+}
+ 
+.comment-body {
+  flex: 1;
+}
+ 
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+ 
+.comment-username {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+ 
+.comment-datetime {
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+}
+ 
+.comment-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: #222;
+  line-height: 1.6;
+  margin: 0 0 8px;
+  white-space: pre-line;
+}
+ 
+/* Role badges */
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+ 
+.badge-expert {
+  background: #f5a623;
+  color: #fff;
+}
+ 
+.badge-author {
+  background: #e8a0b0;
+  color: #fff;
+}
+ 
+/* Reply button */
+.reply-btn {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+  margin-top: 0;
+  width: auto;
+  height: auto;
+}
+ 
+.reply-btn:hover {
+  background: #f0f0f0;
+}
+ 
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .story-hero-inner {
+    flex-direction: column;
+    padding: 0 20px;
+  }
+ 
+  .story-content-area {
+    flex-direction: column;
+    padding: 24px 20px 56px;
+  }
+ 
+  .story-sidebar {
+    width: 100%;
+  }
+ 
+  .chapter-nav-both {
+    gap: 12px;
+  }
+}
