@@ -51,7 +51,7 @@ const Login = () => {
             }
 
             login(data.token, data.user);
-            navigate('/dashboard');
+            navigate(data.user.account_type === 'admin' ? '/admin' : '/');
         } catch {
             setServerError('A network error occurred. Please try again.');
         } finally {

@@ -63,6 +63,9 @@ services:
       # Protect node_modules folder inside container from being overwritten by local files.
       - /fyprojectbe/node_modules
 
+      # Persist uploaded qualification files across container rebuilds.
+      - ./be/uploads:/fyprojectbe/uploads
+
 
 
 

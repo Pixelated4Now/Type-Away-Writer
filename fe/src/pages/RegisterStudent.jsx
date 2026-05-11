@@ -161,7 +161,7 @@ const RegisterStudent = () => {
                 }
 
                 login(data.token, data.user);
-                navigate('/dashboard');
+                navigate('/');
             } catch {
                 setServerError('A network error occurred. Please try again.');
             } finally {
