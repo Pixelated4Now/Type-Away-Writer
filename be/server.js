@@ -11,8 +11,13 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-const authRoute = require('./routes/auth');
+const authRoute       = require('./routes/auth');
+const categoriesRoute = require('./routes/categories');
+const storiesRoute    = require('./routes/stories');
+
 app.use('/auth', authRoute);
+app.use('/', categoriesRoute);
+app.use('/', storiesRoute);
 
 const PORT = process.env.PORT || 5000;
 

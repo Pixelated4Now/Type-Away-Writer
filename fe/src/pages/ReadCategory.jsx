@@ -1,143 +1,98 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./ReadCategory.css";
+import bannerImg from "../assets/readBanner.jpg";
 
-import bannerImg from "../assets/readBanner.jpg"; 
-
-// ── Placeholder data — swap with real API calls when backend is ready ────────
-
-const PLACEHOLDER_TAGS = [
-  "Action", "Adventure", "Betrayal", "Chase", "Chemistry", "Clues", "Comedy",
-  "Crime", "Danger", "Dark", "Dance", "Detective", "Discovery", "Drama",
-  "Fighting", "Friendship", "Funny", "Happy", "Horror", "Hurt", "Illegal",
-  "Laboratory", "Life", "Magic", "Murder", "Mystery", "Poison", "Romance",
-  "Scary", "School", "Science", "Secretagent", "Secrets", "Spooky", "Sports",
-  "Suspense", "Tragedy", "Virus", "Weapons",
-];
-
-const PLACEHOLDER_STORIES = [
-  {
-    id: 1,
-    title: "The Mystery of the Underground Laboratory",
-    authors: ["hmrigs"],
-    summary: "Vihas was an ordinary boy until he found a key. But the key leads to an underground science lab. Let's join him and see what he finds.",
-    tags: ["Experiments", "Science", "Illegal", "scary", "danger", "discovery", "suspense", "dark", "drama", "fighting", "laboratory", "chemistry", "spooky", "weapons", "murder", "crime", "secrets", "hurt", "virus", "clues"],
-    status: "Complete",
-    chapters: 57,
-    likes: 327,
-    comments: 108,
-    cover: "/assets/covers/tmotul.png",
-  },
-    {
-    id: 5,
-    title: "Dreamer Girl",
-    authors: ["pascalChampionhehe"],
-    summary: "Ever since Lizzy's mother got sick, her life changed. Then relatives, the Dohl's, came to visit. But something's up with them, like they're trying to hide something.",
-    tags: ["Mystery", "Secrets", "Poison", "Suspense", "Magic", "School"],
-    status: "Complete",
-    chapters: 3,
-    likes: 17,
-    comments: 9,
-    cover: "/assets/covers/dg.png",
-  },
-  {
-    id: 3,
-    title: "The Man at the Window",
-    authors: ["duckboi0804"],
-    summary: "Every day when Amaya comes home from school there is a man watching from the window of his apartment. He's always there. Every single day. He never moves. And one day, he waves at her. The next day, he's not there. But the light is still on in his room.",
-    tags: ["life", "secrets", "scary", "fighting", "dark", "danger", "suspense", "school"],
-    status: "Complete",
-    chapters: 22,
-    likes: 12,
-    comments: 5,
-    cover: "/assets/covers/tmatw.png",
-  },
-  {
-    id: 4,
-    title: "The Just Right Detective Agency",
-    authors: ["CyberKitty", "TimeBellaOfficial"],
-    summary: "A story about four friends who decide to become detectives and solve many confusing cases.",
-    tags: ["secretagent", "secrets", "detective", "clues", "danger", "drama", "friends", "happy"],
-    status: "Ongoing",
-    chapters: 5,
-    likes: 3,
-    comments: 1,
-    cover: "/assets/covers/tjrda.png",
-  },
-  {
-    id: 5,
-    title: "A CRIME",
-    authors: ["deepfried_steak"],
-    summary: "Just a simple murder mystery story for all to read.",
-    tags: ["Crime", "Murder", "Detective", "Fighting", "Danger", "Clues", "Suspense"],
-    status: "Ongoing",
-    chapters: 11,
-    likes: 3,
-    comments: 0,
-    cover: "/assets/covers/ac.png",
-  },
-];
-
-const CATEGORY_NAMES = {
-  1: "Adventure", 2: "Animal Stories", 3: "Comedy", 4: "Dreams", 5: "Family", 6: "Friendship", 7: "Horror", 8: "Magic", 9: "Mystery", 10: "Romance", 11: "School Life", 12: "Science Fiction", 13: "Sports Fiction", 14: "Superheroes",
-};
-
+const API     = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const MAX_TAGS = 20;
 
-// Component
+// Map DB status values to display labels and back
+const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
 const ReadCategory = () => {
   const { categoryId } = useParams();
-  const navigate = useNavigate();
-  const categoryName = CATEGORY_NAMES[categoryId] || "Stories";
+  const navigate       = useNavigate();
+
+  // ── Category & tag data from API
+  const [category, setCategory]   = useState(null);
+  const [allTags, setAllTags]     = useState([]);   // string[]
 
   // ── Search form state
-  const [titleInput, setTitleInput] = useState("");
-  const [authorInput, setAuthorInput] = useState("");
-  const [tagInput, setTagInput] = useState("");
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [tagDropdown, setTagDropdown] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [titleInput, setTitleInput]         = useState("");
+  const [authorInput, setAuthorInput]       = useState("");
+  const [tagInput, setTagInput]             = useState("");
+  const [selectedTags, setSelectedTags]     = useState([]);
+  const [tagDropdown, setTagDropdown]       = useState([]);
+  const [showDropdown, setShowDropdown]     = useState(false);
   const [completionStatus, setCompletionStatus] = useState("All");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   // ── Results state
-  const [stories, setStories] = useState(PLACEHOLDER_STORIES);
-  const [searched, setSearched] = useState(false);
+  const [stories, setStories]         = useState([]);
+  const [storiesLoading, setStoriesLoading] = useState(true);
 
-  // ── Refs for closing dropdowns on outside click
-  const tagRef = useRef(null);
+  // ── Refs for outside-click closing
+  const tagRef    = useRef(null);
   const statusRef = useRef(null);
 
-  // ── Close dropdowns when clicking outside
+  // ── Fetch categories + tags once on mount
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API}/categories`).then((r) => r.json()),
+      fetch(`${API}/tags`).then((r) => r.json()),
+    ])
+      .then(([cats, tags]) => {
+        setCategory(cats.find((c) => c.id === parseInt(categoryId, 10)) || null);
+        setAllTags(tags.map((t) => t.name));
+      })
+      .catch(console.error);
+  }, [categoryId]);
+
+  // ── Fetch stories (called on mount and on search)
+  const fetchStories = useCallback(
+    async (filters = {}) => {
+      setStoriesLoading(true);
+      try {
+        const params = new URLSearchParams({ category_id: categoryId });
+        if (filters.title)  params.set("title",  filters.title);
+        if (filters.author) params.set("author", filters.author);
+        if (filters.tags)   params.set("tags",   filters.tags);
+        if (filters.status) params.set("status", filters.status);
+
+        const res  = await fetch(`${API}/stories?${params}`);
+        const data = await res.json();
+        setStories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("fetchStories error:", err);
+        setStories([]);
+      } finally {
+        setStoriesLoading(false);
+      }
+    },
+    [categoryId]
+  );
+
+  useEffect(() => { fetchStories(); }, [fetchStories]);
+
+  // ── Close dropdowns on outside click
   useEffect(() => {
     const handleClick = (e) => {
-      if (tagRef.current && !tagRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
-      if (statusRef.current && !statusRef.current.contains(e.target)) {
-        setShowStatusDropdown(false);
-      }
+      if (tagRef.current    && !tagRef.current.contains(e.target))    setShowDropdown(false);
+      if (statusRef.current && !statusRef.current.contains(e.target)) setShowStatusDropdown(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // ── Tag autocomplete: filter on input change
+  // ── Tag autocomplete
   const handleTagInput = (e) => {
     const val = e.target.value;
     setTagInput(val);
-    if (val.trim() === "") {
-      setTagDropdown([]);
-      setShowDropdown(false);
-      return;
-    }
-    const matches = PLACEHOLDER_TAGS.filter(
-      (t) =>
-        t.toLowerCase().startsWith(val.toLowerCase()) &&
-        !selectedTags.includes(t)
+    if (!val.trim()) { setTagDropdown([]); setShowDropdown(false); return; }
+    const matches = allTags.filter(
+      (t) => t.toLowerCase().startsWith(val.toLowerCase()) && !selectedTags.includes(t)
     );
     setTagDropdown(matches);
     setShowDropdown(matches.length > 0);
@@ -151,45 +106,24 @@ const ReadCategory = () => {
     setShowDropdown(false);
   };
 
-  const removeTag = (tag) => {
-    setSelectedTags((prev) => prev.filter((t) => t !== tag));
-  };
+  const removeTag = (tag) => setSelectedTags((prev) => prev.filter((t) => t !== tag));
 
-  // ── Search handler
-  // Replace the filter logic below with a real API call when backend is ready
+  // ── Search handler — fires a new API fetch
   const handleSearch = () => {
-    let results = PLACEHOLDER_STORIES;
-
-    if (titleInput.trim()) {
-      results = results.filter((s) =>
-        s.title.toLowerCase().includes(titleInput.toLowerCase())
-      );
-    }
-    if (authorInput.trim()) {
-      results = results.filter((s) =>
-        s.authors.some((a) =>
-          a.toLowerCase().includes(authorInput.toLowerCase())
-        )
-      );
-    }
-    if (selectedTags.length > 0) {
-      results = results.filter((s) =>
-        selectedTags.every((t) => s.tags.includes(t))
-      );
-    }
-    if (completionStatus !== "All") {
-      results = results.filter((s) => s.status === completionStatus);
-    }
-
-    setStories(results);
-    setSearched(true);
+    const filters = {};
+    if (titleInput.trim())   filters.title  = titleInput.trim();
+    if (authorInput.trim())  filters.author = authorInput.trim();
+    if (selectedTags.length) filters.tags   = selectedTags.join(",");
+    if (completionStatus !== "All") filters.status = completionStatus.toLowerCase();
+    fetchStories(filters);
   };
+
+  const categoryName = category?.name || "Stories";
 
   return (
     <div className="category-page">
       <Navbar />
 
-      {/* ── Hero Banner ── */}
       <section className="category-hero">
         <div className="category-hero-image">
           <img src={bannerImg} alt="Books" />
@@ -204,15 +138,15 @@ const ReadCategory = () => {
         </div>
       </section>
 
-      {/* ── Page Title ── */}
       <h2 className="category-title">{categoryName}</h2>
 
-      {/* ── Main Content: Stories + Work Search ── */}
       <div className="category-main">
 
         {/* ── Story List ── */}
         <div className="story-list">
-          {stories.length > 0 ? (
+          {storiesLoading ? (
+            <p style={{ color: "#888", padding: "24px 0" }}>Loading stories…</p>
+          ) : stories.length > 0 ? (
             stories.map((story) => (
               <div
                 key={story.id}
@@ -220,32 +154,38 @@ const ReadCategory = () => {
                 onClick={() => navigate(`/read/story/${story.id}`)}
               >
                 <div className="story-cover">
-                  <img src={story.cover} alt={story.title} />
+                  <img
+                    src={story.cover_image_url || "/assets/covers/default.png"}
+                    alt={story.title}
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
                 </div>
                 <div className="story-info">
                   <h3 className="story-title">{story.title}</h3>
                   <p className="story-authors">
-                    by {[...story.authors].sort().join(", ")}
+                    by {[...(story.authors || [])].sort().join(", ")}
                   </p>
                   <p className="story-summary">{story.summary}</p>
                   <div className="story-tags">
-                    {story.tags.map((tag) => (
+                    {(story.tags || []).map((tag) => (
                       <span key={tag} className="story-tag">{tag}</span>
                     ))}
                   </div>
                   <div className="story-meta">
-                    <span className="story-status">{story.status}</span>
-                    <span>{story.chapters} chapters</span>
+                    <span className="story-status">
+                      {STATUS_DISPLAY[story.status] || story.status}
+                    </span>
+                    <span>{story.chapter_count} chapter{story.chapter_count !== 1 ? "s" : ""}</span>
                   </div>
                   <div className="story-stats">
-                    {story.likes} likes • {story.comments} comments
+                    {story.likes_count} likes • {story.comment_count} comments
                   </div>
                 </div>
               </div>
             ))
           ) : (
             <p className="no-results">
-              There are currently no stories matching your search criteria.{" "} <br></br>
+              There are currently no stories matching your search criteria.<br />
               Try adjusting your search or{" "}
               <Link to="/write" className="no-results-link">write your own story</Link>
               {" "}on Type-Away-Writer.
@@ -257,7 +197,6 @@ const ReadCategory = () => {
         <aside className="work-search">
           <h3 className="work-search-title">Work Search</h3>
 
-          {/* Title */}
           <div className="search-field">
             <label>Title:</label>
             <input
@@ -269,7 +208,6 @@ const ReadCategory = () => {
             />
           </div>
 
-          {/* Author */}
           <div className="search-field">
             <label>Author:</label>
             <input
@@ -281,17 +219,13 @@ const ReadCategory = () => {
             />
           </div>
 
-          {/* Tags */}
           <div className="search-field" ref={tagRef}>
             <label>Tags:</label>
             <div className={`tag-input-box ${showDropdown ? "active" : ""}`}>
               {selectedTags.map((tag) => (
                 <span key={tag} className="selected-tag">
                   {tag}
-                  <button
-                    className="remove-tag"
-                    onClick={() => removeTag(tag)}
-                  >×</button>
+                  <button className="remove-tag" onClick={() => removeTag(tag)}>×</button>
                 </span>
               ))}
               {selectedTags.length < MAX_TAGS && (
@@ -300,9 +234,7 @@ const ReadCategory = () => {
                   placeholder={selectedTags.length === 0 ? "Search matching tags to include" : ""}
                   value={tagInput}
                   onChange={handleTagInput}
-                  onFocus={() => {
-                    if (tagDropdown.length > 0) setShowDropdown(true);
-                  }}
+                  onFocus={() => { if (tagDropdown.length > 0) setShowDropdown(true); }}
                   className="tag-text-input"
                 />
               )}
@@ -310,11 +242,7 @@ const ReadCategory = () => {
             {showDropdown && (
               <ul className="tag-dropdown">
                 {tagDropdown.map((tag) => (
-                  <li
-                    key={tag}
-                    className="tag-dropdown-item"
-                    onMouseDown={() => addTag(tag)}
-                  >
+                  <li key={tag} className="tag-dropdown-item" onMouseDown={() => addTag(tag)}>
                     {tag}
                   </li>
                 ))}
@@ -322,12 +250,11 @@ const ReadCategory = () => {
             )}
           </div>
 
-          {/* Completion Status */}
           <div className="search-field" ref={statusRef}>
             <label>Completion status:</label>
             <div
               className={`status-select ${showStatusDropdown ? "active" : ""}`}
-              onClick={() => setShowStatusDropdown((prev) => !prev)}
+              onClick={() => setShowStatusDropdown((p) => !p)}
             >
               <span>{completionStatus === "All" ? "Search status" : completionStatus}</span>
               <span className="status-arrow">▾</span>
@@ -338,10 +265,7 @@ const ReadCategory = () => {
                   <li
                     key={s}
                     className={`status-option ${completionStatus === s ? "selected" : ""}`}
-                    onMouseDown={() => {
-                      setCompletionStatus(s);
-                      setShowStatusDropdown(false);
-                    }}
+                    onMouseDown={() => { setCompletionStatus(s); setShowStatusDropdown(false); }}
                   >
                     {s}
                   </li>
