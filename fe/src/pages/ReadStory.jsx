@@ -113,9 +113,9 @@ const PLACEHOLDER_LISTS = [
   { id: 4, title: "Me Likey",       isPublic: true,  storyIds: [] },
 ];
 
-const CURRENT_USER = "ClaireLess"; // TODO: replace with real auth context
+const CURRENT_USER = "DarkxWolf17"; // TODO: replace with real auth context
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// 
 
 const formatDatetime = (isoString) => {
   const date = new Date(isoString);
@@ -226,6 +226,9 @@ const ReadStory = () => {
  
   // ── Like state
   const [liked, setLiked] = useState(false);
+
+  // ── Comment text state
+  const [commentText, setCommentText] = useState("");
  
   // ── Comments state — keyed by chapter id
   const [commentsByChapter, setCommentsByChapter] = useState(() => {
@@ -329,7 +332,7 @@ const ReadStory = () => {
       id: Date.now(),
       username: CURRENT_USER,
       role: "reader",
-      avatar: "/assets/avatars/current-user.jpg",
+      avatar: "/assets/avatars/dw.png",
       datetime: new Date().toISOString(),
       text: commentText.trim(),
       parentId: null,
@@ -347,7 +350,7 @@ const ReadStory = () => {
       id: Date.now(),
       username: CURRENT_USER,
       role: "reader",
-      avatar: "/assets/avatars/current-user.jpg",
+      avatar: "/assets/avatars/dw.png",
       datetime: new Date().toISOString(),
       text,
       parentId,

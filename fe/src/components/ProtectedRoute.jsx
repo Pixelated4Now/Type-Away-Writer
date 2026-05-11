@@ -1,19 +1,18 @@
-import { Navigate, useLocation } from "react-router-dom";
-
-// Replace this with your real auth check, e.g. context, redux, or localStorage
-const isAuthenticated = () => {
-  return !!localStorage.getItem("authToken");
-};
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const location = useLocation();
+    const { user, loading } = useAuth();
+    const location          = useLocation();
 
-  if (!isAuthenticated()) {
-    // Redirect to login, but remember where the user was trying to go
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+    // Wait for the auth state to rehydrate from localStorage before redirecting.
+    if (loading) return null;
 
-  return children;
+    if (!user) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return children;
 };
 
 export default ProtectedRoute;

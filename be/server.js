@@ -1,24 +1,41 @@
-const express = require("express");
-const cors = require('cors');
+const express = require('express');
+const cors    = require('cors');
+const fs      = require('fs');
+const path    = require('path');
 require('dotenv').config();
 
-// Initialise express app.
+const pool = require('./db');
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-//Import route
+// Routes
 const authRoute = require('./routes/auth');
+app.use('/auth', authRoute);
 
+const PORT = process.env.PORT || 5000;
 
-// Apply the route to use it.
-app.use('/auth', authRoute);  
+// Ensure the qualifications upload directory exists inside the container.
+const uploadsDir = path.join(__dirname, 'uploads', 'qualifications');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
+// Apply the full schema (CREATE TABLE IF NOT EXISTS + seeds) then start.
+const applySchema = async () => {
+    const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    await pool.query(sql);
+    console.log('Schema applied successfully.');
+};
 
-const PORT = process.env.PORT || 8000;
-
-
-// Port we run the server on.
-app.listen(PORT, () => {
-    console.log(`Server is running on PORT: ${PORT}`);
-});
+applySchema()
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server is running on PORT: ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error('Failed to apply schema:', err);
+        process.exit(1);
+    });
