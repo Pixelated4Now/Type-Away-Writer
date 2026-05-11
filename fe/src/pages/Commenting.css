@@ -1,0 +1,219 @@
+* Commenting.css */
+ 
+/* ── Comment thread wrapper ── */
+.comment-thread {
+  display: flex;
+  flex-direction: column;
+}
+ 
+/* Indented replies — each level adds 40px */
+.comment-indented {
+  margin-left: 40px;
+  border-left: 2px solid #f0f0f0;
+  padding-left: 16px;
+  margin-top: 16px;
+}
+ 
+/* ── Comment item ── */
+.comment-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 0;
+}
+ 
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #ddd;
+}
+ 
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+ 
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+ 
+.comment-username {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+ 
+.comment-datetime {
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+}
+ 
+.comment-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: #222;
+  line-height: 1.6;
+  margin: 0 0 10px;
+  white-space: pre-line;
+  word-break: break-word;
+}
+ 
+/* ── Comment action buttons (REPLY + DELETE row) ── */
+.comment-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+ 
+.reply-btn {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+  margin-top: 0;
+  width: auto;
+  height: auto;
+}
+ 
+.reply-btn:hover {
+  background: #f0f0f0;
+}
+ 
+.delete-btn {
+  background: transparent;
+  border: 1px solid #f9afaf;
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c0392b;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+  margin-top: 0;
+  width: auto;
+  height: auto;
+}
+ 
+.delete-btn:hover {
+  background: #fff0f0;
+}
+ 
+/* ── Inline reply input area ── */
+.reply-input-area {
+  margin-top: 12px;
+}
+ 
+.reply-textarea {
+  width: 100%;
+  min-height: 80px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+  display: block;
+}
+ 
+.reply-textarea:focus {
+  border-color: #0e72e5;
+}
+ 
+.reply-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+ 
+.cancel-btn {
+  height: 38px;
+  padding: 0 20px;
+  background: transparent;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+  margin-top: 0;
+  width: auto;
+}
+ 
+.cancel-btn:hover {
+  background: #f0f0f0;
+}
+ 
+/* ── Top-level comment textarea (fixed height + inner scroll) ── */
+.comment-textarea {
+  width: 100%;
+  height: 100px;
+  max-height: 100px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+ 
+.comment-textarea:focus {
+  border-color: #0e72e5;
+}
+ 
+/* ── Role badges ── */
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+ 
+.badge-expert {
+  background: #F8C291;
+  color: #000;
+}
+ 
+.badge-author {
+  background: #F9AFAF;
+  color: #000;
+}
+ 
+/* ── Comments list container ── */
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

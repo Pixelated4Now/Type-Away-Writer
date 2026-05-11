@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./ReadStory.css";
+import "./Commenting.css";
 
 import readingListImg from "../assets/addToList.png"; 
 import shareImg from "../assets/share.png"; 
@@ -40,9 +41,9 @@ Lizzy stood.
 
 She shook her head in disbelief, and continued on to the back patio. Her heart skipped beats and fumbled in her chest, though, she had no idea why.`,
       comments: [
-        { id: 1, username: "Jillybean", role: "expert", avatar: "/assets/avatars/jb.png", datetime: "2025-12-16T11:11:00", text: "This is a great story and it really captures how wonderful writing is! I'd love to see more about Lizzy and the Dohls and what kind of things were there. Well done!" },
-        { id: 2, username: "Midnight Tyger", role: "reader", avatar: "/assets/avatars/peopleReading.jpg", datetime: "2025-12-14T09:36:00", text: "How can people NOT view this? This is amazing 😭" },
-        { id: 3, username: "ClaireLess", role: "reader", avatar: "/assets/avatars/jl.png", datetime: "2025-12-18T11:02:00", text: "This was epic bye the way" },
+        { id: 1, username: "Jillybean", role: "expert", avatar: "/assets/avatars/jb.png", datetime: "2025-12-16T11:11:00", text: "This is a great story and it really captures how wonderful writing is! I'd love to see more about Lizzy and the Dohls and what kind of things were there. Well done!", parentId: null },
+        { id: 2, username: "Midnight Tyger", role: "reader", avatar: "/assets/avatars/peopleReading.jpg", datetime: "2025-12-14T09:36:00", text: "How can people NOT view this? This is amazing 😭", parentId: null },
+        { id: 3, username: "ClaireLess", role: "reader", avatar: "/assets/avatars/jl.png", datetime: "2025-12-18T11:02:00", text: "This was epic bye the way", parentId: null },
       ],
     },
     {
@@ -77,8 +78,8 @@ Facilisis consequat mattis habitant enim tempor velit risus etiam sit tempus mi 
 Dapibus quisque dignissim orci vulputate metus tortor nostra enim etiam odio pharetra. Volutpat tristique curabitur ultrices hac non viverra mattis tortor elit.
 Finibus volutpat ornare himenaeos consectetur cras sem. Purus ante potenti est curae mauris leo sociosqu rhoncus non phasellus nisl ad maximus.`,
       comments: [
-        { id: 4, username: "Midnight Tyger", role: "reader", avatar: "/assets/avatars/peopleReading.jpg", datetime: "2025-12-16T12:54:00", text: "Can you pleease a THOUSAND more PEEEASE?!\nIt was soooooo good." },
-        { id: 5, username: "mercywasnothere", role: "reader", avatar: "/assets/avatars/mwh.jpg", datetime: "2025-12-16T10:37:00", text: "a delight to read and I'm super excited to see more chapters 🙂" },
+        { id: 4, username: "Midnight Tyger", role: "reader", avatar: "/assets/avatars/peopleReading.jpg", datetime: "2025-12-16T12:54:00", text: "Can you pleease a THOUSAND more PEEEASE?!\nIt was soooooo good.", parentId: null },
+        { id: 5, username: "mercywasnothere", role: "reader", avatar: "/assets/avatars/mwh.jpg", datetime: "2025-12-16T10:37:00", text: "a delight to read and I'm super excited to see more chapters 🙂", parentId: null },
       ],
     },
     {
@@ -96,9 +97,9 @@ Eget sapien vivamus litora convallis diam torquent dictumst venenatis auctor. So
 Porttitor fermentum elit per luctus dictumst justo orci leo. Ullamcorper per turpis iaculis ad mauris luctus ex nunc accumsan turpis. Sed nunc faucibus varius duis convallis aliquet congue. Molestie mauris conubia turpis nostra hac donec dolor porttitor. Litora nunc imperdiet ligula ipsum condimentum vestibulum tristique turpis nam. Metus posuere augue vivamus lacinia suspendisse dolor lacinia primis. Nec commodo ipsum arcu mollis est dignissim nullam lacus bibendum senectus felis in libero. Ipsum leo nullam consequat elementum commodo tempus cursus. Cras proin varius scelerisque justo suscipit dictum at hendrerit amet dictum eleifend pulvinar`,
       comments: [
         { id: 6, username: "singintheblues", role: "expert", avatar: "/assets/avatars/sb.jpg", datetime: "2025-12-22T19:17:00", text: "Lizzy's determination is admirable - but the challenge of such a ritual does seem nearly insurmountable. I'm intrigued to see how the curse is finally lifted. Thank you for sharing this story with us!" },
-        { id: 7, username: "Arratagus", role: "reader", avatar: "/assets/avatars/as.jpg", datetime: "2025-12-25T11:57:00", text: "liked it very much but maybe try adding some more lore" },
-        { id: 8, username: "pascalChampionhehe", role: "author", avatar: "/assets/avatars/pc.jpg", datetime: "2025-12-25T18:34:00", text: "that's a good idea. I'll try in the sequel. I have this one all written out on Documents already, but the second one I think will be a little LESS focused on the love triangle between Atlas, Phoebe, and Ianira.", replyTo: 7 },
-        { id: 9, username: "Midnight Tyger", role: "reader", avatar: "/assets/avatars/peopleReading.jpg", datetime: "2025-12-20T12:04:00", text: "This is such an amazing story! The characters are well developed and the writing is AMAZING! I LOVE IT! :)" },
+        { id: 7, username: "Arratagus", role: "reader", avatar: "/assets/avatars/as.jpg", datetime: "2025-12-25T11:57:00", text: "liked it very much but maybe try adding some more lore", parentId: null },
+        { id: 8, username: "pascalChampionhehe", role: "author", avatar: "/assets/avatars/pc.jpg", datetime: "2025-12-25T18:34:00", text: "that's a good idea. I'll try in the sequel. I have this one all written out on Documents already, but the second one I think will be a little LESS focused on the love triangle between Atlas, Phoebe, and Ianira.", parentId: 7 },
+        { id: 9, username: "Midnight Tyger", role: "reader", avatar: "/assets/avatars/peopleReading.jpg", datetime: "2025-12-20T12:04:00", text: "This is such an amazing story! The characters are well developed and the writing is AMAZING! I LOVE IT! :)", parentId: null },
       ],
     },
   ],
@@ -111,6 +112,8 @@ const PLACEHOLDER_LISTS = [
   { id: 3, title: "Miscellaneous",  isPublic: false, storyIds: [] },
   { id: 4, title: "Me Likey",       isPublic: true,  storyIds: [] },
 ];
+
+const CURRENT_USER = "ClaireLess"; // TODO: replace with real auth context
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -129,12 +132,8 @@ const formatDatetime = (isoString) => {
 
 // Sort top-level comments: experts first (most recent expert first), then others descending
 const sortTopLevel = (comments) => {
-  const experts = comments
-    .filter((c) => c.role === "expert")
-    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-  const others = comments
-    .filter((c) => c.role !== "expert")
-    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+  const experts = comments.filter((c) => c.role === "expert").sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+  const others = comments.filter((c) => c.role !== "expert").sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
   return [...experts, ...others];
 };
  
@@ -142,11 +141,9 @@ const sortTopLevel = (comments) => {
 const collectDescendants = (commentId, allComments) => {
   const children = allComments.filter((c) => c.parentId === commentId);
   let ids = children.map((c) => c.id);
-  children.forEach((child) => {
-    ids = ids.concat(collectDescendants(child.id, allComments));
-  });
+  children.forEach((child) => { ids = ids.concat(collectDescendants(child.id, allComments)); });
   return ids;
-}
+};
 
 // ── RoleBadge ────────────────────────────────────────────────────────────────
  
@@ -161,18 +158,18 @@ const RoleBadge = ({ role }) => {
 const CommentThread = ({ comment, allComments, depth, onReply, onDelete, currentUser }) => {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState("");
- 
+
   const children = allComments
     .filter((c) => c.parentId === comment.id)
     .sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
- 
+
   const handleSubmitReply = () => {
     if (!replyText.trim()) return;
     onReply(comment.id, replyText.trim());
     setReplyText("");
     setReplyOpen(false);
   };
- 
+
   return (
     <div className={`comment-thread ${depth > 0 ? "comment-indented" : ""}`}>
       <div className="comment-item">
@@ -185,23 +182,11 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
           </div>
           <p className="comment-text">{comment.text}</p>
           <div className="comment-actions">
-            <button
-              className="reply-btn"
-              onClick={() => setReplyOpen((p) => !p)}
-            >
-              REPLY
-            </button>
+            <button className="reply-btn" onClick={() => setReplyOpen((p) => !p)}>REPLY</button>
             {comment.username === currentUser && (
-              <button
-                className="delete-btn"
-                onClick={() => onDelete(comment.id)}
-              >
-                DELETE
-              </button>
+              <button className="delete-btn" onClick={() => onDelete(comment.id)}>DELETE</button>
             )}
           </div>
- 
-          {/* Inline reply textarea */}
           {replyOpen && (
             <div className="reply-input-area">
               <textarea
@@ -211,38 +196,15 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
                 onChange={(e) => setReplyText(e.target.value)}
               />
               <div className="reply-submit-row">
-                <button
-                  className="comment-submit-btn"
-                  onClick={handleSubmitReply}
-                >
-                  REPLY
-                </button>
-                <button
-                  className="cancel-btn"
-                  onClick={() => {
-                    setReplyOpen(false);
-                    setReplyText("");
-                  }}
-                >
-                  CANCEL
-                </button>
+                <button className="comment-submit-btn" onClick={handleSubmitReply}>REPLY</button>
+                <button className="cancel-btn" onClick={() => { setReplyOpen(false); setReplyText(""); }}>CANCEL</button>
               </div>
             </div>
           )}
         </div>
       </div>
- 
-      {/* Render children recursively */}
       {children.map((child) => (
-        <CommentThread
-          key={child.id}
-          comment={child}
-          allComments={allComments}
-          depth={depth + 1}
-          onReply={onReply}
-          onDelete={onDelete}
-          currentUser={currentUser}
-        />
+        <CommentThread key={child.id} comment={child} allComments={allComments} depth={depth + 1} onReply={onReply} onDelete={onDelete} currentUser={currentUser} />
       ))}
     </div>
   );
@@ -265,8 +227,12 @@ const ReadStory = () => {
   // ── Like state
   const [liked, setLiked] = useState(false);
  
-  // ── Comment state
-  const [commentText, setCommentText] = useState("");
+  // ── Comments state — keyed by chapter id
+  const [commentsByChapter, setCommentsByChapter] = useState(() => {
+    const map = {};
+    story.chapters.forEach((ch) => { map[ch.id] = ch.comments; });
+    return map;
+  });
  
   // ── Reading list state
   const [readingLists, setReadingLists] = useState(PLACEHOLDER_LISTS);
@@ -285,7 +251,8 @@ const ReadStory = () => {
   const chapter = story.chapters[currentChapterIndex];
   const isFirst = currentChapterIndex === 0;
   const isLast = currentChapterIndex === totalChapters - 1;
-  const sortedComments = sortComments(chapter.comments);
+  const allComments = commentsByChapter[chapter.id] || [];
+  const topLevel = sortTopLevel(allComments.filter((c) => c.parentId === null));
  
   // ── Close chapter dropdown on outside click
   useEffect(() => {
@@ -358,9 +325,48 @@ const ReadStory = () => {
  
   const handleComment = () => {
     if (!commentText.trim()) return;
-    // TODO: send comment to backend
+    const newComment = {
+      id: Date.now(),
+      username: CURRENT_USER,
+      role: "reader",
+      avatar: "/assets/avatars/current-user.jpg",
+      datetime: new Date().toISOString(),
+      text: commentText.trim(),
+      parentId: null,
+    };
+    setCommentsByChapter((prev) => ({
+      ...prev,
+      [chapter.id]: [...(prev[chapter.id] || []), newComment],
+    }));
     setCommentText("");
+    // TODO: API call — POST /api/chapters/:chapterId/comments { text }
   };
+
+  const handleReply = (parentId, text) => {
+    const newReply = {
+      id: Date.now(),
+      username: CURRENT_USER,
+      role: "reader",
+      avatar: "/assets/avatars/current-user.jpg",
+      datetime: new Date().toISOString(),
+      text,
+      parentId,
+    };
+    setCommentsByChapter((prev) => ({
+      ...prev,
+      [chapter.id]: [...(prev[chapter.id] || []), newReply],
+    }));
+    // TODO: API call — POST /api/chapters/:chapterId/comments { text, parentId }
+  };
+
+const handleDelete = (commentId) => {
+  setCommentsByChapter((prev) => {
+    const current = prev[chapter.id] || [];
+    const toRemove = new Set([commentId, ...collectDescendants(commentId, current)]);
+    return { ...prev, [chapter.id]: current.filter((c) => !toRemove.has(c.id)) };
+  });
+  // TODO: API call — DELETE /api/comments/:commentId
+};
  
   // ── Add story to an existing list
   const handleAddToList = (listId) => {
@@ -609,10 +615,18 @@ const ReadStory = () => {
           </div>
  
           <div className="comments-list">
-            {sortedComments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} />
-            ))}
-          </div>
+          {topLevel.map((comment) => (
+            <CommentThread
+              key={comment.id}
+              comment={comment}
+              allComments={allComments}
+              depth={0}
+              onReply={handleReply}
+              onDelete={handleDelete}
+              currentUser={CURRENT_USER}
+            />
+          ))}
+        </div>
  
         </main>
       </div>
