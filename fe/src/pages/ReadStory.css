@@ -418,6 +418,21 @@
   flex-shrink: 0;
   background: #ddd;
 }
+
+.comment-avatar-initials {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #aecbfa;
+  color: #fff;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
  
 .comment-body {
   flex: 1;

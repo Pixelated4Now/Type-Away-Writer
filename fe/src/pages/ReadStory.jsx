@@ -55,7 +55,7 @@ const collectDescendants = (commentId, all) => {
 const mapComment = (c, storyAuthors = []) => ({
   id:         c.id,
   username:   c.user?.username || "Unknown",
-  avatar:     c.user?.avatar_url || "/assets/avatars/peopleReading.jpg",
+  avatar:     c.user?.avatar_url || null,
   role:       c.user?.account_type === "expert" ? "expert"
             : storyAuthors.includes(c.user?.username) ? "author"
             : "reader",
@@ -93,7 +93,10 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
   return (
     <div className={`comment-thread ${depth > 0 ? "comment-indented" : ""}`}>
       <div className="comment-item">
-        <img src={comment.avatar} alt={comment.username} className="comment-avatar" />
+        {comment.avatar
+          ? <img src={comment.avatar} alt={comment.username} className="comment-avatar" />
+          : <span className="comment-avatar-initials">{comment.username[0].toUpperCase()}</span>
+        }
         <div className="comment-body">
           <div className="comment-header">
             <span className="comment-username">{comment.username}</span>
@@ -375,42 +378,6 @@ const ReadStory = () => {
     setNewListTitle(""); setNewListPublic(false); setShowCreateForm(false);
   };
 
-  // ── PDF download
-  const handleDownload = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const doc = new jsPDF();
-    const margin = 15;
-    const pageH  = 280;
-    let y = 20;
-
-    const addLine = (text, size, bold = false) => {
-      doc.setFontSize(size);
-      doc.setFont("helvetica", bold ? "bold" : "normal");
-      const lines = doc.splitTextToSize(String(text || ""), 180);
-      lines.forEach((line) => {
-        if (y + size * 0.4 > pageH) { doc.addPage(); y = 20; }
-        doc.text(line, margin, y);
-        y += size * 0.45;
-      });
-    };
-
-    addLine(story.title, 22, true);
-    y += 4;
-    addLine(`by ${[...(story.authors || [])].sort().join(", ")}`, 12);
-    y += 4;
-    if (story.summary) { addLine(story.summary, 11); y += 6; }
-
-    story.chapters.forEach((ch, i) => {
-      doc.addPage();
-      y = 20;
-      addLine(`Chapter ${ch.chapter_number}: ${ch.title || ""}`, 16, true);
-      y += 6;
-      (ch.content || "").split("\n\n").forEach((para) => { addLine(para, 11); y += 3; });
-    });
-
-    doc.save(`${story.title}.pdf`);
-  };
-
   const privateLists = readingLists.filter((l) => !l.isPublic);
   const publicLists  = readingLists.filter((l) =>  l.isPublic);
   const storyIdInt   = parseInt(storyId, 10);
@@ -572,15 +539,10 @@ const ReadStory = () => {
             )}
           </div>
 
-          <div style={{ display: "flex", gap: "12px", alignItems: "center", margin: "24px 0 8px" }}>
-            <button className={`like-btn ${liked ? "liked" : ""}`} onClick={handleLike}>
-              <img src={liked ? likedImg : likeImg} alt="Like icon" />
-              {liked ? "LIKED" : "LIKE"} {likesCount > 0 && `· ${likesCount}`}
-            </button>
-            <button className="chapter-nav-btn" onClick={handleDownload} style={{ fontSize: "13px", padding: "8px 16px" }}>
-              ↓ Download PDF
-            </button>
-          </div>
+          <button className={`like-btn ${liked ? "liked" : ""}`} onClick={handleLike} style={{ margin: "24px 0 8px" }}>
+            <img src={liked ? likedImg : likeImg} alt="Like icon" />
+            {liked ? "LIKED" : "LIKE"} {likesCount > 0 && `· ${likesCount}`}
+          </button>
 
           {user ? (
             <div className="comment-input-area">

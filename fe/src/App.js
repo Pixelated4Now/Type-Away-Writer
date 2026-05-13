@@ -21,13 +21,17 @@ function App() {
         <Routes>
           {/* Public */}
           <Route path="/"                    element={<Home />} />
+
           <Route path="/login"               element={<Login />} />
           <Route path="/register"            element={<Register />} />
           <Route path="/register/student"    element={<RegisterStudent />} />
           <Route path="/register/expert"     element={<RegisterExpert />} />
+
           <Route path="/forgot-password"     element={<ForgotPassword />} />
           <Route path="/reset-password"      element={<ResetPassword />} />
+
           <Route path="/guidelines"          element={<Guidelines />} />
+          
           <Route path="/read"                element={<Read />} />
           <Route path="/read/:categoryId"    element={<ReadCategory />} />
           <Route path="/read/story/:storyId" element={<ReadStory />} />
