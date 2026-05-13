@@ -8,12 +8,17 @@ import logo from '../assets/logoBase.png';
 const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const notificationText = (n) => {
+    const actor = n.actor_username || 'Someone';
+    const title = n.story_title   || 'a story';
     switch (n.type) {
-        case 'like':    return `${n.actor_username} liked your story "${n.story_title}"`;
-        case 'comment': return `${n.actor_username} commented on "${n.story_title}"`;
-        case 'follow':  return `${n.actor_username} started following you`;
-        case 'chapter': return `New chapter added to "${n.story_title}"`;
-        default:        return 'You have a new notification';
+        case 'like':           return `${actor} liked ${title}`;
+        case 'comment':        return `${actor} commented on ${title}`;
+        case 'reply':          return `${actor} replied to your comment on ${title}`;
+        case 'save':           return `${actor} added ${title} to a reading list`;
+        case 'review':         return `Language expert ${actor} reviewed ${title}`;
+        case 'follow':         return `${actor} started following you`;
+        case 'review_request': return `${actor} requested a review of ${title}`;
+        default:               return 'You have a new notification';
     }
 };
 
@@ -166,7 +171,20 @@ const Navbar = () => {
                                         ) : (
                                             <ul className="notif-list">
                                                 {notifications.map(n => (
-                                                    <li key={n.id} className={`notif-item${!n.is_read ? ' unread' : ''}`}>
+                                                    <li
+                                                        key={n.id}
+                                                        className={`notif-item${!n.is_read ? ' unread' : ''}`}
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => {
+                                                            setNotifOpen(false);
+                                                            markRead();
+                                                            if (n.type === 'follow') {
+                                                                navigate(`/profile/${n.actor_username}`);
+                                                            } else if (n.story_id) {
+                                                                navigate(`/read/story/${n.story_id}`);
+                                                            }
+                                                        }}
+                                                    >
                                                         <p className="notif-text">{notificationText(n)}</p>
                                                         <span className="notif-time">{formatTime(n.created_at)}</span>
                                                     </li>

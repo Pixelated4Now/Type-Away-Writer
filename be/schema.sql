@@ -120,7 +120,7 @@ ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS notifications (
     id         SERIAL PRIMARY KEY,
     user_id    INT NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
-    type       VARCHAR(50) NOT NULL,
+    type       VARCHAR(50) NOT NULL CHECK (type IN ('like', 'follow', 'comment', 'reply', 'save', 'review', 'review_request')),
     actor_id   INT          REFERENCES users(id)   ON DELETE SET NULL,
     story_id   INT          REFERENCES stories(id) ON DELETE CASCADE,
     is_read    BOOLEAN DEFAULT FALSE,

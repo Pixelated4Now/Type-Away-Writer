@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { createNotification } = require('../utils/notifications');
 
 // ── Shared SQL fragments ──────────────────────────────────────────────────────
 
@@ -213,6 +214,16 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
     }
 
     try {
+        const storyRes = await pool.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
+        if (storyRes.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        const storyAuthorId = storyRes.rows[0].author_id;
+
+        let parentAuthorId = null;
+        if (parent_id) {
+            const parentRes = await pool.query('SELECT user_id FROM comments WHERE id = $1', [parent_id]);
+            if (parentRes.rows.length > 0) parentAuthorId = parentRes.rows[0].user_id;
+        }
+
         const { rows } = await pool.query(`
             INSERT INTO comments (story_id, chapter_id, user_id, content, parent_id)
             VALUES ($1, $2, $3, $4, $5)
@@ -229,6 +240,20 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
         comment.user = userResult.rows[0];
 
         res.status(201).json(comment);
+
+        // ── Notifications (fire-and-forget after response) ─────────────────────
+        if (parent_id) {
+            if (parentAuthorId && parentAuthorId !== req.user.id) {
+                createNotification(parentAuthorId, 'reply', req.user.id, storyId).catch(console.error);
+            }
+        } else {
+            if (storyAuthorId !== req.user.id) {
+                createNotification(storyAuthorId, 'comment', req.user.id, storyId).catch(console.error);
+            }
+            if (comment.user.account_type === 'expert' && storyAuthorId !== req.user.id) {
+                createNotification(storyAuthorId, 'review', req.user.id, storyId).catch(console.error);
+            }
+        }
     } catch (err) {
         console.error('POST /stories/:id/comments error:', err);
         res.status(500).json({ message: 'An error occurred.' });
@@ -285,8 +310,11 @@ router.post('/stories/:id/like', authenticateToken, async (req, res) => {
             liked = true;
         }
 
-        const { rows } = await pool.query('SELECT likes_count FROM stories WHERE id = $1', [storyId]);
+        const { rows } = await pool.query('SELECT likes_count, author_id FROM stories WHERE id = $1', [storyId]);
         res.json({ liked, likes_count: rows[0].likes_count });
+        if (liked && rows[0].author_id !== userId) {
+            createNotification(rows[0].author_id, 'like', userId, storyId).catch(console.error);
+        }
     } catch (err) {
         console.error('POST /stories/:id/like error:', err);
         res.status(500).json({ message: 'An error occurred.' });
@@ -355,11 +383,22 @@ router.post('/reading-lists/:id/stories', authenticateToken, async (req, res) =>
             return res.status(403).json({ message: 'Not authorised.' });
         }
 
-        await pool.query(
+        const insertRes = await pool.query(
             'INSERT INTO reading_list_stories (reading_list_id, story_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
             [listId, story_id]
         );
+
+        let saveAuthorId = null;
+        if (insertRes.rowCount > 0) {
+            const storyRes = await pool.query('SELECT author_id FROM stories WHERE id = $1', [story_id]);
+            if (storyRes.rows.length > 0) saveAuthorId = storyRes.rows[0].author_id;
+        }
+
         res.status(204).send();
+
+        if (saveAuthorId && saveAuthorId !== req.user.id) {
+            createNotification(saveAuthorId, 'save', req.user.id, story_id).catch(console.error);
+        }
     } catch (err) {
         console.error('POST /reading-lists/:id/stories error:', err);
         res.status(500).json({ message: 'An error occurred.' });
