@@ -108,12 +108,18 @@ router.get('/stories/:id', optionalAuth, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
 
     try {
-        // Story row
+        // Story row — tags returned as [{id,name}] objects for editor/settings use
         const storyResult = await pool.query(`
             SELECT
                 s.id, s.title, s.summary, s.cover_image_url, s.status,
+                s.work_status, s.author_id, s.category_id,
                 s.likes_count, s.comment_permission, s.created_at,
-                ${TAGS_SUBQ}    AS tags,
+                COALESCE(
+                    (SELECT JSON_AGG(JSON_BUILD_OBJECT('id', t.id, 'name', t.name) ORDER BY t.name)
+                     FROM story_tags st JOIN tags t ON st.tag_id = t.id
+                     WHERE st.story_id = s.id),
+                    '[]'::JSON
+                )               AS tags,
                 ${AUTHORS_SUBQ} AS authors
             FROM stories s
             WHERE s.id = $1
@@ -382,6 +388,267 @@ router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (r
         res.status(204).send();
     } catch (err) {
         console.error('DELETE /reading-lists/:id/stories/:storyId error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── POST /stories ─────────────────────────────────────────────────────────────
+
+router.post('/stories', authenticateToken, async (req, res) => {
+    const { title, summary, work_status, category_id, tag_ids, cover_image_url } = req.body;
+    if (!title || !title.trim()) return res.status(400).json({ message: 'Title is required.' });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { rows } = await client.query(
+            `INSERT INTO stories (title, summary, work_status, category_id, cover_image_url, author_id)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING id`,
+            [title.trim(), summary || '', work_status || 'ongoing', category_id || null, cover_image_url || null, req.user.id]
+        );
+        const storyId = rows[0].id;
+        if (Array.isArray(tag_ids) && tag_ids.length > 0) {
+            for (const tid of tag_ids) {
+                await client.query(
+                    'INSERT INTO story_tags (story_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                    [storyId, tid]
+                );
+            }
+        }
+        await client.query('COMMIT');
+        res.status(201).json({ id: storyId });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('POST /stories error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    } finally {
+        client.release();
+    }
+});
+
+// ── PUT /stories/:id ──────────────────────────────────────────────────────────
+
+router.put('/stories/:id', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    const { title, summary, work_status, category_id, tag_ids, cover_image_url, status } = req.body;
+
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        if (check.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        await client.query('BEGIN');
+        await client.query(
+            `UPDATE stories SET
+                title           = COALESCE($1, title),
+                summary         = COALESCE($2, summary),
+                work_status     = COALESCE($3, work_status),
+                category_id     = COALESCE($4, category_id),
+                cover_image_url = COALESCE($5, cover_image_url),
+                status          = COALESCE($6, status),
+                updated_at      = NOW()
+             WHERE id = $7`,
+            [
+                title ? title.trim() : null,
+                summary !== undefined ? summary : null,
+                work_status || null,
+                category_id || null,
+                cover_image_url || null,
+                status || null,
+                storyId,
+            ]
+        );
+
+        if (Array.isArray(tag_ids)) {
+            await client.query('DELETE FROM story_tags WHERE story_id = $1', [storyId]);
+            for (const tid of tag_ids) {
+                await client.query(
+                    'INSERT INTO story_tags (story_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                    [storyId, tid]
+                );
+            }
+        }
+
+        await client.query('COMMIT');
+        res.json({ id: storyId });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('PUT /stories/:id error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    } finally {
+        client.release();
+    }
+});
+
+// ── POST /stories/:id/publish ─────────────────────────────────────────────────
+
+router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    try {
+        const storyRes = await pool.query(
+            `SELECT s.title, s.summary, s.cover_image_url, s.work_status, s.category_id, s.author_id,
+                    (SELECT COUNT(*) FROM story_tags WHERE story_id = s.id) AS tag_count
+             FROM stories s WHERE s.id = $1`,
+            [storyId]
+        );
+        if (storyRes.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        const s = storyRes.rows[0];
+        if (s.author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        const chapRes = await pool.query(
+            'SELECT title, content FROM chapters WHERE story_id = $1',
+            [storyId]
+        );
+
+        const errors = [];
+        if (!s.cover_image_url)          errors.push('Cover image is required.');
+        if (!s.title || !s.title.trim()) errors.push('Story title is required.');
+        if (!s.summary || !s.summary.trim()) errors.push('Summary is required.');
+        if (!s.work_status)              errors.push('Work status is required.');
+        if (!s.category_id)              errors.push('Category is required.');
+        if (parseInt(s.tag_count, 10) === 0) errors.push('At least one tag is required.');
+        if (chapRes.rows.length === 0)   errors.push('Story must have at least one chapter.');
+        chapRes.rows.forEach((ch, i) => {
+            if (!ch.title || !ch.title.trim()) errors.push(`Chapter ${i + 1} needs a name.`);
+            if (!ch.content || !ch.content.trim()) errors.push(`Chapter ${i + 1} has no content.`);
+        });
+
+        if (errors.length > 0) return res.status(422).json({ errors });
+
+        await pool.query("UPDATE stories SET status = 'published', updated_at = NOW() WHERE id = $1", [storyId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('POST /stories/:id/publish error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── GET /stories/:id/chapters ─────────────────────────────────────────────────
+
+router.get('/stories/:id/chapters', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    try {
+        const { rows } = await pool.query(
+            'SELECT id, chapter_number, title, content FROM chapters WHERE story_id = $1 ORDER BY chapter_number ASC',
+            [storyId]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error('GET /stories/:id/chapters error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── POST /stories/:id/chapters ────────────────────────────────────────────────
+
+router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    try {
+        const check = await pool.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        if (check.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        const { rows: maxRows } = await pool.query(
+            'SELECT COALESCE(MAX(chapter_number), 0) AS max FROM chapters WHERE story_id = $1',
+            [storyId]
+        );
+        const nextNum = parseInt(maxRows[0].max, 10) + 1;
+
+        const { rows } = await pool.query(
+            `INSERT INTO chapters (story_id, chapter_number, title, content)
+             VALUES ($1, $2, $3, $4) RETURNING id, chapter_number, title, content`,
+            [storyId, nextNum, '', '']
+        );
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        console.error('POST /stories/:id/chapters error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── PUT /chapters/:chapterId ──────────────────────────────────────────────────
+
+router.put('/chapters/:chapterId', authenticateToken, async (req, res) => {
+    const chapterId = parseInt(req.params.chapterId, 10);
+    const { title, content } = req.body;
+    try {
+        const chapRes = await pool.query(
+            'SELECT c.id, s.author_id FROM chapters c JOIN stories s ON s.id = c.story_id WHERE c.id = $1',
+            [chapterId]
+        );
+        if (chapRes.rows.length === 0) return res.status(404).json({ message: 'Chapter not found.' });
+        if (chapRes.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        await pool.query(
+            'UPDATE chapters SET title = $1, content = $2 WHERE id = $3',
+            [title || '', content || '', chapterId]
+        );
+        res.json({ id: chapterId });
+    } catch (err) {
+        console.error('PUT /chapters/:chapterId error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── DELETE /chapters/:chapterId ───────────────────────────────────────────────
+
+router.delete('/chapters/:chapterId', authenticateToken, async (req, res) => {
+    const chapterId = parseInt(req.params.chapterId, 10);
+    try {
+        const chapRes = await pool.query(
+            'SELECT c.story_id, s.author_id FROM chapters c JOIN stories s ON s.id = c.story_id WHERE c.id = $1',
+            [chapterId]
+        );
+        if (chapRes.rows.length === 0) return res.status(404).json({ message: 'Chapter not found.' });
+        if (chapRes.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        const { story_id } = chapRes.rows[0];
+        const { rows: countRows } = await pool.query(
+            'SELECT COUNT(*) AS cnt FROM chapters WHERE story_id = $1',
+            [story_id]
+        );
+        if (parseInt(countRows[0].cnt, 10) <= 1) {
+            return res.status(400).json({ message: 'Cannot delete the only chapter.' });
+        }
+
+        await pool.query('DELETE FROM chapters WHERE id = $1', [chapterId]);
+        res.status(204).send();
+    } catch (err) {
+        console.error('DELETE /chapters/:chapterId error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── POST /stories/:id/review-requests ────────────────────────────────────────
+
+router.post('/stories/:id/review-requests', authenticateToken, async (req, res) => {
+    const storyId  = parseInt(req.params.id, 10);
+    const { expert_id } = req.body;
+    if (!expert_id) return res.status(400).json({ message: 'expert_id is required.' });
+
+    try {
+        const expertRes = await pool.query(
+            "SELECT id FROM users WHERE id = $1 AND account_type = 'expert' AND is_expert_verified = TRUE",
+            [expert_id]
+        );
+        if (expertRes.rows.length === 0) return res.status(400).json({ message: 'Invalid expert.' });
+
+        await pool.query(
+            'INSERT INTO review_requests (story_id, student_id, expert_id) VALUES ($1, $2, $3)',
+            [storyId, req.user.id, expert_id]
+        );
+
+        await pool.query(
+            `INSERT INTO notifications (user_id, type, actor_id, story_id)
+             VALUES ($1, 'review_request', $2, $3)`,
+            [expert_id, req.user.id, storyId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('POST /stories/:id/review-requests error:', err);
         res.status(500).json({ message: 'An error occurred.' });
     }
 });

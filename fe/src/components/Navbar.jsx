@@ -36,11 +36,13 @@ const Navbar = () => {
 
     const [profileOpen,   setProfileOpen]   = useState(false);
     const [notifOpen,     setNotifOpen]     = useState(false);
+    const [writeOpen,     setWriteOpen]     = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unread,        setUnread]        = useState(0);
 
     const profileRef = useRef(null);
     const notifRef   = useRef(null);
+    const writeRef   = useRef(null);
 
     useEffect(() => {
         if (!user) return;
@@ -78,6 +80,9 @@ const Navbar = () => {
                     return false;
                 });
             }
+            if (writeRef.current && !writeRef.current.contains(e.target)) {
+                setWriteOpen(false);
+            }
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
@@ -112,7 +117,24 @@ const Navbar = () => {
 
                 <ul className="navbar-links">
                     <li><Link to="/"          className={isActive('/')                                ? 'active' : ''}>Home</Link></li>
-                    <li><Link to="/write"      className={isActive('/write')                          ? 'active' : ''}>Write</Link></li>
+                    <li ref={writeRef} className="write-nav-item">
+                        <button
+                            className={`write-nav-btn${location.pathname.startsWith('/write') ? ' active' : ''}`}
+                            onClick={() => setWriteOpen(v => !v)}
+                        >
+                            Write
+                        </button>
+                        {writeOpen && (
+                            <div className="write-dropdown">
+                                <div className="write-dropdown-item" onClick={() => { navigate('/write/new'); setWriteOpen(false); }}>
+                                    Individual
+                                </div>
+                                <div className="write-dropdown-item write-dropdown-item-disabled">
+                                    Collaboration
+                                </div>
+                            </div>
+                        )}
+                    </li>
                     <li><Link to="/read"       className={location.pathname.startsWith('/read')       ? 'active' : ''}>Read</Link></li>
                     <li><Link to="/contact"    className={isActive('/contact')                        ? 'active' : ''}>Contact Us</Link></li>
                     <li><Link to="/guidelines" className={isActive('/guidelines')                     ? 'active' : ''}>Guidelines</Link></li>

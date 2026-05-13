@@ -2,7 +2,7 @@
 FROM node:24.0.0-alpine AS development
 WORKDIR /fyprojectfe
 COPY package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 COPY . .
 CMD ["npm", "start"]
 

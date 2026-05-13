@@ -133,3 +133,14 @@ INSERT INTO tags (name) VALUES
     ('Animals'), ('Mystery'), ('Love'), ('Action'), ('Nature'),
     ('Fear'), ('Hope'), ('Courage'), ('Teamwork'), ('Dreams')
 ON CONFLICT DO NOTHING;
+
+-- Add work_status to stories if not present (safe to re-run)
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS work_status VARCHAR(10) DEFAULT 'ongoing';
+
+CREATE TABLE IF NOT EXISTS review_requests (
+    id         SERIAL PRIMARY KEY,
+    story_id   INT REFERENCES stories(id) ON DELETE CASCADE,
+    student_id INT REFERENCES users(id)   ON DELETE CASCADE,
+    expert_id  INT REFERENCES users(id)   ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
@@ -23,6 +23,14 @@ const authFetch = (url, options = {}) => {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+};
+
+const renderContent = (content) => {
+  if (!content) return null;
+  if (/<[a-z][\s\S]*>/i.test(content)) {
+    return <div dangerouslySetInnerHTML={{ __html: content }} />;
+  }
+  return content.split("\n\n").map((para, i) => <p key={i}>{para}</p>);
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -138,10 +146,20 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
 
 const ReadStory = () => {
   useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
-  
+
   const { storyId }    = useParams();
+  const navigate       = useNavigate();
   const { user }       = useAuth();
   const currentUser    = user?.username ?? null;
+
+  // ── Submit for Review modal
+  const [reviewModalOpen,   setReviewModalOpen]   = useState(false);
+  const [expertSearch,      setExpertSearch]      = useState("");
+  const [expertSuggestions, setExpertSuggestions] = useState([]);
+  const [selectedExpert,    setSelectedExpert]    = useState(null); // {id, username}
+  const [reviewSubmitting,  setReviewSubmitting]  = useState(false);
+  const [reviewSuccess,     setReviewSuccess]     = useState(false);
+  const [reviewError,       setReviewError]       = useState(null);
 
   // ── Story data
   const [story, setStory]     = useState(null);
@@ -380,6 +398,46 @@ const ReadStory = () => {
     setNewListTitle(""); setNewListPublic(false); setShowCreateForm(false);
   };
 
+  // ── Expert search
+  const handleExpertSearch = async (value) => {
+    setExpertSearch(value);
+    setSelectedExpert(null);
+    if (!value.trim()) { setExpertSuggestions([]); return; }
+    try {
+      const res  = await authFetch(`${API}/users/experts?username=${encodeURIComponent(value)}`);
+      const data = await res.json();
+      setExpertSuggestions(Array.isArray(data) ? data : []);
+    } catch { setExpertSuggestions([]); }
+  };
+
+  const handleReviewSubmit = async () => {
+    if (!selectedExpert) { setReviewError("Please choose an expert."); return; }
+    setReviewSubmitting(true);
+    setReviewError(null);
+    try {
+      const res  = await authFetch(`${API}/stories/${storyId}/review-requests`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ expert_id: selectedExpert.id }),
+      });
+      const data = await res.json();
+      if (data.success) { setReviewSuccess(true); }
+      else setReviewError(data.message || "Something went wrong.");
+    } catch { setReviewError("Something went wrong."); }
+    finally { setReviewSubmitting(false); }
+  };
+
+  const openReviewModal = () => {
+    setReviewModalOpen(true);
+    setExpertSearch("");
+    setExpertSuggestions([]);
+    setSelectedExpert(null);
+    setReviewSuccess(false);
+    setReviewError(null);
+  };
+
+  const isAuthor = story && currentUser && story.authors?.includes(currentUser);
+
   const privateLists = readingLists.filter((l) => !l.isPublic);
   const publicLists  = readingLists.filter((l) =>  l.isPublic);
   const storyIdInt   = parseInt(storyId, 10);
@@ -394,7 +452,7 @@ const ReadStory = () => {
           <img src={story.cover_image_url} alt={story.title} className="story-hero-cover" />
           <div className="story-hero-info">
             <p className="story-hero-meta">
-              {story.status === "published" ? "Complete" : "Ongoing"} • {totalChapters} Chapter{totalChapters !== 1 ? "s" : ""}
+              {story.work_status === "complete" ? "Complete" : "Ongoing"} • {totalChapters} Chapter{totalChapters !== 1 ? "s" : ""}
             </p>
             <h1 className="story-hero-title">{story.title}</h1>
             <p className="story-hero-author">by {[...(story.authors || [])].sort().join(", ")}</p>
@@ -409,6 +467,16 @@ const ReadStory = () => {
 
         {/* ── Left Sidebar ── */}
         <aside className="story-sidebar">
+          {isAuthor && (
+            <>
+              <button className="sidebar-btn sidebar-btn-primary" style={{ marginBottom: "8px" }} onClick={openReviewModal}>
+                Submit for Review
+              </button>
+              <button className="sidebar-btn sidebar-btn-secondary" style={{ marginBottom: "16px" }} onClick={() => navigate(`/write/${storyId}/settings`)}>
+                Edit
+              </button>
+            </>
+          )}
           <p className="sidebar-label">Chapters</p>
 
           <div className="chapter-dropdown-wrapper" ref={chapterDropdownRef}>
@@ -521,9 +589,7 @@ const ReadStory = () => {
           </h2>
 
           <div className="chapter-content">
-            {(chapter.content || "").split("\n\n").map((para, i) => (
-              <p key={i}>{para}</p>
-            ))}
+            {renderContent(chapter.content)}
           </div>
 
           <hr className="chapter-divider" />
@@ -581,6 +647,60 @@ const ReadStory = () => {
       </div>
 
       <Footer />
+
+      {/* ── Submit for Review modal ── */}
+      {reviewModalOpen && (
+        <div className="review-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setReviewModalOpen(false); }}>
+          <div className="review-modal">
+            <button className="review-modal-close" onClick={() => setReviewModalOpen(false)}>×</button>
+
+            {reviewSuccess ? (
+              <div className="review-success">
+                <span className="review-success-icon">✓</span>
+                <p className="review-success-text">
+                  Your story has been submitted for review. You'll hear from {selectedExpert?.username} soon!
+                </p>
+              </div>
+            ) : (
+              <>
+                <h2 className="review-modal-title">Submit your story for review by a language expert!</h2>
+                <p className="review-modal-intro">
+                  Fee-fi-fo-fum! I spy with my eye… a young, aspiring author who wants to become better at writing stories.
+                  Choose a language expert to review your story and help you take your writing to the next level.
+                  They'll give you helpful tips and feedback to make your story even better.
+                  And fear not — they're very nice people!
+                </p>
+
+                <label className="review-modal-label">Choose a language expert:</label>
+                <div className="review-expert-input-wrap">
+                  <input
+                    className="review-expert-input"
+                    placeholder="Start typing for suggestions!"
+                    value={expertSearch}
+                    onChange={e => handleExpertSearch(e.target.value)}
+                  />
+                  {expertSuggestions.length > 0 && (
+                    <ul className="review-expert-dropdown">
+                      {expertSuggestions.map(exp => (
+                        <li key={exp.id} className="review-expert-item"
+                          onClick={() => { setSelectedExpert(exp); setExpertSearch(exp.username); setExpertSuggestions([]); }}>
+                          {exp.username}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {reviewError && <p className="review-error">{reviewError}</p>}
+
+                <button className="review-submit-btn" onClick={handleReviewSubmit} disabled={reviewSubmitting}>
+                  {reviewSubmitting ? "Submitting…" : "SUBMIT"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

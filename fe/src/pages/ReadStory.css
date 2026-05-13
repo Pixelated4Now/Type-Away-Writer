@@ -433,6 +433,171 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
+/* ── Submit for Review modal ── */
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 24px;
+}
+
+.review-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 40px;
+  max-width: 520px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.review-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #888;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.review-modal-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 14px;
+  line-height: 1.4;
+}
+
+.review-modal-intro {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.65;
+  margin: 0 0 20px;
+}
+
+.review-modal-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.review-expert-input-wrap {
+  position: relative;
+}
+
+.review-expert-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.review-expert-input:focus {
+  border-color: #3b82f6;
+}
+
+.review-expert-dropdown {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  background: #fff;
+  border: 1.5px solid #3b82f6;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.review-expert-item {
+  padding: 9px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.review-expert-item:hover {
+  background: #f0f4ff;
+}
+
+.review-error {
+  color: #e53e3e;
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.review-submit-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.review-submit-btn:hover:not(:disabled) {
+  background: #3b82f6;
+}
+
+.review-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.review-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.review-success-icon {
+  width: 56px;
+  height: 56px;
+  background: #22c55e;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-success-text {
+  font-size: 15px;
+  color: #222;
+  line-height: 1.6;
+  margin: 0;
+}
  
 .comment-body {
   flex: 1;
