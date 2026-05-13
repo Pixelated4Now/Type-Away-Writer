@@ -48,6 +48,7 @@ const ForgotPassword = () => {
     };
 
     return (
+        <div className="auth-page">
         <div className="wrapper">
             <div className="heading">
                 <h1>Reset Your Password</h1>
@@ -82,6 +83,7 @@ const ForgotPassword = () => {
                     </button>
                 </div>
             </form>
+        </div>
         </div>
     );
 };

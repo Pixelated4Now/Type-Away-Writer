@@ -60,6 +60,7 @@ const Login = () => {
     };
 
     return (
+        <div className="auth-page">
         <div className="wrapper">
             <div className="heading">
                 <img src="/favicon.png" alt="Type-Away-Writer logo" />
@@ -116,6 +117,7 @@ const Login = () => {
                     <p>Don't have an account? <Link to="/register">Register</Link>.</p>
                 </div>
             </form>
+        </div>
         </div>
     );
 };

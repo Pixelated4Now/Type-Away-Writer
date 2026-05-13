@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import "./Auth.css";
@@ -9,6 +10,8 @@ import expertImg from "../assets/expert.png";
 
 
 const Register = () => {
+  useEffect(() => { document.title = 'Register | Type-Away-Writer'; }, []);
+
   const navigate = useNavigate();
 
   const handleRegister = (role) => {
@@ -20,7 +23,7 @@ const Register = () => {
   };
 
   return (
-    <div className="register-page">
+    <div className="auth-page register-page">
 
 
       <div className="register-cards">

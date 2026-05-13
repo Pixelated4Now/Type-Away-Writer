@@ -11,13 +11,15 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-const authRoute       = require('./routes/auth');
-const categoriesRoute = require('./routes/categories');
-const storiesRoute    = require('./routes/stories');
+const authRoute          = require('./routes/auth');
+const categoriesRoute    = require('./routes/categories');
+const storiesRoute       = require('./routes/stories');
+const notificationsRoute = require('./routes/notifications');
 
-app.use('/auth', authRoute);
-app.use('/', categoriesRoute);
-app.use('/', storiesRoute);
+app.use('/auth',          authRoute);
+app.use('/',              categoriesRoute);
+app.use('/',              storiesRoute);
+app.use('/notifications', notificationsRoute);
 
 const PORT = process.env.PORT || 5000;
 

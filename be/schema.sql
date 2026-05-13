@@ -117,6 +117,16 @@ INSERT INTO categories (name) VALUES
     ('Superheroes'), ('Historical')
 ON CONFLICT DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS notifications (
+    id         SERIAL PRIMARY KEY,
+    user_id    INT NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+    type       VARCHAR(50) NOT NULL,
+    actor_id   INT          REFERENCES users(id)   ON DELETE SET NULL,
+    story_id   INT          REFERENCES stories(id) ON DELETE CASCADE,
+    is_read    BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO tags (name) VALUES
     ('happy'), ('sad'), ('danger'), ('school'), ('family'),
     ('friendship'), ('funny'), ('dark'), ('magic'), ('adventure'),

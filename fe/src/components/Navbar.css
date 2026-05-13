@@ -52,7 +52,7 @@
   margin: 0;
   padding: 0;
 }
- 
+
 .navbar-links a {
   font-family: "Manrope", sans-serif;
   font-size: 15px;
@@ -61,16 +61,16 @@
   text-decoration: none;
   transition: color 0.15s ease;
 }
- 
+
 .navbar-links a:hover {
   color: #0e72e5;
 }
- 
+
 .navbar-links a.active {
   font-weight: 800;
   color: #111;
 }
- 
+
 /* ── Actions ── */
 .navbar-actions {
   display: flex;
@@ -78,7 +78,7 @@
   gap: 12px;
   flex-shrink: 0;
 }
- 
+
 .btn-signin {
   background: transparent;
   border: none;
@@ -91,12 +91,12 @@
   border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
- 
+
 .btn-signin:hover {
   background: #f0f4f8;
   color: #111;
 }
- 
+
 .btn-signup {
   background: #111;
   border: none;
@@ -109,7 +109,230 @@
   border-radius: 8px;
   transition: background 0.15s ease;
 }
- 
+
 .btn-signup:hover {
   background: #0e72e5;
+}
+
+/* ── Logged-in user section ── */
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Bell icon button */
+.btn-icon {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 7px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.btn-icon:hover {
+  background: #f0f4f8;
+  color: #111;
+}
+
+/* Unread badge */
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 8px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* Avatar + chevron button */
+.btn-avatar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.btn-avatar:hover {
+  background: #f0f4f8;
+}
+
+.avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #aecbfa;
+  color: #fff;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chevron {
+  font-size: 11px;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown shared ── */
+.notif-wrap,
+.profile-wrap {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+  animation: dropIn 0.14s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Profile dropdown ── */
+.profile-dropdown {
+  min-width: 180px;
+  padding: 6px 0;
+}
+
+.dropdown-title {
+  font-family: "Manrope", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 16px 4px;
+  margin: 0;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 16px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.12s;
+}
+
+.dropdown-item:hover {
+  background: #f5f7fa;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #ebebeb;
+  margin: 4px 0;
+}
+
+.dropdown-logout {
+  color: #e53e3e;
+  font-weight: 600;
+}
+
+.dropdown-logout:hover {
+  background: #fff5f5;
+}
+
+/* ── Notification dropdown ── */
+.notif-dropdown {
+  width: 320px;
+  right: -50px;
+}
+
+.notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-item.unread {
+  background: #f0f7ff;
+}
+
+.notif-text {
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  margin: 0 0 3px;
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.notif-empty {
+  padding: 20px 16px;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  color: #999;
+  text-align: center;
+  margin: 0;
 }

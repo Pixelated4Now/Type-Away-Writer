@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BsEye, BsEyeSlash } from 'react-icons/bs';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 import './Register.css';
@@ -19,7 +20,7 @@ const MONTHS = [
     'July', 'August', 'September', 'October', 'November', 'December',
 ];
 const DAYS  = Array.from({ length: 31 }, (_, i) => i + 1);
-const YEARS = Array.from({ length: 10 }, (_, i) => 2011 + i); // 2011–2020
+const YEARS = Array.from({ length: 25 }, (_, i) => 2000 + i); // 2000–2024
 
 const StepIndicator = ({ current }) => (
     <div className="step-indicator">
@@ -43,6 +44,8 @@ const selectStyle = (hasError) => ({
 });
 
 const RegisterStudent = () => {
+    useEffect(() => { document.title = 'Register | Type-Away-Writer'; }, []);
+
     const navigate   = useNavigate();
     const { login }  = useAuth();
     const [step, setStep] = useState(1);
@@ -57,6 +60,9 @@ const RegisterStudent = () => {
     const [serverError, setServerError] = useState('');
     const [loading, setLoading]         = useState(false);
     const [userId, setUserId]           = useState(null); // set after registration call
+    const [showPassword, setShowPassword]               = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [resendMessage, setResendMessage]             = useState({ text: '', type: '' });
 
     const update = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -103,10 +109,25 @@ const RegisterStudent = () => {
     const handleNext = async () => {
         if (!validateStep()) return;
 
-        // Step 3 → 4: register the user, then advance to verification step
+        // Step 3 → 4: check email, then register
         if (step === 3) {
             setLoading(true);
             setServerError('');
+            try {
+                const chk  = await fetch(`${API}/auth/check-email?email=${encodeURIComponent(formData.email)}`);
+                const chkData = await chk.json();
+                if (!chkData.available) {
+                    setErrors((prev) => ({ ...prev, email: 'There is already an account associated with this email address. Please try logging in.' }));
+                    return;
+                }
+            } catch {
+                setServerError('A network error occurred. Please try again.');
+                return;
+            } finally {
+                setLoading(false);
+            }
+
+            setLoading(true);
             try {
                 const res  = await fetch(`${API}/auth/register/student`, {
                     method:  'POST',
@@ -170,7 +191,24 @@ const RegisterStudent = () => {
             return;
         }
 
-        // Steps 1–2: just advance
+        // Step 1 → 2: check username availability before advancing
+        if (step === 1) {
+            setLoading(true);
+            try {
+                const res  = await fetch(`${API}/auth/check-username?username=${encodeURIComponent(formData.username)}`);
+                const data = await res.json();
+                if (!data.available) {
+                    setErrors((prev) => ({ ...prev, username: 'This username has been used. Please try again.' }));
+                    return;
+                }
+            } catch {
+                setServerError('A network error occurred. Please try again.');
+                return;
+            } finally {
+                setLoading(false);
+            }
+        }
+
         setStep((s) => s + 1);
     };
 
@@ -178,7 +216,6 @@ const RegisterStudent = () => {
 
     const handleResend = async () => {
         if (!userId) return;
-        setServerError('');
         try {
             const res  = await fetch(`${API}/auth/resend-verification`, {
                 method:  'POST',
@@ -186,13 +223,19 @@ const RegisterStudent = () => {
                 body:    JSON.stringify({ userId }),
             });
             const data = await res.json();
-            if (!res.ok) setServerError(data.message);
+            const msg  = res.ok
+                ? { text: 'Verification email resent!', type: 'success' }
+                : { text: data.message,                  type: 'error'   };
+            setResendMessage(msg);
+            setTimeout(() => setResendMessage({ text: '', type: '' }), 4000);
         } catch {
-            setServerError('A network error occurred. Please try again.');
+            setResendMessage({ text: 'A network error occurred. Please try again.', type: 'error' });
+            setTimeout(() => setResendMessage({ text: '', type: '' }), 4000);
         }
     };
 
     return (
+        <div className="auth-page">
         <div className="wrapper student-register">
             <div className="heading">
                 <h1>Individual / Student</h1>
@@ -219,8 +262,13 @@ const RegisterStudent = () => {
 
                     <div className="input-box">
                         <label>Password:</label>
-                        <input type="password" value={formData.password} onChange={(e) => update('password', e.target.value)}
-                            style={{ border: errors.password ? '1px solid #FF1212' : '' }} />
+                        <div className="password-box" style={{ border: errors.password ? '1px solid #FF1212' : '' }}>
+                            <input type={showPassword ? 'text' : 'password'} value={formData.password}
+                                onChange={(e) => update('password', e.target.value)} />
+                            <button className="password-eye" onClick={(e) => { e.preventDefault(); setShowPassword((v) => !v); }}>
+                                {showPassword ? <BsEyeSlash /> : <BsEye />}
+                            </button>
+                        </div>
                         {errors.password
                             ? <span className="field-error">{errors.password}</span>
                             : <span className="field-hint">Password must include 6–12 characters, including letters and numbers.</span>}
@@ -228,8 +276,13 @@ const RegisterStudent = () => {
 
                     <div className="input-box">
                         <label>Re-enter Password:</label>
-                        <input type="password" value={formData.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)}
-                            style={{ border: errors.confirmPassword ? '1px solid #FF1212' : '' }} />
+                        <div className="password-box" style={{ border: errors.confirmPassword ? '1px solid #FF1212' : '' }}>
+                            <input type={showConfirmPassword ? 'text' : 'password'} value={formData.confirmPassword}
+                                onChange={(e) => update('confirmPassword', e.target.value)} />
+                            <button className="password-eye" onClick={(e) => { e.preventDefault(); setShowConfirmPassword((v) => !v); }}>
+                                {showConfirmPassword ? <BsEyeSlash /> : <BsEye />}
+                            </button>
+                        </div>
                         {errors.confirmPassword && <span className="field-error">{errors.confirmPassword}</span>}
                     </div>
 
@@ -316,6 +369,16 @@ const RegisterStudent = () => {
                     <button className="btn-resend full-width" onClick={handleResend} type="button">
                         Re-send Email
                     </button>
+                    {resendMessage.text && (
+                        <span style={{
+                            fontSize: '12px',
+                            color: resendMessage.type === 'success' ? '#4ade80' : '#F64E4E',
+                            marginTop: '6px',
+                            display: 'block',
+                        }}>
+                            {resendMessage.text}
+                        </span>
+                    )}
                     <span className="field-hint">
                         Check your email inbox for the verification code. Check the spam folder if you cannot find it.
                     </span>
@@ -328,6 +391,7 @@ const RegisterStudent = () => {
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 };

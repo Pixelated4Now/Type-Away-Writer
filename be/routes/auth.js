@@ -85,49 +85,94 @@ const sendVerificationEmail = async (email, username, code) => {
 // ── Shared registration logic ─────────────────────────────────────────────────
 
 const registerUser = async (res, { username, email, password, birthDay, birthMonth, birthYear, account_type }) => {
-    // Validate required fields
     if (!username || !email || !password || !birthDay || !birthMonth || !birthYear) {
         return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    // Check uniqueness
-    const existing = await pool.query(
-        'SELECT id, username, email FROM users WHERE username = $1 OR email = $2',
-        [username, email]
-    );
-    if (existing.rows.length > 0) {
-        const conflict = existing.rows[0];
-        if (conflict.username === username)
-            return res.status(409).json({ message: 'Username is already taken.' });
-        return res.status(409).json({ message: 'Email address is already registered.' });
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const existing = await client.query(
+            'SELECT id, username, email FROM users WHERE username = $1 OR email = $2',
+            [username, email]
+        );
+        if (existing.rows.length > 0) {
+            await client.query('ROLLBACK');
+            const conflict = existing.rows[0];
+            if (conflict.username === username)
+                return res.status(409).json({ message: 'Username is already taken.' });
+            return res.status(409).json({ message: 'Email address is already registered.' });
+        }
+
+        const dob       = buildDOB(birthDay, birthMonth, birthYear);
+        const hashedPwd = await bcrypt.hash(password, 10);
+
+        const { rows } = await client.query(
+            `INSERT INTO users (username, email, password, account_type, date_of_birth)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id, username, email, account_type`,
+            [username, email, hashedPwd, account_type, dob]
+        );
+        const user = rows[0];
+
+        const code      = generateCode();
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await client.query(
+            'INSERT INTO email_verification_codes (user_id, code, expires_at) VALUES ($1, $2, $3)',
+            [user.id, code, expiresAt]
+        );
+
+        // Send email before committing — rolls back if this throws
+        await sendVerificationEmail(email, username, code);
+
+        await client.query('COMMIT');
+
+        return res.status(201).json({
+            message: 'Account created. Please check your email for the verification code.',
+            userId: user.id,
+        });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+    } finally {
+        client.release();
     }
-
-    const dob          = buildDOB(birthDay, birthMonth, birthYear);
-    const hashedPwd    = await bcrypt.hash(password, 10);
-
-    const { rows } = await pool.query(
-        `INSERT INTO users (username, email, password, account_type, date_of_birth)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, username, email, account_type`,
-        [username, email, hashedPwd, account_type, dob]
-    );
-    const user = rows[0];
-
-    // Store verification code (expires in 24 h)
-    const code      = generateCode();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await pool.query(
-        'INSERT INTO email_verification_codes (user_id, code, expires_at) VALUES ($1, $2, $3)',
-        [user.id, code, expiresAt]
-    );
-
-    await sendVerificationEmail(email, username, code);
-
-    return res.status(201).json({
-        message: 'Account created. Please check your email for the verification code.',
-        userId: user.id,
-    });
 };
+
+// ── GET /auth/check-username?username= ───────────────────────────────────────
+
+router.get('/check-username', async (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ message: 'username is required.' });
+    try {
+        const { rows } = await pool.query(
+            'SELECT 1 FROM users WHERE LOWER(username) = LOWER($1)',
+            [username]
+        );
+        res.json({ available: rows.length === 0 });
+    } catch (err) {
+        console.error('GET /check-username error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── GET /auth/check-email?email= ─────────────────────────────────────────────
+
+router.get('/check-email', async (req, res) => {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ message: 'email is required.' });
+    try {
+        const { rows } = await pool.query(
+            'SELECT 1 FROM users WHERE LOWER(email) = LOWER($1)',
+            [email]
+        );
+        res.json({ available: rows.length === 0 });
+    } catch (err) {
+        console.error('GET /check-email error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
 
 // ── POST /auth/register/student ───────────────────────────────────────────────
 

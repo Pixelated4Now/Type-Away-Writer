@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -12,9 +13,9 @@ import getInspiredImg from "../assets/reading.jpg";
 import shareLoveImg from "../assets/like.jpg";
 import bookmarkImg from "../assets/readingList.jpg";
 import expertImg from "../assets/expertReview.png";
-import footerLogo from "../assets/logo.png";
 
 const Home = () => {
+  useEffect(() => { document.title = 'Type-Away-Writer'; }, []);
   const navigate = useNavigate();
 
   return (

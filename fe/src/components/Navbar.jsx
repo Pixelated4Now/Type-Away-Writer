@@ -1,50 +1,202 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import "./Navbar.css";
-import logo from "../assets/logoBase.png";
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { BsBell, BsChevronDown } from 'react-icons/bs';
+import { useAuth } from '../context/AuthContext';
+import './Navbar.css';
+import logo from '../assets/logoBase.png';
+
+const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+const notificationText = (n) => {
+    switch (n.type) {
+        case 'like':    return `${n.actor_username} liked your story "${n.story_title}"`;
+        case 'comment': return `${n.actor_username} commented on "${n.story_title}"`;
+        case 'follow':  return `${n.actor_username} started following you`;
+        case 'chapter': return `New chapter added to "${n.story_title}"`;
+        default:        return 'You have a new notification';
+    }
+};
+
+const formatTime = (ts) =>
+    new Date(ts).toLocaleString('en-US', {
+        timeZone: 'Asia/Colombo',
+        month:    'short',
+        day:      'numeric',
+        hour:     'numeric',
+        minute:   '2-digit',
+        hour12:   true,
+    });
 
 const Navbar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+    const navigate         = useNavigate();
+    const location         = useLocation();
+    const { user, logout } = useAuth();
 
-  const isActive = (path) => location.pathname === path;
+    const isActive = (path) => location.pathname === path;
 
-  return (
-    <nav className="navbar">
-      <div className="navbar-inner">
+    const [profileOpen,   setProfileOpen]   = useState(false);
+    const [notifOpen,     setNotifOpen]     = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unread,        setUnread]        = useState(0);
 
-        <div className="navbar-brand">
-          <Link to="/"><img src={logo} alt="TypeAway logo" className="navbar-logo"/></Link>
-        </div>
+    const profileRef = useRef(null);
+    const notifRef   = useRef(null);
 
-        
-        <ul className="navbar-links">
-          <li>
-            <Link to="/" className={isActive("/") ? "active" : ""}>Home</Link>
-          </li>
-          <li>
-            <Link to="/write" className={isActive("/write") ? "active" : ""}>Write</Link>
-          </li>
-          <li>
-            <Link to="/read" className={location.pathname.startsWith("/read") ? "active" : ""}>Read</Link>
-          </li>
-          <li>
-            <Link to="/contact" className={isActive("/contact") ? "active" : ""}>Contact Us</Link>
-          </li>
-          <li>
-            <Link to="/guidelines" className={isActive("/guidelines") ? "active" : ""}>Guidelines</Link>
-          </li>
-        </ul>
+    useEffect(() => {
+        if (!user) return;
+        const token = localStorage.getItem('authToken');
+        fetch(`${API}/notifications`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then(r => r.json())
+            .then(data => {
+                setNotifications(data.notifications || []);
+                setUnread(data.unread || 0);
+            })
+            .catch(() => {});
+    }, [user]);
 
-        <div className="navbar-actions">
-          <button className="btn-signin" onClick={() => navigate("/login")}>Sign In</button>
-          <button className="btn-signup" onClick={() => navigate("/register")}>Sign Up</button>
-        </div>
+    const markRead = () => {
+        const token = localStorage.getItem('authToken');
+        fetch(`${API}/notifications/mark-read`, {
+            method:  'POST',
+            headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {});
+        setUnread(0);
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    };
 
-      </div>
-    </nav>
-  );
+    // Close dropdowns on outside click; mark notifications read when notif dropdown closes
+    useEffect(() => {
+        const handler = (e) => {
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false);
+            }
+            if (notifRef.current && !notifRef.current.contains(e.target)) {
+                setNotifOpen(prev => {
+                    if (prev) markRead();
+                    return false;
+                });
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const toggleNotif = () => {
+        setNotifOpen(v => {
+            if (v) markRead();
+            return !v;
+        });
+        setProfileOpen(false);
+    };
+
+    const toggleProfile = () => {
+        setProfileOpen(v => !v);
+        setNotifOpen(false);
+    };
+
+    const handleLogout = () => {
+        logout();
+        setProfileOpen(false);
+        navigate('/');
+    };
+
+    return (
+        <nav className="navbar">
+            <div className="navbar-inner">
+
+                <div className="navbar-brand">
+                    <Link to="/"><img src={logo} alt="TypeAway logo" className="navbar-logo" /></Link>
+                </div>
+
+                <ul className="navbar-links">
+                    <li><Link to="/"          className={isActive('/')                                ? 'active' : ''}>Home</Link></li>
+                    <li><Link to="/write"      className={isActive('/write')                          ? 'active' : ''}>Write</Link></li>
+                    <li><Link to="/read"       className={location.pathname.startsWith('/read')       ? 'active' : ''}>Read</Link></li>
+                    <li><Link to="/contact"    className={isActive('/contact')                        ? 'active' : ''}>Contact Us</Link></li>
+                    <li><Link to="/guidelines" className={isActive('/guidelines')                     ? 'active' : ''}>Guidelines</Link></li>
+                </ul>
+
+                <div className="navbar-actions">
+                    {!user ? (
+                        <>
+                            <button className="btn-signin" onClick={() => navigate('/login')}>Sign In</button>
+                            <button className="btn-signup" onClick={() => navigate('/register')}>Sign Up</button>
+                        </>
+                    ) : (
+                        <div className="navbar-user">
+
+                            {/* Bell icon + notification dropdown */}
+                            <div className="notif-wrap" ref={notifRef}>
+                                <button className="btn-icon" onClick={toggleNotif} aria-label="Notifications">
+                                    <BsBell />
+                                    {unread > 0 && (
+                                        <span className="notif-badge">{unread > 99 ? '99+' : unread}</span>
+                                    )}
+                                </button>
+
+                                {notifOpen && (
+                                    <div className="dropdown notif-dropdown">
+                                        <p className="dropdown-title">Notifications</p>
+                                        {notifications.length === 0 ? (
+                                            <p className="notif-empty">No notifications yet.</p>
+                                        ) : (
+                                            <ul className="notif-list">
+                                                {notifications.map(n => (
+                                                    <li key={n.id} className={`notif-item${!n.is_read ? ' unread' : ''}`}>
+                                                        <p className="notif-text">{notificationText(n)}</p>
+                                                        <span className="notif-time">{formatTime(n.created_at)}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Avatar + chevron + profile dropdown */}
+                            <div className="profile-wrap" ref={profileRef}>
+                                <button className="btn-avatar" onClick={toggleProfile} aria-label="Profile menu">
+                                    {user.avatar_url ? (
+                                        <img src={user.avatar_url} alt="avatar" className="avatar-img" />
+                                    ) : (
+                                        <span className="avatar-initials">{user.username[0].toUpperCase()}</span>
+                                    )}
+                                    <BsChevronDown className={`chevron${profileOpen ? ' open' : ''}`} />
+                                </button>
+
+                                {profileOpen && (
+                                    <div className="dropdown profile-dropdown">
+                                        <Link
+                                            to={`/profile/${user.username}`}
+                                            className="dropdown-item"
+                                            onClick={() => setProfileOpen(false)}
+                                        >
+                                            My Profile
+                                        </Link>
+                                        <Link
+                                            to="/account-settings"
+                                            className="dropdown-item"
+                                            onClick={() => setProfileOpen(false)}
+                                        >
+                                            Account Settings
+                                        </Link>
+                                        <div className="dropdown-divider" />
+                                        <button className="dropdown-item dropdown-logout" onClick={handleLogout}>
+                                            Log Out
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
+                    )}
+                </div>
+
+            </div>
+        </nav>
+    );
 };
 
 export default Navbar;
-
-
