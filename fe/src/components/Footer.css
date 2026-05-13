@@ -3,6 +3,7 @@
 .home-footer {
   background: #FBFFFE;
   border-top: 1px solid #e8e8e8;
+  min-width: 100vw;
   max-width: 1200px;
   margin: 0 auto;
   padding: 56px 48px;

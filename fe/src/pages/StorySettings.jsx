@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+
+import { RiImageAddFill } from "react-icons/ri";
 import { useAuth } from "../context/AuthContext";
 import "./StorySettings.css";
 
@@ -231,7 +233,7 @@ const StorySettings = () => {
               </div>
             ) : (
               <div className="cover-placeholder">
-                <span className="cover-icon">🖼</span>
+                <span className="cover-icon"><RiImageAddFill /></span>
                 <span className="cover-label">Add a cover</span>
               </div>
             )}
@@ -327,7 +329,7 @@ const StorySettings = () => {
             <div className="field-group" ref={tagRef}>
               <label className="field-label">Tags</label>
               <div
-                className={`tag-input-box${errors.tags ? " field-error" : ""}`}
+                className={`settings-tag-input-box${errors.tags ? " field-error" : ""}`}
                 onClick={() => { setTagOpen(true); }}
               >
                 {selectedTags.map(tag => (
@@ -338,7 +340,7 @@ const StorySettings = () => {
                 ))}
                 {selectedTags.length < MAX_TAGS && (
                   <input
-                    className="tag-text-input"
+                    className="settings-tag-text-input"
                     value={tagInput}
                     placeholder={selectedTags.length === 0 ? "Search or create tags…" : ""}
                     onChange={e => { handleTagInput(e.target.value); setErrors(p => ({ ...p, tags: undefined })); }}
@@ -347,22 +349,22 @@ const StorySettings = () => {
                 )}
               </div>
               {tagOpen && (
-                <ul className="tag-dropdown">
+                <ul className="settings-tag-dropdown">
                   {!tagInput.trim() && (
-                    <li className="tag-dropdown-hint">Start typing for suggestions!</li>
+                    <li className="settings-tag-dropdown-hint">Start typing for suggestions!</li>
                   )}
                   {tagSuggestions.map(t => (
-                    <li key={t.id} className="tag-dropdown-item" onMouseDown={() => addTag(t)}>
+                    <li key={t.id} className="settings-tag-dropdown-item" onMouseDown={() => addTag(t)}>
                       {t.name}
                     </li>
                   ))}
                   {showCreateTag && (
-                    <li className="tag-dropdown-item tag-create" onMouseDown={createTag}>
+                    <li className="settings-tag-dropdown-item settings-tag-create" onMouseDown={createTag}>
                       Create "{tagInput.trim()}"
                     </li>
                   )}
                   {tagInput.trim() && tagSuggestions.length === 0 && !showCreateTag && (
-                    <li className="tag-dropdown-hint">No matches found.</li>
+                    <li className="settings-tag-dropdown-hint">No matches found.</li>
                   )}
                 </ul>
               )}

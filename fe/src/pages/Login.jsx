@@ -106,7 +106,7 @@ const Login = () => {
                 </div>
 
                 {serverError && (
-                    <p style={{ color: '#F64E4E', fontSize: '14px', marginBottom: '12px' }}>{serverError}</p>
+                    <p style={{ color: '#F64E4E', fontSize: '12px', marginBottom: '12px' }}>{serverError}</p>
                 )}
 
                 <button type="submit" disabled={loading}>

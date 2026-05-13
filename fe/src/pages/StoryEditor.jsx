@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
+import { BsTrash } from "react-icons/bs";
 import "./StoryEditor.css";
 import "quill/dist/quill.snow.css";
 
@@ -262,15 +264,6 @@ const StoryEditor = () => {
 
   const currentIndex = chapters.findIndex(c => c.id === currentChapterId);
 
-  if (loading) {
-    return (
-      <div className="editor-page">
-        <Navbar />
-        <p style={{ padding: "60px 40px", color: "#888" }}>Loading editor…</p>
-      </div>
-    );
-  }
-
   return (
     <div className="editor-page">
       <Navbar />
@@ -280,7 +273,7 @@ const StoryEditor = () => {
         {/* ── Main Editor ── */}
         <div className="editor-main">
           <h2 className="editor-chapter-heading">
-            Chapter {currentIndex + 1}
+            {loading ? "Loading…" : `Chapter ${currentIndex + 1}`}
           </h2>
 
           <div className="editor-chapter-name-row">
@@ -290,6 +283,7 @@ const StoryEditor = () => {
               placeholder="Untitled"
               value={chapterName}
               onChange={e => setChapterName(e.target.value)}
+              disabled={loading}
             />
           </div>
 
@@ -300,10 +294,10 @@ const StoryEditor = () => {
           {publishError && <p className="editor-publish-error">{publishError}</p>}
 
           <div className="editor-actions">
-            <button className="editor-btn editor-btn-outline" onClick={handleBack}>BACK</button>
-            <button className="editor-btn editor-btn-outline" onClick={handlePreview}>PREVIEW</button>
-            <button className="editor-btn editor-btn-outline" onClick={handleSaveAsDraft}>SAVE AS DRAFT</button>
-            <button className="editor-btn editor-btn-dark" onClick={handlePublish} disabled={publishing}>
+            <button className="editor-btn editor-btn-outline" onClick={handleBack} disabled={loading}>BACK</button>
+            <button className="editor-btn editor-btn-outline" onClick={handlePreview} disabled={loading}>PREVIEW</button>
+            <button className="editor-btn editor-btn-outline" onClick={handleSaveAsDraft} disabled={loading}>SAVE AS DRAFT</button>
+            <button className="editor-btn editor-btn-dark" onClick={handlePublish} disabled={publishing || loading}>
               {publishing ? "Publishing…" : "PUBLISH"}
             </button>
           </div>
@@ -327,12 +321,12 @@ const StoryEditor = () => {
                   onClick={e => { e.stopPropagation(); if (chapters.length > 1) setDeleteConfirmId(ch.id); }}
                   title="Delete chapter"
                 >
-                  🗑
+                  <BsTrash />
                 </button>
               </li>
             ))}
           </ul>
-          <button className="editor-add-chapter-btn" onClick={handleAddChapter}>
+          <button className="editor-add-chapter-btn" onClick={handleAddChapter} disabled={loading}>
             <span>+</span> ADD CHAPTER
           </button>
         </aside>
@@ -367,6 +361,7 @@ const StoryEditor = () => {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 };

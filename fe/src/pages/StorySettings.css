@@ -4,6 +4,7 @@
   font-family: "Manrope", sans-serif;
   background: #f8f9fb;
   min-height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
 }
@@ -23,6 +24,7 @@
   font-weight: 800;
   color: #111;
   margin: 0 0 36px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .settings-body {
@@ -117,10 +119,8 @@
 
 .field-label {
   font-size: 13px;
-  font-weight: 700;
-  color: #444;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: #111;
 }
 
 .field-input,
@@ -129,7 +129,7 @@
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
   font-family: "Manrope", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #111;
   background: #fff;
   outline: none;
@@ -144,7 +144,7 @@
 }
 
 .field-error {
-  border-color: #e53e3e !important;
+  border-color: #F64E4E !important;
 }
 
 .field-textarea {
@@ -161,7 +161,7 @@
 
 .error-msg {
   font-size: 12px;
-  color: #e53e3e;
+  color: #F64E4E;
   margin: 0;
 }
 
@@ -176,7 +176,7 @@
   align-items: center;
   justify-content: space-between;
   font-family: "Manrope", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #111;
   user-select: none;
   transition: border-color 0.15s;
@@ -216,7 +216,7 @@
 .custom-select-item {
   padding: 9px 14px;
   font-family: "Manrope", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #222;
   cursor: pointer;
   transition: background 0.1s;
@@ -232,21 +232,24 @@
 }
 
 /* ── Tag input ── */
-.tag-input-box {
+.settings-tag-input-box {
   min-height: 44px;
+  height: auto;
   padding: 6px 10px;
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
   background: #fff;
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 6px;
   align-items: center;
   cursor: text;
   transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
-.tag-input-box:focus-within {
+.settings-tag-input-box:focus-within {
   border-color: #3b82f6;
 }
 
@@ -254,36 +257,45 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #e8f0fe;
-  color: #1a56db;
-  font-size: 13px;
+  background: #c9cbce;
+  color: #111;
+  font-size: 12px;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 999px;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .tag-chip-remove {
   background: none;
   border: none;
-  color: #1a56db;
+  color: #555;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1;
   padding: 0;
+  font-weight: 700;
+  box-shadow: none;
+  width: auto;
+  height: auto;
 }
 
-.tag-text-input {
+.tag-chip-remove:hover {
+  color: #111;
+  background: none;
+}
+
+.settings-tag-text-input {
   border: none;
   outline: none;
   font-family: "Manrope", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #111;
   flex: 1;
-  min-width: 120px;
+  min-width: 60px;
   background: transparent;
 }
 
-.tag-dropdown {
+.settings-tag-dropdown {
   list-style: none;
   margin: 0;
   padding: 4px 0;
@@ -300,25 +312,25 @@
   overflow-y: auto;
 }
 
-.tag-dropdown-item {
+.settings-tag-dropdown-item {
   padding: 9px 14px;
   font-family: "Manrope", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #222;
   cursor: pointer;
   transition: background 0.1s;
 }
 
-.tag-dropdown-item:hover {
+.settings-tag-dropdown-item:hover {
   background: #f0f4ff;
 }
 
-.tag-create {
+.settings-tag-create {
   font-style: italic;
   color: #3b82f6;
 }
 
-.tag-dropdown-hint {
+.settings-tag-dropdown-hint {
   padding: 9px 14px;
   font-size: 13px;
   color: #aaa;
@@ -340,8 +352,9 @@
   font-family: "Manrope", sans-serif;
   font-size: 13px;
   font-weight: 700;
-  padding: 10px 24px;
-  border-radius: 8px;
+  padding: 0 24px;
+  height: 36px;
+  border-radius: 6px;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -354,12 +367,14 @@
 .btn-next {
   background: #111;
   border: none;
+  box-shadow: none;
   color: #fff;
   font-family: "Manrope", sans-serif;
   font-size: 13px;
   font-weight: 700;
-  padding: 10px 28px;
-  border-radius: 8px;
+  padding: 0 30px;
+  height: 36px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s;
 }

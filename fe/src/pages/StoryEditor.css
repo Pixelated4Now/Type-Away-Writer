@@ -4,6 +4,7 @@
   font-family: "Manrope", sans-serif;
   background: #f8f9fb;
   min-height: 100vh;
+  width: 100vw;
 }
 
 .editor-layout {
