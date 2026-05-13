@@ -13,6 +13,8 @@ const categoryImage = (name) => {
 };
 
 const ReadPage = () => {
+  useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
+  
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);

@@ -128,8 +128,8 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 INSERT INTO tags (name) VALUES
-    ('happy'), ('sad'), ('danger'), ('school'), ('family'),
-    ('friendship'), ('funny'), ('dark'), ('magic'), ('adventure'),
-    ('animals'), ('mystery'), ('love'), ('action'), ('nature'),
-    ('fear'), ('hope'), ('courage'), ('teamwork'), ('dreams')
+    ('Happy'), ('Sad'), ('Danger'), ('School'), ('Family'),
+    ('Friendship'), ('Funny'), ('Dark'), ('Magic'), ('Adventure'),
+    ('Animals'), ('Mystery'), ('Love'), ('Action'), ('Nature'),
+    ('Fear'), ('Hope'), ('Courage'), ('Teamwork'), ('Dreams')
 ON CONFLICT DO NOTHING;

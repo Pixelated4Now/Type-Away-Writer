@@ -12,6 +12,9 @@ const MAX_TAGS = 20;
 const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
 const ReadCategory = () => {
+  useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
+
+
   const { categoryId } = useParams();
   const navigate       = useNavigate();
 

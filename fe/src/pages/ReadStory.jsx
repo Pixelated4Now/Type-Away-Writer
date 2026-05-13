@@ -137,6 +137,8 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const ReadStory = () => {
+  useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
+  
   const { storyId }    = useParams();
   const { user }       = useAuth();
   const currentUser    = user?.username ?? null;
