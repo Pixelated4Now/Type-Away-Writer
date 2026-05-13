@@ -126,7 +126,7 @@ const StoryPreview = () => {
       <Navbar />
 
       <div style={{ background: "#fffbea", textAlign: "center", padding: "8px", fontSize: "13px", fontWeight: 600, color: "#92400e", borderBottom: "1px solid #fde68a" }}>
-        PREVIEW — this is how your story will look when published
+        PREVIEW: this is what your story will look like when published.
       </div>
 
       {/* ── Hero ── */}
@@ -173,10 +173,10 @@ const StoryPreview = () => {
 
           <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
             <button className="sidebar-btn sidebar-btn-primary" onClick={() => navigate(`/write/${storyId}/chapters`)}>
-              Edit Story
+              EDIT
             </button>
             <button className="sidebar-btn sidebar-btn-primary" onClick={handlePublish} disabled={publishing}>
-              {publishing ? "Publishing…" : "Publish"}
+              {publishing ? "PUBLISHING…" : "PUBLISH"}
             </button>
             {publishError && <p style={{ color: "#e53e3e", fontSize: "12px", margin: 0 }}>{publishError}</p>}
           </div>

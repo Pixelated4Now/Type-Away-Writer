@@ -105,17 +105,24 @@ const StoryEditor = () => {
 
   // ── Fetch chapters on mount
   useEffect(() => {
+    let ignore = false;
     setLoading(true);
-    authFetch(`${API}/stories/${storyId}/chapters`)
-      .then(r => r.json())
-      .then(async (data) => {
+
+    (async () => {
+      try {
+        const r    = await authFetch(`${API}/stories/${storyId}/chapters`);
+        if (ignore) return;
+        const data = await r.json();
+        if (ignore) return;
+
         let chs = Array.isArray(data) ? data : [];
         if (chs.length === 0) {
-          // Auto-create chapter 1
-          const res = await authFetch(`${API}/stories/${storyId}/chapters`, { method: "POST" });
+          const res   = await authFetch(`${API}/stories/${storyId}/chapters`, { method: "POST" });
+          if (ignore) return;
           const newCh = await res.json();
           chs = [newCh];
         }
+
         setChapters(chs);
         const first = chs[0];
         setCurrentChapterId(first.id);
@@ -125,9 +132,14 @@ const StoryEditor = () => {
         if (quillRef.current) {
           quillRef.current.root.innerHTML = first.content || "";
         }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch (err) {
+        if (!ignore) console.error(err);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    })();
+
+    return () => { ignore = true; };
   }, [storyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── When currentChapterId changes (and Quill is ready), update editor content

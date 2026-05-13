@@ -10,6 +10,8 @@ import readingListImg from "../assets/addToList.png";
 import shareImg       from "../assets/share.png";
 import likeImg        from "../assets/likeAChapter.png";
 import likedImg       from "../assets/likedAChapter.png";
+import reviewImg from "../assets/reviewSubmit.png";
+import { ImPencil } from "react-icons/im";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -467,16 +469,7 @@ const ReadStory = () => {
 
         {/* ── Left Sidebar ── */}
         <aside className="story-sidebar">
-          {isAuthor && (
-            <>
-              <button className="sidebar-btn sidebar-btn-primary" style={{ marginBottom: "8px" }} onClick={openReviewModal}>
-                Submit for Review
-              </button>
-              <button className="sidebar-btn sidebar-btn-secondary" style={{ marginBottom: "16px" }} onClick={() => navigate(`/write/${storyId}/settings`)}>
-                Edit
-              </button>
-            </>
-          )}
+          
           <p className="sidebar-label">Chapters</p>
 
           <div className="chapter-dropdown-wrapper" ref={chapterDropdownRef}>
@@ -577,9 +570,21 @@ const ReadStory = () => {
             )}
           </div>
 
-          <button className="sidebar-btn sidebar-btn-secondary">
+          <button className="sidebar-btn sidebar-btn-secondary" style={{ marginBottom: "40px" }}>
             <img src={shareImg} alt="Share" /> Share
           </button>
+
+          {isAuthor && (
+            <>
+              <button className="sidebar-btn sidebar-btn-primary" style={{ marginBottom: "4px" }} onClick={openReviewModal}> <img src={reviewImg} alt="Submit for review" />
+                Submit for Review
+              </button>
+              <button className="sidebar-btn sidebar-btn-secondary" onClick={() => navigate(`/write/${storyId}/settings`)}>
+                <ImPencil /> Edit
+              </button>
+            </>
+          )}
+
         </aside>
 
         {/* ── Main Reading Area ── */}
