@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BsBell, BsChevronDown } from 'react-icons/bs';
+import { BsBell, BsHeart, BsChevronDown, BsChat, BsChatDots, BsBookmark, BsStar, BsPerson, BsEnvelope, } from 'react-icons/bs';
+
+import { GoHeartFill } from "react-icons/go";
+
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 import logo from '../assets/logoBase.png';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-const notificationText = (n) => {
+const notificationText = (n, accountType) => {
     const actor = n.actor_username || 'Someone';
     const title = n.story_title   || 'a story';
     switch (n.type) {
@@ -17,9 +20,21 @@ const notificationText = (n) => {
         case 'save':           return `${actor} added ${title} to a reading list`;
         case 'review':         return `Language expert ${actor} reviewed ${title}`;
         case 'follow':         return `${actor} started following you`;
-        case 'review_request': return `${actor} requested a review of ${title}`;
+        case 'review_request': return accountType === 'expert'
+            ? 'You received a new review request'
+            : `${actor} requested a review of ${title}`;
         default:               return 'You have a new notification';
     }
+};
+
+const NOTIF_ICONS = {
+    like:           <BsHeart />,
+    comment:        <BsChat />,
+    reply:          <BsChatDots />,
+    save:           <BsBookmark />,
+    review:         <BsStar />,
+    follow:         <BsPerson />,
+    review_request: <BsEnvelope />,
 };
 
 const formatTime = (ts) =>
@@ -120,30 +135,39 @@ const Navbar = () => {
                     <Link to="/"><img src={logo} alt="TypeAway logo" className="navbar-logo" /></Link>
                 </div>
 
-                <ul className="navbar-links">
-                    <li><Link to="/"          className={isActive('/')                                ? 'active' : ''}>Home</Link></li>
-                    <li ref={writeRef} className="write-nav-item">
-                        <button
-                            className={`write-nav-btn${location.pathname.startsWith('/write') ? ' active' : ''}`}
-                            onClick={() => setWriteOpen(v => !v)}
-                        >
-                            Write
-                        </button>
-                        {writeOpen && (
-                            <div className="write-dropdown">
-                                <div className="write-dropdown-item" onClick={() => { navigate('/write/new'); setWriteOpen(false); }}>
-                                    Individual
+                {user?.account_type === 'expert' ? (
+                    <ul className="navbar-links">
+                        <li><Link to="/"          className={isActive('/')          ? 'active' : ''}>Home</Link></li>
+                        <li><Link to="/review"    className={isActive('/review')    ? 'active' : ''}>Review</Link></li>
+                        <li><Link to="/read"      className={location.pathname.startsWith('/read') ? 'active' : ''}>Read</Link></li>
+                        <li><Link to="/guidelines" className={isActive('/guidelines') ? 'active' : ''}>Guidelines</Link></li>
+                    </ul>
+                ) : (
+                    <ul className="navbar-links">
+                        <li><Link to="/"          className={isActive('/')                                ? 'active' : ''}>Home</Link></li>
+                        <li ref={writeRef} className="write-nav-item">
+                            <button
+                                className={`write-nav-btn${location.pathname.startsWith('/write') ? ' active' : ''}`}
+                                onClick={() => setWriteOpen(v => !v)}
+                            >
+                                Write
+                            </button>
+                            {writeOpen && (
+                                <div className="write-dropdown">
+                                    <div className="write-dropdown-item" onClick={() => { navigate('/write/new'); setWriteOpen(false); }}>
+                                        Individual
+                                    </div>
+                                    <div className="write-dropdown-item write-dropdown-item-disabled">
+                                        Collaboration
+                                    </div>
                                 </div>
-                                <div className="write-dropdown-item write-dropdown-item-disabled">
-                                    Collaboration
-                                </div>
-                            </div>
-                        )}
-                    </li>
-                    <li><Link to="/read"       className={location.pathname.startsWith('/read')       ? 'active' : ''}>Read</Link></li>
-                    <li><Link to="/contact"    className={isActive('/contact')                        ? 'active' : ''}>Contact Us</Link></li>
-                    <li><Link to="/guidelines" className={isActive('/guidelines')                     ? 'active' : ''}>Guidelines</Link></li>
-                </ul>
+                            )}
+                        </li>
+                        <li><Link to="/read"       className={location.pathname.startsWith('/read')       ? 'active' : ''}>Read</Link></li>
+                        <li><Link to="/contact"    className={isActive('/contact')                        ? 'active' : ''}>Contact Us</Link></li>
+                        <li><Link to="/guidelines" className={isActive('/guidelines')                     ? 'active' : ''}>Guidelines</Link></li>
+                    </ul>
+                )}
 
                 <div className="navbar-actions">
                     {!user ? (
@@ -180,13 +204,20 @@ const Navbar = () => {
                                                             markRead();
                                                             if (n.type === 'follow') {
                                                                 navigate(`/profile/${n.actor_username}`);
+                                                            } else if (n.type === 'review_request' && user?.account_type === 'expert') {
+                                                                navigate('/review');
                                                             } else if (n.story_id) {
                                                                 navigate(`/read/story/${n.story_id}`);
                                                             }
                                                         }}
                                                     >
-                                                        <p className="notif-text">{notificationText(n)}</p>
-                                                        <span className="notif-time">{formatTime(n.created_at)}</span>
+                                                        <span className="notif-icon">
+                                                            {NOTIF_ICONS[n.type] || <BsBell />}
+                                                        </span>
+                                                        <div className="notif-body">
+                                                            <p className="notif-text">{notificationText(n, user?.account_type)}</p>
+                                                            <span className="notif-time">{formatTime(n.created_at)}</span>
+                                                        </div>
                                                     </li>
                                                 ))}
                                             </ul>

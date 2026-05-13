@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+.review-page {
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  background: #fff;
+  width: 100vw;
+}
+
+/* ════════════════════════════
+   HERO
+════════════════════════════ */
+.review-hero {
+  background: #3E79BD;
+  display: flex;
+  align-items: stretch;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.review-hero-image {
+  width: 470px;
+  flex-shrink: 0;
+  background: #3E79BD;
+  overflow: hidden;
+}
+
+.review-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.review-hero-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: right;
+  padding: 40px 56px;
+}
+
+.review-hero-text h1 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 12px;
+}
+
+.review-hero-text p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.65;
+  max-width: 380px;
+  margin: 0;
+}
+
+/* ════════════════════════════
+   PAGE TITLE
+════════════════════════════ */
+.review-page-title {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  margin: 40px 0 32px;
+  color: #111;
+}
+
+/* ════════════════════════════
+   MAIN LAYOUT
+════════════════════════════ */
+.review-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 72px;
+}
+
+/* ════════════════════════════
+   CARD LIST
+════════════════════════════ */
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Review Card ── */
+.review-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid #e8e8e8;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.review-card:first-child {
+  border-top: 1px solid #e8e8e8;
+}
+
+.review-card:hover {
+  background: #fafafa;
+}
+
+/* ── Badge ── */
+.review-badge {
+  flex-shrink: 0;
+  display: inline-block;
+  color: #EDF2F4;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 95px;
+  white-space: nowrap;
+  margin-top: 2px;
+  min-width: 96px;
+  text-align: center;
+}
+
+.review-badge-new {
+  background: #248642;
+}
+
+.review-badge-reviewed {
+  background: #92ABD1;
+}
+
+/* ── Card Body ── */
+.review-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-card-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.review-card-text strong {
+  font-weight: 700;
+  color: #111;
+}
+
+.review-card-time {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ════════════════════════════
+   THREE-DOT MENU
+════════════════════════════ */
+.review-card-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.review-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+  padding: 0 6px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.review-menu-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.review-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 190px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.review-dropdown button {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.review-dropdown button:hover {
+  background: #f5f5f5;
+}
+
+.review-dropdown-danger {
+  color: #c62828 !important;
+}
+
+/* ════════════════════════════
+   EMPTY STATE
+════════════════════════════ */
+.review-page .no-results {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+  padding: 48px 0;
+  line-height: 1.6;
+}
+
+/* ════════════════════════════
+   RESPONSIVE
+════════════════════════════ */
+@media (max-width: 860px) {
+  .review-hero {
+    flex-direction: column;
+  }
+
+  .review-hero-image {
+    width: 100%;
+    height: 160px;
+  }
+
+  .review-hero-text {
+    align-items: flex-start;
+    text-align: left;
+    padding: 28px 24px;
+  }
+
+  .review-main {
+    padding: 0 20px 56px;
+  }
+}

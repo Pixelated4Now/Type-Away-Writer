@@ -17,11 +17,19 @@ import ReadStory     from './pages/ReadStory';
 import StorySettings from './pages/StorySettings';
 import StoryEditor   from './pages/StoryEditor';
 import StoryPreview  from './pages/StoryPreview';
+import Review        from './pages/Review';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user)   return <Navigate to="/login" replace />;
+  return children;
+};
+
+const ExpertRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user || user.account_type !== 'expert') return <Navigate to="/" replace />;
   return children;
 };
 
@@ -52,6 +60,9 @@ function App() {
           <Route path="/write/:id/settings"    element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
           <Route path="/write/:id/chapters"    element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
           <Route path="/write/:id/preview"     element={<ProtectedRoute><StoryPreview /></ProtectedRoute>} />
+
+          {/* Expert only */}
+          <Route path="/review"                element={<ExpertRoute><Review /></ExpertRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

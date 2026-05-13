@@ -246,13 +246,9 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
             if (parentAuthorId && parentAuthorId !== req.user.id) {
                 createNotification(parentAuthorId, 'reply', req.user.id, storyId).catch(console.error);
             }
-        } else {
-            if (storyAuthorId !== req.user.id) {
-                createNotification(storyAuthorId, 'comment', req.user.id, storyId).catch(console.error);
-            }
-            if (comment.user.account_type === 'expert' && storyAuthorId !== req.user.id) {
-                createNotification(storyAuthorId, 'review', req.user.id, storyId).catch(console.error);
-            }
+        } else if (storyAuthorId !== req.user.id) {
+            const type = comment.user.account_type === 'expert' ? 'review' : 'comment';
+            createNotification(storyAuthorId, type, req.user.id, storyId).catch(console.error);
         }
     } catch (err) {
         console.error('POST /stories/:id/comments error:', err);
@@ -537,7 +533,7 @@ router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
         if (s.author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
 
         const chapRes = await pool.query(
-            'SELECT title, content FROM chapters WHERE story_id = $1',
+            'SELECT title, content FROM chapters WHERE story_id = $1 ORDER BY chapter_number',
             [storyId]
         );
 
@@ -551,7 +547,8 @@ router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
         if (chapRes.rows.length === 0)   errors.push('Story must have at least one chapter.');
         chapRes.rows.forEach((ch, i) => {
             if (!ch.title || !ch.title.trim()) errors.push(`Chapter ${i + 1} needs a name.`);
-            if (!ch.content || !ch.content.trim()) errors.push(`Chapter ${i + 1} has no content.`);
+            const text = (ch.content || '').replace(/<[^>]*>/g, '').trim();
+            if (!text) errors.push(`Chapter ${i + 1} has no content.`);
         });
 
         if (errors.length > 0) return res.status(422).json({ errors });

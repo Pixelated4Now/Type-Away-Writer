@@ -236,6 +236,27 @@ const StoryEditor = () => {
     setPublishing(true);
     setPublishError(null);
     await saveCurrentChapter();
+
+    // Validate every chapter before hitting the server.
+    // Use live values for the current chapter because the state update
+    // from saveCurrentChapter hasn't been applied yet.
+    const liveContent = quillRef.current?.root.innerHTML || "";
+    const errs = [];
+    chapters.forEach((ch, i) => {
+      const title   = ch.id === currentChapterId ? chapterName : (ch.title   || "");
+      const content = ch.id === currentChapterId ? liveContent : (ch.content || "");
+      const num = i + 1;
+      if (!title.trim()) errs.push(`Chapter ${num} has no title.`);
+      const isEmpty = !content.trim() || content.trim() === "<p><br></p>";
+      if (isEmpty) errs.push(`Chapter ${num} has no content.`);
+    });
+
+    if (errs.length > 0) {
+      setPublishError(errs.join(" "));
+      setPublishing(false);
+      return;
+    }
+
     try {
       const res  = await authFetch(`${API}/stories/${storyId}/publish`, { method: "POST" });
       const data = await res.json();

@@ -11,20 +11,22 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-const authRoute          = require('./routes/auth');
-const categoriesRoute    = require('./routes/categories');
-const storiesRoute       = require('./routes/stories');
-const notificationsRoute = require('./routes/notifications');
-const uploadRoute        = require('./routes/upload');
-const usersRoute         = require('./routes/users');
+const authRoute            = require('./routes/auth');
+const categoriesRoute      = require('./routes/categories');
+const storiesRoute         = require('./routes/stories');
+const notificationsRoute   = require('./routes/notifications');
+const uploadRoute          = require('./routes/upload');
+const usersRoute           = require('./routes/users');
+const reviewRequestsRoute  = require('./routes/reviewRequests');
 
-app.use('/uploads',       express.static(path.join(__dirname, 'uploads')));
-app.use('/auth',          authRoute);
-app.use('/',              categoriesRoute);
-app.use('/',              storiesRoute);
-app.use('/notifications', notificationsRoute);
-app.use('/upload',        uploadRoute);
-app.use('/users',         usersRoute);
+app.use('/uploads',          express.static(path.join(__dirname, 'uploads')));
+app.use('/auth',             authRoute);
+app.use('/',                 categoriesRoute);
+app.use('/',                 storiesRoute);
+app.use('/notifications',    notificationsRoute);
+app.use('/upload',           uploadRoute);
+app.use('/users',            usersRoute);
+app.use('/review-requests',  reviewRequestsRoute);
 
 const PORT = process.env.PORT || 5000;
 

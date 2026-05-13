@@ -211,7 +211,7 @@
   position: absolute;
   top: 2px;
   right: 2px;
-  background: #e53e3e;
+  background: #F64E4E;
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -344,7 +344,7 @@
 }
 
 .dropdown-logout {
-  color: #e53e3e;
+  color: #F64E4E;
   font-weight: 600;
 }
 
@@ -367,6 +367,9 @@
 }
 
 .notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 10px 16px;
   border-bottom: 1px solid #f2f2f2;
 }
@@ -377,6 +380,20 @@
 
 .notif-item.unread {
   background: #f0f7ff;
+}
+
+.notif-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: var(--color-text-secondary, #000);
+  margin-top: 5%;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .notif-text {

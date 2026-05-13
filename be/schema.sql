@@ -142,5 +142,8 @@ CREATE TABLE IF NOT EXISTS review_requests (
     story_id   INT REFERENCES stories(id) ON DELETE CASCADE,
     student_id INT REFERENCES users(id)   ON DELETE CASCADE,
     expert_id  INT REFERENCES users(id)   ON DELETE CASCADE,
+    status     VARCHAR(10) DEFAULT 'new' CHECK (status IN ('new', 'reviewed')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE review_requests ADD COLUMN IF NOT EXISTS status VARCHAR(10) DEFAULT 'new' CHECK (status IN ('new', 'reviewed'));
