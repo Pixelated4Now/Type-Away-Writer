@@ -75,7 +75,7 @@ const ResetPassword = () => {
             </div>
 
             {success ? (
-                <p style={{ color: '#EDF2F4', fontSize: '16px', marginTop: '32px', textAlign: 'center' }}>
+                <p style={{ color: '#EDF2F4', fontSize: '14px', marginTop: '32px', textAlign: 'center' }}>
                     Password reset successfully! Redirecting to login…
                 </p>
             ) : (
@@ -90,7 +90,7 @@ const ResetPassword = () => {
                             </button>
                         </div>
                         {fieldsError.newPassword && (
-                            <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '16px' }}>Please fill in this field.</p>
+                            <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '12px' }}>Please fill in this field.</p>
                         )}
                     </div>
 
@@ -104,22 +104,22 @@ const ResetPassword = () => {
                             </button>
                         </div>
                         {fieldsError.confirmPassword && (
-                            <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '16px' }}>Please fill in this field.</p>
+                            <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '16px' }}>Please fill in this field.</p>
                         )}
                     </div>
 
                     {passwordError === 'mismatch' && (
-                        <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '50px', marginBottom: '24px' }}>
+                        <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '50px', marginBottom: '24px' }}>
                             <span style={{ fontWeight: 'bold' }}>Passwords don't match.</span> Make sure you've entered the same password in each field. Passwords are case-sensitive.
                         </p>
                     )}
 
-                    <p style={{ color: passwordError === 'format' ? '#F64E4E' : '#EDF2F4', fontSize: '14px', marginTop: '8px' }}>
+                    <p style={{ color: passwordError === 'format' ? '#F64E4E' : '#EDF2F4', fontSize: '12px', marginTop: '8px' }}>
                         Password must include 6–12 characters, including letters and numbers.
                     </p>
 
                     {serverError && (
-                        <p style={{ color: '#F64E4E', fontSize: '14px', marginTop: '8px' }}>{serverError}</p>
+                        <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '8px' }}>{serverError}</p>
                     )}
 
                     <button type="submit" style={{ width: '100%', marginTop: '32px' }} disabled={loading}>

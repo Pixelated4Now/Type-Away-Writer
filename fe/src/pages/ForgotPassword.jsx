@@ -67,7 +67,7 @@ const ForgotPassword = () => {
                 </div>
 
                 {emailSent && (
-                    <p style={{ color: '#EDF2F4', fontSize: '14px', marginTop: '50px', marginBottom: '4px' }}>
+                    <p style={{ color: '#EDF2F4', fontSize: '12px', marginTop: '50px', marginBottom: '4px' }}>
                         Instructions to reset your password have been emailed to you. Please check your email.
                     </p>
                 )}

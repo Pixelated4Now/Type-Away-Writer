@@ -111,10 +111,10 @@ CREATE TABLE IF NOT EXISTS reading_list_stories (
 -- ============================================================
 
 INSERT INTO categories (name) VALUES
-    ('Adventure'), ('Animal Stories'), ('Comedy'), ('Fantasy'),
-    ('Friendship'), ('Horror'), ('Mystery'), ('Nature'),
-    ('Romance'), ('Science Fiction'), ('School Life'), ('Sports'),
-    ('Superheroes'), ('Historical')
+    ('Adventure'), ('Animal Stories'), ('Dreams'), ('Family'),
+    ('Friendship'), ('Funny'), ('Horror'), ('Magic'),
+    ('Mystery'), ('Romance'), ('School Life'), ('Science Fiction'),
+    ('Sports Fiction'), ('Superheroes')
 ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS notifications (
