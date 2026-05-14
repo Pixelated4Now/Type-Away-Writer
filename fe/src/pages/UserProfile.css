@@ -152,13 +152,13 @@
 
 .up-expert-badge {
   display: inline-block;
-  background: #3E79BD;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
+  background: #F8C291;
+  color: #000;
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: 0.06em;
   padding: 3px 9px;
-  border-radius: 20px;
+  border-radius: 8px;
   text-transform: uppercase;
 }
 
@@ -258,7 +258,7 @@
 .up-btn-outline-sm {
   background: #fff;
   color: #111;
-  border: 1.5px solid #111;
+  border: 1px solid #111;
 }
 
 .up-btn-outline-sm:hover {
@@ -290,7 +290,7 @@
 
 .up-remove-btn:hover {
   background: #f5f5f5;
-  color: #c62828;
+  color: #FF1212;
 }
 
 /* ════════════════════════════

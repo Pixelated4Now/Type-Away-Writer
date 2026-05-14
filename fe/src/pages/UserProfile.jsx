@@ -131,6 +131,9 @@ const UserProfile = () => {
   const [editError,    setEditError]    = useState("");
   const [saving,       setSaving]       = useState(false);
 
+  // Logged-in user's following set (for button state on other profiles)
+  const [myFollowingIds, setMyFollowingIds] = useState(new Set());
+
   // Reading list detail
   const [openList,     setOpenList]     = useState(null);
 
@@ -158,6 +161,7 @@ const UserProfile = () => {
     setTabLoaded({});
     setActiveTab("about");
     setOpenList(null);
+    setMyFollowingIds(new Set());
 
     authFetch(`${API}/users/${username}`)
       .then((r) => r.json())
@@ -168,6 +172,17 @@ const UserProfile = () => {
         setLoading(false);
       })
       .catch(() => { if (!ignore) setLoading(false); });
+
+    // Fetch the logged-in student's own following list for O(1) button-state lookups
+    if (user && user.account_type === "student") {
+      authFetch(`${API}/users/${user.username}/following`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (ignore || !Array.isArray(data)) return;
+          setMyFollowingIds(new Set(data.map((u) => u.id)));
+        })
+        .catch(() => {});
+    }
 
     return () => { ignore = true; };
   }, [username]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -390,6 +405,21 @@ const UserProfile = () => {
     }));
   };
 
+  // Follow / Unfollow a person listed on another user's Following or Followers tab
+  const handleFollowUser = async (targetUsername, targetId) => {
+    await authFetch(`${API}/users/${targetUsername}/follow`, { method: "POST" });
+    setMyFollowingIds((prev) => new Set([...prev, targetId]));
+  };
+
+  const handleUnfollowUser = async (targetUsername, targetId) => {
+    await authFetch(`${API}/users/${targetUsername}/follow`, { method: "DELETE" });
+    setMyFollowingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(targetId);
+      return next;
+    });
+  };
+
   if (loading) return (
     <div className="up-page"><Navbar /><p className="up-loading">Loading…</p><Footer /></div>
   );
@@ -401,18 +431,25 @@ const UserProfile = () => {
   const following = tabData.following || [];
   const followers = tabData.followers || [];
 
+  const isExpertProfile = profile.account_type === "expert";
   const canFollow  = user && !isOwnProfile && user.account_type === "student";
   const heroBg     = imgSrc(profile.header_image_url);
   const avatarSrc  = imgSrc(profile.avatar_url);
 
-  const TABS = [
-    { id: "about",     label: "About" },
-    { id: "stories",   label: "Stories" },
-    ...(isOwnProfile ? [{ id: "drafts", label: "Drafts" }] : []),
-    { id: "lists",     label: "Reading Lists" },
-    { id: "following", label: "Following" },
-    { id: "followers", label: "Followers" },
-  ];
+  const TABS = isExpertProfile
+    ? [
+        { id: "about",     label: "About" },
+        { id: "lists",     label: "Reading Lists" },
+        { id: "followers", label: "Followers" },
+      ]
+    : [
+        { id: "about",     label: "About" },
+        { id: "stories",   label: "Stories" },
+        ...(isOwnProfile ? [{ id: "drafts", label: "Drafts" }] : []),
+        { id: "lists",     label: "Reading Lists" },
+        { id: "following", label: "Following" },
+        { id: "followers", label: "Followers" },
+      ];
 
   return (
     <div className="up-page">
@@ -456,11 +493,13 @@ const UserProfile = () => {
           <div className="up-hero-info">
             <div className="up-hero-name-row">
               <h1 className="up-username">{profile.username}</h1>
-              {profile.is_expert_verified && <span className="up-expert-badge">Expert</span>}
+              {profile.is_expert_verified && <span className="up-expert-badge">Language Expert</span>}
             </div>
-            <p className="up-hero-stats">
-              {profile.story_count} {parseInt(profile.story_count) === 1 ? "story" : "stories"}
-            </p>
+            {!isExpertProfile && (
+              <p className="up-hero-stats">
+                {profile.story_count} {parseInt(profile.story_count) === 1 ? "story" : "stories"}
+              </p>
+            )}
           </div>
 
           {canFollow && (
@@ -719,14 +758,26 @@ const UserProfile = () => {
             ) : (
               <>
                 <p className="up-user-list-header">{following.length} Following</p>
-                {following.map((u) => (
-                  <UserRow
-                    key={u.id}
-                    u={u}
-                    onAction={isOwnProfile ? () => handleUnfollow(u.username) : null}
-                    actionLabel="UNFOLLOW"
-                  />
-                ))}
+                {following.map((u) => {
+                  let onAction = null;
+                  let actionLabel = "";
+                  if (isOwnProfile) {
+                    onAction = () => handleUnfollow(u.username);
+                    actionLabel = "UNFOLLOW";
+                  } else if (user && user.account_type === "student" &&
+                             u.username?.toLowerCase() !== user.username?.toLowerCase()) {
+                    if (myFollowingIds.has(u.id)) {
+                      onAction = () => handleUnfollowUser(u.username, u.id);
+                      actionLabel = "UNFOLLOW";
+                    } else {
+                      onAction = () => handleFollowUser(u.username, u.id);
+                      actionLabel = "FOLLOW";
+                    }
+                  }
+                  return (
+                    <UserRow key={u.id} u={u} onAction={onAction} actionLabel={actionLabel} />
+                  );
+                })}
               </>
             )}
           </div>
@@ -740,14 +791,26 @@ const UserProfile = () => {
             ) : (
               <>
                 <p className="up-user-list-header">{followers.length} Followers</p>
-                {followers.map((u) => (
-                  <UserRow
-                    key={u.id}
-                    u={u}
-                    onAction={isOwnProfile ? () => handleRemoveFollower(u.id) : null}
-                    actionLabel="REMOVE FOLLOWER"
-                  />
-                ))}
+                {followers.map((u) => {
+                  let onAction = null;
+                  let actionLabel = "";
+                  if (isOwnProfile) {
+                    onAction = () => handleRemoveFollower(u.id);
+                    actionLabel = "REMOVE FOLLOWER";
+                  } else if (user && user.account_type === "student" &&
+                             u.username?.toLowerCase() !== user.username?.toLowerCase()) {
+                    if (myFollowingIds.has(u.id)) {
+                      onAction = () => handleUnfollowUser(u.username, u.id);
+                      actionLabel = "UNFOLLOW";
+                    } else {
+                      onAction = () => handleFollowUser(u.username, u.id);
+                      actionLabel = "FOLLOW";
+                    }
+                  }
+                  return (
+                    <UserRow key={u.id} u={u} onAction={onAction} actionLabel={actionLabel} />
+                  );
+                })}
               </>
             )}
           </div>
