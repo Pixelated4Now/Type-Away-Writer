@@ -58,7 +58,7 @@ router.get('/experts', authenticateToken, async (req, res) => {
 router.get('/me', authenticateToken, async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT id, username, email, account_type, avatar_url, bio, header_image_url, created_at
+            `SELECT id, username, email, account_type, avatar_url, bio, header_image_url, date_of_birth, created_at
              FROM users WHERE id = $1`,
             [req.user.id]
         );
@@ -73,7 +73,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 // ── PUT /users/me — update username and/or bio ────────────────────────────────
 
 router.put('/me', authenticateToken, async (req, res) => {
-    const { username, bio } = req.body;
+    const { username, bio, email, date_of_birth } = req.body;
     if (!username || !username.trim()) {
         return res.status(400).json({ message: 'Username is required.' });
     }
@@ -82,10 +82,19 @@ router.put('/me', authenticateToken, async (req, res) => {
         return res.status(400).json({ message: 'Username must be 3-30 characters (letters, numbers, underscores).' });
     }
     try {
+        // Build update dynamically so callers that omit email/date_of_birth don't overwrite those fields
+        const setClauses = ['username = $1', 'bio = $2'];
+        const params     = [trimmed, bio?.trim() || null];
+        let idx = 3;
+
+        if (email !== undefined)         { setClauses.push(`email = $${idx++}`);         params.push(email || null); }
+        if (date_of_birth !== undefined) { setClauses.push(`date_of_birth = $${idx++}`); params.push(date_of_birth || null); }
+
+        params.push(req.user.id);
         const { rows } = await pool.query(
-            `UPDATE users SET username = $1, bio = $2 WHERE id = $3
-             RETURNING id, username, email, account_type, avatar_url, bio, header_image_url`,
-            [trimmed, bio?.trim() || null, req.user.id]
+            `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${idx}
+             RETURNING id, username, email, account_type, avatar_url, bio, header_image_url, date_of_birth`,
+            params
         );
         if (!rows[0]) return res.status(404).json({ message: 'User not found.' });
         res.json(rows[0]);
@@ -395,7 +404,7 @@ router.post('/:username/follow', authenticateToken, async (req, res) => {
             `INSERT INTO follows (follower_id, following_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
             [req.user.id, targetId]
         );
-        createNotification({ userId: targetId, type: 'follow', actorId: req.user.id }).catch(console.error);
+        await createNotification(targetId, 'follow', req.user.id, null);
         res.sendStatus(204);
     } catch (err) {
         console.error('POST /users/:username/follow error:', err);

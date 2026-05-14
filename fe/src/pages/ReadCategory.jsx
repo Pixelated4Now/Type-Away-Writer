@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./ReadCategory.css";
@@ -17,6 +18,7 @@ const ReadCategory = () => {
 
   const { categoryId } = useParams();
   const navigate       = useNavigate();
+  const { user }       = useAuth();
 
   // ── Category & tag data from API
   const [category, setCategory]   = useState(null);
@@ -190,7 +192,10 @@ const ReadCategory = () => {
             <p className="no-results">
               There are currently no stories matching your search criteria.<br />
               Try adjusting your search or{" "}
-              <Link to="/write" className="no-results-link">write your own story</Link>
+              <span
+                style={{ color: "#0E72E5", cursor: "pointer", fontWeight: 600, textDecoration: "none" }}
+                onClick={() => navigate(user ? "/write/new" : "/login")}
+              >write your own story</span>
               {" "}on Type-Away-Writer.
             </p>
           )}

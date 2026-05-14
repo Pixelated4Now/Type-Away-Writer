@@ -640,7 +640,7 @@
   font-size: 13px;
   font-weight: 600;
   font-family: "Manrope", sans-serif;
-  color: #3E79BD;
+  color: #0E72E5;
   cursor: pointer;
   padding: 0;
   margin-bottom: 16px;
@@ -712,42 +712,42 @@
   flex-direction: column;
 }
 
+.up-user-list-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 16px;
+}
+
 .up-user-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid #ececec;
+  flex-direction: column;
+  padding: 16px 0 16px 12px;
+  border-bottom: 1px solid #e8e8e8;
 }
 
-.up-user-row:first-child {
-  border-top: 1px solid #ececec;
-}
-
-.up-user-row-left {
+.up-user-row-top {
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  flex: 1;
 }
 
 .up-user-avatar {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .up-user-initials {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #3E79BD;
+  background: #aecbfa;
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -757,24 +757,46 @@
 
 .up-user-name {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   color: #111;
 }
 
-.up-user-row-left:hover .up-user-name {
+.up-user-row-top:hover .up-user-name {
   text-decoration: underline;
 }
 
 .up-expert-badge-sm {
   display: inline-block;
-  background: #3E79BD;
-  color: #fff;
-  font-size: 9px;
+  background: #F8C291;
+  color: #000;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 2px 7px;
-  border-radius: 20px;
-  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.up-user-row-action {
+  margin-top: 10px;
+  padding-left: 52px;
+}
+
+.up-user-action-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Manrope", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-left: 0px;
+}
+
+.up-user-action-btn:hover {
+  background: #333;
 }
 
 /* ════════════════════════════

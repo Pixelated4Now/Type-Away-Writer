@@ -70,7 +70,7 @@ function App() {
 
           {/* User profiles — public */}
           <Route path="/profile/:username"     element={<UserProfile />} />
-          <Route path="/settings"     element={<AccountSettings />} />
+          <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           
         </Routes>
       </AuthProvider>

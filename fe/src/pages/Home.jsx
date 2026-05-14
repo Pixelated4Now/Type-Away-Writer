@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Home.css";
@@ -17,6 +18,7 @@ import expertImg from "../assets/expertReview.png";
 const Home = () => {
   useEffect(() => { document.title = 'Type-Away-Writer'; }, []);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="home-page">
@@ -48,7 +50,7 @@ const Home = () => {
             Write captivating stories, read enchanting novels, and
             discover hidden talents
           </p>
-          <button className="btn-start-writing" onClick={() => navigate("/write")}>
+          <button className="btn-start-writing" onClick={() => navigate(user ? "/write/new" : "/login")}>
             START WRITING
           </button>
         </div>

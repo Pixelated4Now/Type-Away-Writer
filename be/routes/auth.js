@@ -7,6 +7,7 @@ const crypto   = require('crypto');
 const path     = require('path');
 const multer   = require('multer');
 const pool     = require('../db');
+const { authenticateToken } = require('../middleware/auth');
 require('dotenv').config();
 
 // ── Email transporter ────────────────────────────────────────────────────────
@@ -381,6 +382,29 @@ router.post('/reset-password', async (req, res) => {
     } catch (err) {
         console.error('Reset password error:', err);
         res.status(500).json({ message: 'An error occurred. Please try again.' });
+    }
+});
+
+// ── POST /auth/change-password ────────────────────────────────────────────────
+
+router.post('/change-password', authenticateToken, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'currentPassword and newPassword are required.' });
+    }
+    try {
+        const { rows } = await pool.query('SELECT password FROM users WHERE id = $1', [req.user.id]);
+        if (!rows[0]) return res.status(404).json({ message: 'User not found.' });
+
+        const match = await bcrypt.compare(currentPassword, rows[0].password);
+        if (!match) return res.status(401).json({ message: 'Current password is incorrect.' });
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, req.user.id]);
+        res.sendStatus(204);
+    } catch (err) {
+        console.error('POST /auth/change-password error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
     }
 });
 

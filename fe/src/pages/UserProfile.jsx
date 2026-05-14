@@ -88,19 +88,22 @@ const StoryCard = ({ story, isOwn, onEdit, onDelete, clickable = true, redDelete
 
 const UserRow = ({ u, onAction, actionLabel }) => {
   const navigate = useNavigate();
-  const avatar = imgSrc(u.avatar_url);
+  const avatar = listCoverSrc(u.avatar_url);
+  const isExpert = u.account_type === "expert" || u.is_expert_verified;
   return (
     <div className="up-user-row">
-      <div className="up-user-row-left" onClick={() => navigate(`/profile/${u.username}`)}>
+      <div className="up-user-row-top" onClick={() => navigate(`/profile/${u.username}`)}>
         {avatar
           ? <img src={avatar} alt="avatar" className="up-user-avatar" />
           : <span className="up-user-initials">{u.username[0].toUpperCase()}</span>
         }
         <span className="up-user-name">{u.username}</span>
-        {u.is_expert_verified && <span className="up-expert-badge-sm">Expert</span>}
+        {isExpert && <span className="up-expert-badge-sm">LANGUAGE EXPERT</span>}
       </div>
       {onAction && (
-        <button className="up-btn-sm up-btn-outline-sm" onClick={onAction}>{actionLabel}</button>
+        <div className="up-user-row-action">
+          <button className="up-user-action-btn" onClick={onAction}>{actionLabel}</button>
+        </div>
       )}
     </div>
   );
@@ -466,7 +469,7 @@ const UserProfile = () => {
                 className={`up-btn ${profile.is_following ? "up-btn-outline" : "up-btn-dark"}`}
                 onClick={handleFollow}
               >
-                {profile.is_following ? "Unfollow" : "Follow"}
+                {profile.is_following ? "UNFOLLOW" : "FOLLOW"}
               </button>
             </div>
           )}
@@ -713,14 +716,19 @@ const UserProfile = () => {
           <div className="up-user-list">
             {following.length === 0 ? (
               <p className="up-empty">Not following anyone yet.</p>
-            ) : following.map((u) => (
-              <UserRow
-                key={u.id}
-                u={u}
-                onAction={isOwnProfile ? () => handleUnfollow(u.username) : null}
-                actionLabel="Unfollow"
-              />
-            ))}
+            ) : (
+              <>
+                <p className="up-user-list-header">{following.length} Following</p>
+                {following.map((u) => (
+                  <UserRow
+                    key={u.id}
+                    u={u}
+                    onAction={isOwnProfile ? () => handleUnfollow(u.username) : null}
+                    actionLabel="UNFOLLOW"
+                  />
+                ))}
+              </>
+            )}
           </div>
         )}
 
@@ -729,14 +737,19 @@ const UserProfile = () => {
           <div className="up-user-list">
             {followers.length === 0 ? (
               <p className="up-empty">No followers yet.</p>
-            ) : followers.map((u) => (
-              <UserRow
-                key={u.id}
-                u={u}
-                onAction={isOwnProfile ? () => handleRemoveFollower(u.id) : null}
-                actionLabel="Remove"
-              />
-            ))}
+            ) : (
+              <>
+                <p className="up-user-list-header">{followers.length} Followers</p>
+                {followers.map((u) => (
+                  <UserRow
+                    key={u.id}
+                    u={u}
+                    onAction={isOwnProfile ? () => handleRemoveFollower(u.id) : null}
+                    actionLabel="REMOVE FOLLOWER"
+                  />
+                ))}
+              </>
+            )}
           </div>
         )}
 
