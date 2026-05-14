@@ -39,6 +39,18 @@ const ExpertRoute = ({ children }) => {
   return children;
 };
 
+const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem('authToken');
+  if (!token) return <Navigate to="/login" replace />;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.account_type !== 'admin') return <Navigate to="/login" replace />;
+  } catch {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -74,7 +86,7 @@ function App() {
           <Route path="/profile/:username"     element={<UserProfile />} />
           <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

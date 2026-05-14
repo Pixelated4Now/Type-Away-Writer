@@ -1,165 +1,78 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
-} from "recharts";
+} from 'recharts';
 
-// ── Icons (inline SVG components) ────────────────────────────────────────────
-const Icon = ({ d, color = "#0d2d5e" }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
-    <path d={d} />
-  </svg>
-);
+const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-const ICONS = {
-  dashboard: "M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z",
-  students:  "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z",
-  experts:   "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z",
-  content:   "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z",
-  tags:      "M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z",
-  categories:"M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z",
-  admins:    "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z",
-  profile:   "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
-  logout:    "M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z",
+const authFetch = (url, options = {}) => {
+  const token = localStorage.getItem('authToken');
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
 };
 
-// ── Placeholder data ──────────────────────────────────────────────────────────
-const STATS = {
-  totalUsers: 123,
-  totalStudents: 91,
-  totalExperts: 32,
-  totalStories: 142,
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const STORIES_OVER_TIME = [
-  { month: "Jan", stories: 8 },
-  { month: "Feb", stories: 14 },
-  { month: "Mar", stories: 10 },
-  { month: "Apr", stories: 22 },
-  { month: "May", stories: 18 },
-  { month: "Jun", stories: 30 },
-  { month: "Jul", stories: 25 },
-  { month: "Aug", stories: 12 },
-  { month: "Sep", stories: 20 },
-  { month: "Oct", stories: 28 },
-  { month: "Nov", stories: 16 },
-  { month: "Dec", stories: 35 },
-];
+const actionBtn = (bg) => ({
+  background: bg, color: '#fff', border: 'none', borderRadius: 6,
+  padding: '5px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', marginRight: 6,
+});
 
-const STORIES_BY_CATEGORY = [
-  { name: "Mystery",        value: 28 },
-  { name: "Adventure",      value: 22 },
-  { name: "Romance",        value: 18 },
-  { name: "Horror",         value: 14 },
-  { name: "Science Fiction",value: 12 },
-  { name: "Other",          value: 48 },
-];
+const fmtDate = (iso) =>
+  iso ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
 
-const STORIES_BY_TYPE = [
-  { name: "Individual", value: 95 },
-  { name: "Collaborated", value: 47 },
-];
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-const CATEGORY_COLORS = ["#0d2d5e","#1a4a8a","#2563b0","#4a90d9","#7ab8f5","#aed4f7"];
-const TYPE_COLORS = ["#0d2d5e", "#7ab8f5"];
-
-// ── Students placeholder data
-const STUDENTS = Array.from({ length: 12 }, (_, i) => ({
-  userId: `STU${String(i + 1).padStart(3, "0")}`,
-  username: ["DarkxWolf17","ClaireLess","Midnight Tyger","Arratagus","mercywasnothere","hmrigs","CyberKitty","deepfried_steak","TimeBellaOfficial","pascalChampionhehe","Jillybean","singintheblues"][i],
-  email: `user${i + 1}@example.com`,
-  joined: `${String(Math.floor(Math.random() * 28) + 1).padStart(2,"0")} Jan 2025`,
-  stories: Math.floor(Math.random() * 10),
-  status: i % 4 === 0 ? "Suspended" : "Active",
-}));
-
-// ── Experts placeholder data
-const EXPERTS = Array.from({ length: 6 }, (_, i) => ({
-  userId: `EXP${String(i + 1).padStart(3, "0")}`,
-  username: ["Jillybean","singintheblues","ArtsyMoth","LinguaFranca","WordSmith99","PenAndPaper"][i],
-  email: `expert${i + 1}@example.com`,
-  joined: `${String(Math.floor(Math.random() * 28) + 1).padStart(2,"0")} Jan 2025`,
-  reviews: Math.floor(Math.random() * 50),
-  status: i % 5 === 0 ? "Suspended" : "Active",
-}));
-
-// ── Content placeholder data
-const CONTENT = Array.from({ length: 8 }, (_, i) => ({
-  storyId: `STR${String(i + 1).padStart(3, "0")}`,
-  title: ["Dreamer Girl","The Mystery of the Underground Laboratory","The Man at the Window","A CRIME","What Remains","The Just Right Detective Agency","A Soul for the Stars","Echoes in the Dark"][i],
-  author: ["pascalChampionhehe","hmrigs","duckboi0804","deepfried_steak","backdoor","CyberKitty","ArtsyMoth","ClaireLess"][i],
-  category: ["Dreams","Mystery","Mystery","Mystery","Mystery","Mystery","Science Fiction","Horror"][i],
-  status: i % 3 === 0 ? "Under Review" : "Published",
-}));
-
-// ── Tags placeholder data
-const TAGS = ["action","adventure","betrayal","chase","chemistry","clues","comedy","crime","danger","dark","detective","discovery","drama","fighting","friendship","funny","happy","horror","hurt","illegal","laboratory","life","magic","murder","mystery","poison","romance","scary","school","science","secretagent","secrets","spooky","suspense","tragedy","virus","weapons"];
-
-// ── Categories placeholder data
-const CATEGORIES = [
-  { id: 1, name: "Adventure",       stories: 22, image: "/assets/categories/adventure.jpg" },
-  { id: 2, name: "Animal Stories",  stories: 8,  image: "/assets/categories/animals.jpg" },
-  { id: 3, name: "Comedy",          stories: 5,  image: "/assets/categories/comedy.jpg" },
-  { id: 4, name: "Dreams",          stories: 11, image: "/assets/categories/dreams.jpg" },
-  { id: 5, name: "Family",          stories: 7,  image: "/assets/categories/family.jpg" },
-  { id: 6, name: "Mystery",         stories: 28, image: "/assets/categories/mystery.jpg" },
-];
-
-// ── Admins placeholder data
-const ADMINS = [
-  { userId: "ADM001", username: "superadmin", email: "admin@typeaway.com", role: "Super Admin", joined: "01 Jan 2024" },
-  { userId: "ADM002", username: "moderator1", email: "mod1@typeaway.com",  role: "Moderator",   joined: "15 Mar 2024" },
-];
-
-// ── Stat Card ─────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, bg }) => (
-  <div style={{
-    background: bg,
-    borderRadius: 12,
-    padding: "24px 28px",
-    flex: 1,
-    minWidth: 160,
-  }}>
-    <p style={{ color: "#fff", fontWeight: 700, fontSize: 16, margin: "0 0 12px" }}>{label}</p>
-    <p style={{ color: "#fff", fontWeight: 800, fontSize: 40, margin: 0, lineHeight: 1 }}>{value}</p>
+  <div style={{ background: bg, color: '#fff', borderRadius: 12, padding: 24, flex: 1, minWidth: 160 }}>
+    <div style={{ fontSize: 36, fontWeight: 700 }}>{value}</div>
+    <div style={{ fontSize: 14, opacity: 0.85, marginTop: 4 }}>{label}</div>
   </div>
 );
 
-// ── Status Badge ──────────────────────────────────────────────────────────────
-const StatusBadge = ({ status }) => {
-  const colors = {
-    Active:       { bg: "#e6f4ea", color: "#2e7d32" },
-    Suspended:    { bg: "#fdecea", color: "#c62828" },
-    Published:    { bg: "#e6f4ea", color: "#2e7d32" },
-    "Under Review":{ bg: "#fff8e1", color: "#f57f17" },
-  };
-  const s = colors[status] || { bg: "#eee", color: "#555" };
-  return (
-    <span style={{
-      background: s.bg, color: s.color,
-      borderRadius: 20, padding: "3px 12px",
-      fontSize: 12, fontWeight: 700,
-    }}>{status}</span>
-  );
+const STATUS_STYLES = {
+  Active:          { background: '#e8f5e9', color: '#2e7d32' },
+  Suspended:       { background: '#ffebee', color: '#c62828' },
+  Published:       { background: '#e8f5e9', color: '#2e7d32' },
+  'Under Review':  { background: '#fff8e1', color: '#f57f17' },
 };
 
-// ── Table ─────────────────────────────────────────────────────────────────────
+const StatusBadge = ({ status }) => (
+  <span style={{
+    ...(STATUS_STYLES[status] || {}),
+    fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20, display: 'inline-block',
+  }}>{status}</span>
+);
+
 const AdminTable = ({ columns, rows }) => (
-  <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+  <div style={{ overflowX: 'auto' }}>
+    <table style={{
+      width: '100%', borderCollapse: 'collapse', background: '#fff',
+      borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+    }}>
       <thead>
-        <tr style={{ background: "#0d2d5e" }}>
-          {columns.map((col) => (
-            <th key={col} style={{ color: "#fff", padding: "12px 16px", textAlign: "left", fontWeight: 600, whiteSpace: "nowrap" }}>{col}</th>
+        <tr>
+          {columns.map((c) => (
+            <th key={c} style={{
+              background: '#0d2d5e', color: '#fff', fontSize: 13, fontWeight: 600,
+              padding: '12px 16px', textAlign: 'left',
+            }}>{c}</th>
           ))}
         </tr>
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} style={{ borderBottom: "1px solid #e8e8e8", background: i % 2 === 0 ? "#fff" : "#f9fafc" }}>
+          <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
             {row.map((cell, j) => (
-              <td key={j} style={{ padding: "12px 16px", color: "#333" }}>{cell}</td>
+              <td key={j} style={{ fontSize: 13, color: '#333', padding: '12px 16px' }}>{cell}</td>
             ))}
           </tr>
         ))}
@@ -168,324 +81,516 @@ const AdminTable = ({ columns, rows }) => (
   </div>
 );
 
-// ── Section wrapper ───────────────────────────────────────────────────────────
 const Section = ({ title, children }) => (
   <div>
-    <h2 style={{ fontSize: 24, fontWeight: 800, color: "#0d2d5e", margin: "0 0 24px" }}>{title}</h2>
+    <div style={{ fontSize: 20, fontWeight: 700, color: '#0d2d5e', marginBottom: 20 }}>{title}</div>
     {children}
   </div>
 );
 
-// ── Main Component ────────────────────────────────────────────────────────────
+const addBtnStyle = {
+  background: '#0d2d5e', color: '#fff', border: 'none', borderRadius: 8,
+  padding: '8px 20px', fontSize: 14, cursor: 'pointer', marginTop: 16, display: 'inline-block',
+};
+
+const PIE_COLORS   = ['#0d2d5e', '#3b4270', '#8fa8cf', '#5c6bc0', '#42a5f5', '#26c6da'];
+const COLAB_COLORS = ['#0d2d5e', '#8fa8cf'];
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 const AdminDashboard = () => {
-    useEffect(() => { document.title = 'Dashboard | Type-Away-Writer'; }, []);
-
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("dashboard");
-  const [tagSearch, setTagSearch] = useState("");
+  const [activeSection, setActiveSection] = useState('dashboard');
 
-  const navItems = [
-    { id: "dashboard",  label: "Dashboard",  icon: ICONS.dashboard },
-    { id: "students",   label: "Students",   icon: ICONS.students },
-    { id: "experts",    label: "Experts",    icon: ICONS.experts },
-    { id: "content",    label: "Content",    icon: ICONS.content },
-    { id: "tags",       label: "Tags",       icon: ICONS.tags },
-    { id: "categories", label: "Categories", icon: ICONS.categories },
-    { id: "admins",     label: "Admins",     icon: ICONS.admins },
+  // Dashboard stats
+  const [stats,       setStats]       = useState({ total_users: 0, total_students: 0, total_experts: 0, total_stories: 0 });
+  const [barData,     setBarData]     = useState([]);
+  const [catPieData,  setCatPieData]  = useState([]);
+  const [colabPieData,setColabPieData]= useState([]);
+
+  // Section data (null = not yet loaded)
+  const [students,   setStudents]   = useState(null);
+  const [experts,    setExperts]    = useState(null);
+  const [stories,    setStories]    = useState(null);
+  const [tags,       setTags]       = useState(null);
+  const [categories, setCategories] = useState(null);
+  const [admins,     setAdmins]     = useState(null);
+
+  // Story delete confirm
+  const [deleteStoryId, setDeleteStoryId] = useState(null);
+
+  // Tag UI
+  const [tagSearch,  setTagSearch]  = useState('');
+  const [addingTag,  setAddingTag]  = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+
+  // Category UI
+  const [editCatId,   setEditCatId]   = useState(null);
+  const [editCatName, setEditCatName] = useState('');
+  const [addingCat,   setAddingCat]   = useState(false);
+  const [newCatName,  setNewCatName]  = useState('');
+
+  // Loaded flags
+  const [loaded, setLoaded] = useState({});
+  const mark = (s) => setLoaded((p) => ({ ...p, [s]: true }));
+
+  // ── Fetchers ────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (loaded.dashboard) return;
+    mark('dashboard');
+    Promise.all([
+      authFetch(`${API}/admin/stats`).then((r) => r.json()),
+      authFetch(`${API}/admin/stats/stories-over-time`).then((r) => r.json()),
+      authFetch(`${API}/admin/stats/stories-by-category`).then((r) => r.json()),
+      authFetch(`${API}/admin/stats/collaboration`).then((r) => r.json()),
+    ]).then(([s, bar, cat, colab]) => {
+      setStats(s);
+      setBarData(Array.isArray(bar) ? bar : []);
+      setCatPieData(Array.isArray(cat) ? cat : []);
+      setColabPieData([
+        { name: 'Individual',   value: colab?.individual   || 0 },
+        { name: 'Collaborated', value: colab?.collaborated || 0 },
+      ]);
+    }).catch(console.error);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const fetch1 = (url, setter) =>
+      authFetch(url).then((r) => r.json()).then((d) => setter(Array.isArray(d) ? d : [])).catch(console.error);
+
+    if (activeSection === 'students'   && !loaded.students)   { mark('students');   fetch1(`${API}/admin/users?type=student`, setStudents); }
+    if (activeSection === 'experts'    && !loaded.experts)    { mark('experts');    fetch1(`${API}/admin/users?type=expert`,  setExperts); }
+    if (activeSection === 'content'    && !loaded.content)    { mark('content');    fetch1(`${API}/admin/stories`,            setStories); }
+    if (activeSection === 'tags'       && !loaded.tags)       { mark('tags');       fetch1(`${API}/admin/tags`,               setTags); }
+    if (activeSection === 'categories' && !loaded.categories) { mark('categories'); fetch1(`${API}/admin/categories`,         setCategories); }
+    if (activeSection === 'admins'     && !loaded.admins)     { mark('admins');     fetch1(`${API}/admin/admins`,             setAdmins); }
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
+
+  const handleLogout = () => { localStorage.removeItem('authToken'); navigate('/login'); };
+
+  const handleSuspend = async (userId, type) => {
+    const res  = await authFetch(`${API}/admin/users/${userId}/suspend`, { method: 'PATCH' });
+    const data = await res.json();
+    const setter = type === 'student' ? setStudents : setExperts;
+    setter((prev) => prev.map((u) => u.id === userId ? { ...u, is_active: data.is_active } : u));
+  };
+
+  const handleDeleteStory = async () => {
+    await authFetch(`${API}/admin/stories/${deleteStoryId}`, { method: 'DELETE' });
+    setStories((prev) => prev.filter((s) => s.id !== deleteStoryId));
+    setDeleteStoryId(null);
+  };
+
+  const handleDeleteTag = async (id) => {
+    await authFetch(`${API}/admin/tags/${id}`, { method: 'DELETE' });
+    setTags((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleAddTag = async () => {
+    if (!newTagName.trim()) return;
+    const res  = await authFetch(`${API}/admin/tags`, { method: 'POST', body: JSON.stringify({ name: newTagName.trim() }) });
+    const data = await res.json();
+    if (data?.id) setTags((prev) => prev.find((t) => t.id === data.id) ? prev : [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+    setNewTagName(''); setAddingTag(false);
+  };
+
+  const handleSaveCategoryEdit = async (id) => {
+    const res  = await authFetch(`${API}/admin/categories/${id}`, { method: 'PUT', body: JSON.stringify({ name: editCatName.trim() }) });
+    const data = await res.json();
+    if (data?.id) setCategories((prev) => prev.map((c) => c.id === id ? { ...c, name: data.name } : c));
+    setEditCatId(null);
+  };
+
+  const handleDeleteCategory = async (id) => {
+    await authFetch(`${API}/admin/categories/${id}`, { method: 'DELETE' });
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCatName.trim()) return;
+    const res  = await authFetch(`${API}/admin/categories`, { method: 'POST', body: JSON.stringify({ name: newCatName.trim() }) });
+    const data = await res.json();
+    if (data?.id) setCategories((prev) => [...prev, { ...data, story_count: 0 }]);
+    setNewCatName(''); setAddingCat(false);
+  };
+
+  // ── Row builders ─────────────────────────────────────────────────────────────
+
+  const studentRows = (students || []).map((u) => [
+    u.id, u.username, u.email, fmtDate(u.created_at), u.story_count,
+    <StatusBadge key={u.id} status={u.is_active ? 'Active' : 'Suspended'} />,
+    <span key={u.id}>
+      <button style={actionBtn('#0d2d5e')}>View</button>
+      <button style={actionBtn(u.is_active ? '#c62828' : '#2e7d32')} onClick={() => handleSuspend(u.id, 'student')}>
+        {u.is_active ? 'Suspend' : 'Unsuspend'}
+      </button>
+    </span>,
+  ]);
+
+  const expertRows = (experts || []).map((u) => [
+    u.id, u.username, u.email, fmtDate(u.created_at), u.review_count,
+    <StatusBadge key={u.id} status={u.is_active ? 'Active' : 'Suspended'} />,
+    <span key={u.id}>
+      <button style={actionBtn('#0d2d5e')}>View</button>
+      <button style={actionBtn(u.is_active ? '#c62828' : '#2e7d32')} onClick={() => handleSuspend(u.id, 'expert')}>
+        {u.is_active ? 'Suspend' : 'Unsuspend'}
+      </button>
+    </span>,
+  ]);
+
+  const storyRows = (stories || []).map((s) => [
+    s.id, s.title, s.author, s.category || '—',
+    <StatusBadge key={s.id} status="Published" />,
+    <span key={s.id}>
+      <button style={actionBtn('#0d2d5e')} onClick={() => navigate(`/read/story/${s.id}`)}>View</button>
+      <button style={actionBtn('#c62828')} onClick={() => setDeleteStoryId(s.id)}>Remove</button>
+    </span>,
+  ]);
+
+  const categoryRows = [
+    ...(categories || []).map((c) => [
+      c.id,
+      editCatId === c.id
+        ? <input
+            key={`edit-${c.id}`}
+            value={editCatName}
+            onChange={(e) => setEditCatName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveCategoryEdit(c.id)}
+            autoFocus
+            style={{ border: '1px solid #ddd', borderRadius: 4, padding: '4px 8px', fontSize: 13, width: '90%' }}
+          />
+        : c.name,
+      c.story_count,
+      <span key={c.id}>
+        {editCatId === c.id ? (
+          <>
+            <button style={actionBtn('#2e7d32')} onClick={() => handleSaveCategoryEdit(c.id)}>Save</button>
+            <button style={actionBtn('#888')}     onClick={() => setEditCatId(null)}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <button style={actionBtn('#0d2d5e')} onClick={() => { setEditCatId(c.id); setEditCatName(c.name); }}>Edit</button>
+            <button style={actionBtn('#c62828')} onClick={() => handleDeleteCategory(c.id)}>Delete</button>
+          </>
+        )}
+      </span>,
+    ]),
+    ...(addingCat ? [[
+      '—',
+      <input
+        key="new-cat"
+        value={newCatName}
+        onChange={(e) => setNewCatName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+        placeholder="Category name…"
+        autoFocus
+        style={{ border: '1px solid #ddd', borderRadius: 4, padding: '4px 8px', fontSize: 13, width: '90%' }}
+      />,
+      '—',
+      <span key="new-cat-actions">
+        <button style={actionBtn('#2e7d32')} onClick={handleAddCategory}>Save</button>
+        <button style={actionBtn('#888')} onClick={() => { setAddingCat(false); setNewCatName(''); }}>Cancel</button>
+      </span>,
+    ]] : []),
   ];
 
-  const filteredTags = TAGS.filter((t) =>
-    t.toLowerCase().includes(tagSearch.toLowerCase())
+  const adminRows = (admins || []).map((a) => [
+    a.id, a.username, a.email, 'Admin', fmtDate(a.created_at),
+    <span key={a.id}>
+      <button style={actionBtn('#0d2d5e')}>Edit</button>
+      <button style={actionBtn('#c62828')}>Remove</button>
+    </span>,
+  ]);
+
+  const filteredTags = (tags || []).filter((t) =>
+    t.name.toLowerCase().includes(tagSearch.toLowerCase())
   );
 
+  // ── Nav ──────────────────────────────────────────────────────────────────────
+
+  const navItems = [
+    { id: 'dashboard',  label: 'Dashboard',  icon: '📊' },
+    { id: 'students',   label: 'Students',   icon: '🎓' },
+    { id: 'experts',    label: 'Experts',    icon: '🏅' },
+    { id: 'content',    label: 'Content',    icon: '📖' },
+    { id: 'tags',       label: 'Tags',       icon: '🏷️' },
+    { id: 'categories', label: 'Categories', icon: '📂' },
+    { id: 'admins',     label: 'Admins',     icon: '🔑' },
+  ];
+
+  const navStyle = (id) => ({
+    padding: '10px 24px', cursor: 'pointer', fontSize: 14,
+    display: 'flex', alignItems: 'center', gap: 10,
+    ...(activeSection === id
+      ? { background: '#eef3fb', color: '#0d2d5e', fontWeight: 600 }
+      : { color: 'rgba(255,255,255,0.8)' }),
+  });
+
+  // ── Render ───────────────────────────────────────────────────────────────────
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "'Manrope', sans-serif", background: "#f4f6fb" }}>
+    <div style={{ background: '#f4f6fb', fontFamily: 'sans-serif', minHeight: '100vh' }}>
 
-      {/* ── Sidebar ── */}
-      <aside style={{
-        width: 240, background: "#fff", borderRight: "1px solid #e8e8e8",
-        display: "flex", flexDirection: "column", flexShrink: 0, position: "sticky", top: 0, height: "100vh",
+      {/* Sidebar — fixed so it never participates in page scroll */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, width: 240, height: '100vh',
+        background: '#0d2d5e', color: '#fff',
+        padding: '24px 0', display: 'flex', flexDirection: 'column',
+        justifyContent: 'space-between', overflowY: 'auto', zIndex: 100,
       }}>
-        {/* Brand */}
-        <div style={{ padding: "28px 24px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 24 }}>🖨️</span>
-          <span style={{ fontSize: 20, fontWeight: 800, color: "#0d2d5e" }}>TypeAway.</span>
-        </div>
-        <hr style={{ border: "none", borderTop: "1px solid #e8e8e8", margin: "0 24px 16px" }} />
-
-        {/* Nav items */}
-        <nav style={{ flex: 1, padding: "0 12px" }}>
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveSection(item.id)}
-              style={{
-                display: "flex", alignItems: "center", gap: 12,
-                width: "100%", padding: "10px 14px", marginBottom: 4,
-                background: activeSection === item.id ? "#eef3fb" : "transparent",
-                border: "none", borderRadius: 8, cursor: "pointer",
-                color: activeSection === item.id ? "#0d2d5e" : "#555",
-                fontFamily: "'Manrope', sans-serif",
-                fontSize: 14, fontWeight: activeSection === item.id ? 700 : 500,
-                transition: "background 0.15s ease",
-              }}
-            >
-              <Icon d={item.icon} color={activeSection === item.id ? "#0d2d5e" : "#888"} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <hr style={{ border: "none", borderTop: "1px solid #e8e8e8", margin: "0 24px 12px" }} />
-
-        {/* Profile + Logout */}
-        <div style={{ padding: "0 12px 24px" }}>
-          <button style={{
-            display: "flex", alignItems: "center", gap: 12,
-            width: "100%", padding: "10px 14px", marginBottom: 4,
-            background: "transparent", border: "none", borderRadius: 8,
-            cursor: "pointer", fontFamily: "'Manrope', sans-serif",
-            fontSize: 14, fontWeight: 500, color: "#555",
-          }}>
-            <Icon d={ICONS.profile} color="#888" /> Profile
-          </button>
-          <button
-            onClick={() => { localStorage.removeItem("authToken"); navigate("/login"); }}
-            style={{
-              display: "flex", alignItems: "center", gap: 12,
-              width: "100%", padding: "10px 14px",
-              background: "transparent", border: "none", borderRadius: 8,
-              cursor: "pointer", fontFamily: "'Manrope', sans-serif",
-              fontSize: 14, fontWeight: 500, color: "#c62828",
-            }}
-          >
-            <Icon d={ICONS.logout} color="#c62828" /> Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main Content ── */}
-      <main style={{ flex: 1, padding: "40px 40px 72px", overflowY: "auto" }}>
-
-        {/* ══ DASHBOARD ══ */}
-        {activeSection === "dashboard" && (
-          <div>
-            {/* Stat cards */}
-            <div style={{ display: "flex", gap: 20, marginBottom: 32, flexWrap: "wrap" }}>
-              <StatCard label="Total Users:"           value={STATS.totalUsers}    bg="#3b4270" />
-              <StatCard label="Total Students:"        value={STATS.totalStudents} bg="#1a2340" />
-              <StatCard label="Total Language Experts:"value={STATS.totalExperts}  bg="#1a2340" />
-              <StatCard label="Total Stories:"         value={STATS.totalStories}  bg="#8fa8cf" />
-            </div>
-
-            {/* Charts row */}
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-
-              {/* Stories Over Time */}
-              <div style={{ flex: 2, minWidth: 300, background: "#fff", borderRadius: 12, padding: "24px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ fontWeight: 800, fontSize: 18, color: "#111", margin: "0 0 24px" }}>Stories Over Time</h3>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={STORIES_OVER_TIME}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="stories" fill="#0d2d5e" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Right column: two pie charts */}
-              <div style={{ flex: 1, minWidth: 260, display: "flex", flexDirection: "column", gap: 24 }}>
-
-                {/* Stories by Category */}
-                <div style={{ background: "#fff", borderRadius: 12, padding: "24px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
-                  <h3 style={{ fontWeight: 800, fontSize: 18, color: "#111", margin: "0 0 16px" }}>Stories by Category</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <PieChart>
-                      <Pie data={STORIES_BY_CATEGORY} cx="50%" cy="50%" outerRadius={70} dataKey="value">
-                        {STORIES_BY_CATEGORY.map((_, i) => (
-                          <Cell key={i} fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Individual vs Collaborated */}
-                <div style={{ background: "#fff", borderRadius: 12, padding: "24px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
-                  <h3 style={{ fontWeight: 800, fontSize: 18, color: "#111", margin: "0 0 16px" }}>Individual vs Collaborated</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <PieChart>
-                      <Pie data={STORIES_BY_TYPE} cx="50%" cy="50%" outerRadius={70} dataKey="value">
-                        {STORIES_BY_TYPE.map((_, i) => (
-                          <Cell key={i} fill={TYPE_COLORS[i]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-              </div>
-            </div>
+        <div>
+          <div style={{ padding: '0 24px', marginBottom: 32, fontWeight: 700, fontSize: 18 }}>
+            ✏️ TypeAway.
           </div>
+          {navItems.map((item) => (
+            <div
+              key={item.id}
+              style={navStyle(item.id)}
+              onClick={() => setActiveSection(item.id)}
+              onMouseEnter={(e) => { if (activeSection !== item.id) e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={(e) => { if (activeSection !== item.id) e.currentTarget.style.background = ''; }}
+            >
+              <span>{item.icon}</span><span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', margin: '16px 0' }} />
+          <div
+            style={{ padding: '10px 24px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.8)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
+          >
+            <span>👤</span><span>Profile</span>
+          </div>
+          <div
+            style={{ padding: '10px 24px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.8)' }}
+            onClick={handleLogout}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
+          >
+            <span>🚪</span><span>Logout</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main — offset by sidebar width */}
+      <div style={{ marginLeft: 240, padding: 32, minHeight: '100vh' }}>
+
+        {/* ── Dashboard ── */}
+        {activeSection === 'dashboard' && (
+          <Section title="Dashboard">
+            <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+              <StatCard label="Total Users"            value={stats.total_users}    bg="#3b4270" />
+              <StatCard label="Total Students"         value={stats.total_students} bg="#1a2340" />
+              <StatCard label="Total Language Experts" value={stats.total_experts}  bg="#8fa8cf" />
+              <StatCard label="Total Stories"          value={stats.total_stories}  bg="#3b4270" />
+            </div>
+            <div style={{ display: 'flex', gap: 24, marginTop: 32, flexWrap: 'wrap' }}>
+              <div style={{ flex: 2, minWidth: 300, background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#0d2d5e', marginBottom: 16 }}>Stories Over Time</div>
+                {barData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={barData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#0d2d5e" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', fontSize: 13 }}>Loading chart…</div>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 260, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0d2d5e', marginBottom: 8 }}>Stories by Category</div>
+                  {catPieData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <PieChart>
+                        <Pie data={catPieData} dataKey="value" cx="50%" cy="50%" outerRadius={60}>
+                          {catPieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                        </Pie>
+                        <Tooltip />
+                        <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', fontSize: 13 }}>Loading chart…</div>
+                  )}
+                </div>
+                <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0d2d5e', marginBottom: 8 }}>Individual vs Collaborated</div>
+                  {colabPieData.some((d) => d.value > 0) ? (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <PieChart>
+                        <Pie data={colabPieData} dataKey="value" cx="50%" cy="50%" outerRadius={60}>
+                          {colabPieData.map((_, i) => <Cell key={i} fill={COLAB_COLORS[i % COLAB_COLORS.length]} />)}
+                        </Pie>
+                        <Tooltip />
+                        <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', fontSize: 13 }}>Loading chart…</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Section>
         )}
 
-        {/* ══ STUDENTS ══ */}
-        {activeSection === "students" && (
+        {/* ── Students ── */}
+        {activeSection === 'students' && (
           <Section title="Students">
-            <AdminTable
-              columns={["User ID", "Username", "Email Address", "Date Joined", "Stories", "Status", "Actions"]}
-              rows={STUDENTS.map((s) => [
-                s.userId, s.username, s.email, s.joined, s.stories,
-                <StatusBadge status={s.status} />,
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button style={actionBtn("#0d2d5e")}>View</button>
-                  <button style={actionBtn("#c62828")}>Suspend</button>
-                </div>
-              ])}
-            />
+            {students === null
+              ? <p style={{ color: '#666' }}>Loading…</p>
+              : <AdminTable
+                  columns={['User ID', 'Username', 'Email Address', 'Date Joined', 'Stories', 'Status', 'Actions']}
+                  rows={studentRows}
+                />
+            }
           </Section>
         )}
 
-        {/* ══ EXPERTS ══ */}
-        {activeSection === "experts" && (
-          <Section title="Language Experts">
-            <AdminTable
-              columns={["User ID", "Username", "Email Address", "Date Joined", "Reviews", "Status", "Actions"]}
-              rows={EXPERTS.map((e) => [
-                e.userId, e.username, e.email, e.joined, e.reviews,
-                <StatusBadge status={e.status} />,
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button style={actionBtn("#0d2d5e")}>View</button>
-                  <button style={actionBtn("#c62828")}>Suspend</button>
-                </div>
-              ])}
-            />
+        {/* ── Experts ── */}
+        {activeSection === 'experts' && (
+          <Section title="Experts">
+            {experts === null
+              ? <p style={{ color: '#666' }}>Loading…</p>
+              : <AdminTable
+                  columns={['User ID', 'Username', 'Email Address', 'Date Joined', 'Reviews', 'Status', 'Actions']}
+                  rows={expertRows}
+                />
+            }
           </Section>
         )}
 
-        {/* ══ CONTENT ══ */}
-        {activeSection === "content" && (
+        {/* ── Content ── */}
+        {activeSection === 'content' && (
           <Section title="Content">
-            <AdminTable
-              columns={["Story ID", "Title", "Author", "Category", "Status", "Actions"]}
-              rows={CONTENT.map((c) => [
-                c.storyId, c.title, c.author, c.category,
-                <StatusBadge status={c.status} />,
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button style={actionBtn("#0d2d5e")}>View</button>
-                  <button style={actionBtn("#c62828")}>Remove</button>
-                </div>
-              ])}
-            />
+            {stories === null
+              ? <p style={{ color: '#666' }}>Loading…</p>
+              : <AdminTable
+                  columns={['Story ID', 'Title', 'Author', 'Category', 'Status', 'Actions']}
+                  rows={storyRows}
+                />
+            }
           </Section>
         )}
 
-        {/* ══ TAGS ══ */}
-        {activeSection === "tags" && (
+        {/* ── Tags ── */}
+        {activeSection === 'tags' && (
           <Section title="Tags">
             <input
               type="text"
-              placeholder="Search tags..."
+              placeholder="Search tags…"
               value={tagSearch}
               onChange={(e) => setTagSearch(e.target.value)}
               style={{
-                width: "100%", maxWidth: 360, height: 40,
-                border: "1px solid #ccc", borderRadius: 8,
-                padding: "0 14px", fontSize: 14, fontFamily: "'Manrope', sans-serif",
-                outline: "none", marginBottom: 24, boxSizing: "border-box",
+                width: '100%', border: '1px solid #ddd', borderRadius: 8,
+                padding: '8px 12px', fontSize: 14, marginBottom: 16,
+                boxSizing: 'border-box', outline: 'none',
               }}
             />
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-              {filteredTags.map((tag) => (
-                <div key={tag} style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  background: "#eef3fb", borderRadius: 20,
-                  padding: "6px 14px", fontSize: 13, fontWeight: 600, color: "#0d2d5e",
-                }}>
-                  {tag}
-                  <button style={{
-                    background: "none", border: "none", cursor: "pointer",
-                    color: "#c62828", fontWeight: 800, fontSize: 14,
-                    padding: 0, lineHeight: 1,
-                  }}>×</button>
-                </div>
-              ))}
-            </div>
-            <button style={{
-              marginTop: 24, height: 40, padding: "0 24px",
-              background: "#0d2d5e", color: "#fff", border: "none",
-              borderRadius: 8, fontFamily: "'Manrope', sans-serif",
-              fontSize: 14, fontWeight: 700, cursor: "pointer",
-            }}>
-              + Add Tag
-            </button>
+            {tags === null
+              ? <p style={{ color: '#666' }}>Loading…</p>
+              : (
+                <>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {filteredTags.map((tag) => (
+                      <span key={tag.id} style={{
+                        background: '#0d2d5e', color: '#fff', borderRadius: 20,
+                        padding: '4px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        {tag.name}
+                        <button
+                          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
+                          onClick={() => handleDeleteTag(tag.id)}
+                        >×</button>
+                      </span>
+                    ))}
+                  </div>
+                  {addingTag ? (
+                    <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input
+                        value={newTagName}
+                        onChange={(e) => setNewTagName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                        placeholder="New tag name…"
+                        autoFocus
+                        style={{ border: '1px solid #ddd', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none' }}
+                      />
+                      <button style={actionBtn('#0d2d5e')} onClick={handleAddTag}>Add</button>
+                      <button style={actionBtn('#888')} onClick={() => { setAddingTag(false); setNewTagName(''); }}>Cancel</button>
+                    </div>
+                  ) : (
+                    <button style={addBtnStyle} onClick={() => setAddingTag(true)}>+ Add Tag</button>
+                  )}
+                </>
+              )
+            }
           </Section>
         )}
 
-        {/* ══ CATEGORIES ══ */}
-        {activeSection === "categories" && (
+        {/* ── Categories ── */}
+        {activeSection === 'categories' && (
           <Section title="Categories">
-            <AdminTable
-              columns={["ID", "Category Name", "Total Stories", "Actions"]}
-              rows={CATEGORIES.map((c) => [
-                c.id, c.name, c.stories,
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button style={actionBtn("#0d2d5e")}>Edit</button>
-                  <button style={actionBtn("#c62828")}>Delete</button>
-                </div>
-              ])}
-            />
-            <button style={{
-              marginTop: 24, height: 40, padding: "0 24px",
-              background: "#0d2d5e", color: "#fff", border: "none",
-              borderRadius: 8, fontFamily: "'Manrope', sans-serif",
-              fontSize: 14, fontWeight: 700, cursor: "pointer",
-            }}>
-              + Add Category
-            </button>
+            {categories === null
+              ? <p style={{ color: '#666' }}>Loading…</p>
+              : <>
+                  <AdminTable
+                    columns={['ID', 'Category Name', 'Total Stories', 'Actions']}
+                    rows={categoryRows}
+                  />
+                  {!addingCat && (
+                    <button style={addBtnStyle} onClick={() => setAddingCat(true)}>+ Add Category</button>
+                  )}
+                </>
+            }
           </Section>
         )}
 
-        {/* ══ ADMINS ══ */}
-        {activeSection === "admins" && (
+        {/* ── Admins ── */}
+        {activeSection === 'admins' && (
           <Section title="Admins">
-            <AdminTable
-              columns={["User ID", "Username", "Email Address", "Role", "Date Joined", "Actions"]}
-              rows={ADMINS.map((a) => [
-                a.userId, a.username, a.email, a.role, a.joined,
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button style={actionBtn("#0d2d5e")}>Edit</button>
-                  <button style={actionBtn("#c62828")}>Remove</button>
-                </div>
-              ])}
-            />
-            <button style={{
-              marginTop: 24, height: 40, padding: "0 24px",
-              background: "#0d2d5e", color: "#fff", border: "none",
-              borderRadius: 8, fontFamily: "'Manrope', sans-serif",
-              fontSize: 14, fontWeight: 700, cursor: "pointer",
-            }}>
-              + Add Admin
-            </button>
+            {admins === null
+              ? <p style={{ color: '#666' }}>Loading…</p>
+              : <AdminTable
+                  columns={['User ID', 'Username', 'Email Address', 'Role', 'Date Joined', 'Actions']}
+                  rows={adminRows}
+                />
+            }
           </Section>
         )}
 
-      </main>
+      </div>
+
+      {/* ── Delete story confirmation ── */}
+      {deleteStoryId && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        }} onClick={(e) => { if (e.target === e.currentTarget) setDeleteStoryId(null); }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, maxWidth: 400, width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#0d2d5e', marginBottom: 12 }}>Remove Story</div>
+            <p style={{ fontSize: 14, color: '#444', marginBottom: 24 }}>
+              Are you sure you want to remove this story? This cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button style={{ ...actionBtn('#c62828'), padding: '8px 24px', fontSize: 14 }} onClick={handleDeleteStory}>YES</button>
+              <button style={{ ...actionBtn('#888'),    padding: '8px 24px', fontSize: 14 }} onClick={() => setDeleteStoryId(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
-
-// ── Small helper for action buttons
-const actionBtn = (bg) => ({
-  height: 30, padding: "0 14px", background: bg, color: "#fff",
-  border: "none", borderRadius: 6, fontFamily: "'Manrope', sans-serif",
-  fontSize: 12, fontWeight: 700, cursor: "pointer",
-});
 
 export default AdminDashboard;

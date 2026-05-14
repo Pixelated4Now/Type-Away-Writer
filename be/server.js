@@ -18,6 +18,7 @@ const notificationsRoute   = require('./routes/notifications');
 const uploadRoute          = require('./routes/upload');
 const usersRoute           = require('./routes/users');
 const reviewRequestsRoute  = require('./routes/reviewRequests');
+const adminRoute           = require('./routes/admin');
 
 app.use('/uploads',          express.static(path.join(__dirname, 'uploads')));
 app.use('/auth',             authRoute);
@@ -27,6 +28,7 @@ app.use('/notifications',    notificationsRoute);
 app.use('/upload',           uploadRoute);
 app.use('/users',            usersRoute);
 app.use('/review-requests',  reviewRequestsRoute);
+app.use('/admin',            adminRoute);
 
 const PORT = process.env.PORT || 5000;
 

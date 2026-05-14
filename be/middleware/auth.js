@@ -28,4 +28,12 @@ const optionalAuth = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateToken, optionalAuth };
+// Blocks the request if the user's account_type is not in the allowed list.
+const requireRole = (...roles) => (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.account_type)) {
+        return res.status(403).json({ message: 'Forbidden.' });
+    }
+    next();
+};
+
+module.exports = { authenticateToken, optionalAuth, requireRole };
