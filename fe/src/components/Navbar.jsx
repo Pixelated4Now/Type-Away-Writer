@@ -230,7 +230,7 @@ const Navbar = () => {
                             <div className="profile-wrap" ref={profileRef}>
                                 <button className="btn-avatar" onClick={toggleProfile} aria-label="Profile menu">
                                     {user.avatar_url ? (
-                                        <img src={user.avatar_url} alt="avatar" className="avatar-img" />
+                                        <img src={user.avatar_url.startsWith('http') ? user.avatar_url : `${API}${user.avatar_url}`} alt="avatar" className="avatar-img" />
                                     ) : (
                                         <span className="avatar-initials">{user.username[0].toUpperCase()}</span>
                                     )}

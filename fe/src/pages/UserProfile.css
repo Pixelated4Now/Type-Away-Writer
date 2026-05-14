@@ -1,0 +1,670 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+.up-page {
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  background: #fff;
+  width: 100vw;
+}
+
+.up-loading {
+  text-align: center;
+  padding: 80px 0;
+  color: #888;
+  font-size: 14px;
+}
+
+/* ════════════════════════════
+   HERO
+════════════════════════════ */
+.up-hero {
+  position: relative;
+  background: #B8D4E8;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.up-hero-top-btns {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.up-hero-img-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.15s;
+}
+
+.up-hero-img-btn:hover {
+  background: #fff;
+}
+
+.up-hero-img-btn-danger {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.up-hero-img-btn-danger:hover {
+  background: #fff5f5;
+}
+
+.up-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 32px 48px 28px;
+  margin-top: auto;
+}
+
+/* ── Avatar ── */
+.up-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  overflow: visible;
+}
+
+.up-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.up-avatar-initials {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #3E79BD;
+  color: #fff;
+  font-size: 44px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.up-avatar-edit {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  color: #555;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s;
+}
+
+.up-avatar-edit:hover {
+  background: #f5f5f5;
+}
+
+/* ── Hero info ── */
+.up-hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.up-hero-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.up-username {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.up-expert-badge {
+  display: inline-block;
+  background: #3E79BD;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.up-hero-stats {
+  font-size: 13px;
+  color: #555;
+  margin: 6px 0 0;
+  font-weight: 500;
+}
+
+/* ── Hero actions ── */
+.up-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════
+   BUTTONS
+════════════════════════════ */
+.up-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 22px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.up-btn-dark {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.up-btn-dark:hover {
+  background: #333;
+  border-color: #333;
+}
+
+.up-btn-outline {
+  background: #fff;
+  color: #111;
+  border-color: #111;
+}
+
+.up-btn-outline:hover {
+  background: #f5f5f5;
+}
+
+.up-btn-danger {
+  background: #c62828;
+  color: #fff;
+  border-color: #c62828;
+}
+
+.up-btn-danger:hover {
+  background: #a01c1c;
+  border-color: #a01c1c;
+}
+
+.up-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Small buttons */
+.up-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Manrope", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.up-btn-outline-sm {
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+}
+
+.up-btn-outline-sm:hover {
+  background: #f5f5f5;
+}
+
+.up-btn-danger-sm {
+  background: #fff;
+  color: #c62828;
+  border: 1.5px solid #c62828;
+}
+
+.up-btn-danger-sm:hover {
+  background: #fff5f5;
+}
+
+/* Remove / trash button */
+.up-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #aaa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.up-remove-btn:hover {
+  background: #f5f5f5;
+  color: #c62828;
+}
+
+/* ════════════════════════════
+   TABS
+════════════════════════════ */
+.up-tabs {
+  display: flex;
+  border-bottom: 2px solid #e8e8e8;
+  padding: 0 48px;
+  overflow-x: auto;
+}
+
+.up-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Manrope", sans-serif;
+  color: #777;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.up-tab:hover {
+  color: #111;
+}
+
+.up-tab.active {
+  color: #111;
+  border-bottom-color: #111;
+}
+
+/* ════════════════════════════
+   CONTENT AREA
+════════════════════════════ */
+.up-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.up-empty {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+  padding: 56px 0;
+  line-height: 1.6;
+}
+
+/* ════════════════════════════
+   ABOUT TAB
+════════════════════════════ */
+.up-about {
+  max-width: 640px;
+}
+
+.up-bio {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #333;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* Edit form */
+.up-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.up-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.up-edit-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.up-char-count {
+  font-weight: 500;
+  color: #999;
+}
+
+.up-edit-input,
+.up-edit-textarea {
+  border: 1.5px solid #ddd;
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+
+.up-edit-input:focus,
+.up-edit-textarea:focus {
+  border-color: #3E79BD;
+}
+
+.up-edit-error {
+  font-size: 13px;
+  color: #c62828;
+  font-weight: 500;
+  margin: 0;
+}
+
+.up-edit-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ════════════════════════════
+   STORIES / DRAFTS
+════════════════════════════ */
+.up-story-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.up-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ════════════════════════════
+   READING LISTS
+════════════════════════════ */
+.up-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid #ececec;
+  cursor: default;
+}
+
+.up-list-row:first-child {
+  border-top: 1px solid #ececec;
+}
+
+.up-list-row-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.up-list-row-info:hover .up-list-name {
+  text-decoration: underline;
+}
+
+.up-list-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+}
+
+.up-list-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Reading list detail */
+.up-back-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Manrope", sans-serif;
+  color: #3E79BD;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+.up-back-btn:hover {
+  text-decoration: underline;
+}
+
+.up-list-detail-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 24px;
+  color: #111;
+}
+
+.up-list-story-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ececec;
+}
+
+.up-list-story-row:first-of-type {
+  border-top: 1px solid #ececec;
+}
+
+.up-list-story-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.up-list-story-left:hover .up-list-story-title {
+  text-decoration: underline;
+}
+
+.up-list-story-cover {
+  width: 56px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.up-list-story-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 4px;
+}
+
+.up-list-story-authors {
+  font-size: 12px;
+  color: #777;
+  margin: 0;
+}
+
+/* ════════════════════════════
+   FOLLOWING / FOLLOWERS
+════════════════════════════ */
+.up-user-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.up-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ececec;
+}
+
+.up-user-row:first-child {
+  border-top: 1px solid #ececec;
+}
+
+.up-user-row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.up-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.up-user-initials {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #3E79BD;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.up-user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.up-user-row-left:hover .up-user-name {
+  text-decoration: underline;
+}
+
+.up-expert-badge-sm {
+  display: inline-block;
+  background: #3E79BD;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════
+   OVERLAYS / POPUPS
+════════════════════════════ */
+.up-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.up-popup {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 28px 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.up-popup-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.up-popup-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ════════════════════════════
+   RESPONSIVE
+════════════════════════════ */
+@media (max-width: 700px) {
+  .up-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px 20px;
+    gap: 16px;
+  }
+
+  .up-hero-actions {
+    width: 100%;
+  }
+
+  .up-tabs {
+    padding: 0 16px;
+  }
+
+  .up-content {
+    padding: 28px 16px 60px;
+  }
+
+  .up-username {
+    font-size: 20px;
+  }
+}

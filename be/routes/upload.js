@@ -32,4 +32,14 @@ router.post('/image', authenticateToken, multer({ storage: makeStorage('images')
     res.json({ url: `/uploads/images/${req.file.filename}` });
 });
 
+router.post('/avatar', authenticateToken, multer({ storage: makeStorage('avatars'), fileFilter: imageFilter }).single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
+    res.json({ url: `/uploads/avatars/${req.file.filename}` });
+});
+
+router.post('/header', authenticateToken, multer({ storage: makeStorage('headers'), fileFilter: imageFilter }).single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
+    res.json({ url: `/uploads/headers/${req.file.filename}` });
+});
+
 module.exports = router;

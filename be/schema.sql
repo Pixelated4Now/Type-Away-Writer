@@ -147,3 +147,14 @@ CREATE TABLE IF NOT EXISTS review_requests (
 );
 
 ALTER TABLE review_requests ADD COLUMN IF NOT EXISTS status VARCHAR(10) DEFAULT 'new' CHECK (status IN ('new', 'reviewed'));
+
+-- User profile extensions
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(500);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS header_image_url VARCHAR(500);
+
+CREATE TABLE IF NOT EXISTS follows (
+    follower_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    following_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id)
+);

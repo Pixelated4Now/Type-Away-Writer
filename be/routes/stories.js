@@ -517,6 +517,23 @@ router.put('/stories/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ── DELETE /stories/:id ───────────────────────────────────────────────────────
+
+router.delete('/stories/:id', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    try {
+        const check = await pool.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        if (check.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        await pool.query('DELETE FROM stories WHERE id = $1', [storyId]);
+        res.sendStatus(204);
+    } catch (err) {
+        console.error('DELETE /stories/:id error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
 // ── POST /stories/:id/publish ─────────────────────────────────────────────────
 
 router.post('/stories/:id/publish', authenticateToken, async (req, res) => {

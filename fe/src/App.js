@@ -18,6 +18,7 @@ import StorySettings from './pages/StorySettings';
 import StoryEditor   from './pages/StoryEditor';
 import StoryPreview  from './pages/StoryPreview';
 import Review        from './pages/Review';
+import UserProfile   from './pages/UserProfile';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -63,6 +64,9 @@ function App() {
 
           {/* Expert only */}
           <Route path="/review"                element={<ExpertRoute><Review /></ExpertRoute>} />
+
+          {/* User profiles — public */}
+          <Route path="/profile/:username"     element={<UserProfile />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
