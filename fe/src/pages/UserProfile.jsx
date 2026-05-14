@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { BsPencil, BsTrash, BsX, BsImageFill, BsXCircle, BsLock } from "react-icons/bs";
+import { BsPencil, BsTrash, BsX, BsImageFill, BsXCircle, BsLock, BsUnlock } from "react-icons/bs";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
@@ -598,7 +598,9 @@ const UserProfile = () => {
 
               <div className="up-list-detail-meta-row">
                 <p className="up-list-detail-meta">
-                  <BsLock className="up-lock-icon" />
+                  {(listEditMode ? listEditPublic : openList.is_public)
+                    ? <BsUnlock className="up-lock-icon" />
+                    : <BsLock className="up-lock-icon" />}
                   {(listEditMode ? listEditPublic : openList.is_public) ? "Public" : "Private"}
                   {" · "}
                   {openList.stories.length} {openList.stories.length === 1 ? "Story" : "Stories"}
@@ -680,7 +682,9 @@ const UserProfile = () => {
                   <div className="story-info">
                     <h3 className="story-title">{list.title}</h3>
                     <p className="story-authors">
-                      <BsLock className="up-lock-icon" />
+                      {list.is_public
+                        ? <BsUnlock className="up-lock-icon" />
+                        : <BsLock className="up-lock-icon" />}
                       {list.is_public ? "Public" : "Private"}
                       {" · "}
                       {list.story_count} {parseInt(list.story_count) === 1 ? "story" : "stories"}

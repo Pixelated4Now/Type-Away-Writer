@@ -4,6 +4,15 @@
   background: #fff;
   width: 100vw;
 }
+
+.author-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.author-link:hover {
+  text-decoration: underline;
+}
  
 /* ── Story Hero ── */
 .story-hero {

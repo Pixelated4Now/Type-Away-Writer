@@ -23,7 +23,6 @@ const Footer = () => {
       <nav className="footer-links">
         <a href="/write">Write</a>
         <a href="/read">Read</a>
-        <a href="/contact">Contact Us</a>
         <a href="/guidelines">Guidelines</a>
       </nav>
        <img src={footerDoodles} alt="" className="footer-doodle" />

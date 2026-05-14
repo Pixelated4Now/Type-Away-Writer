@@ -225,7 +225,7 @@ router.post('/verify-email', async (req, res) => {
         await pool.query('DELETE FROM email_verification_codes WHERE user_id = $1', [userId]);
 
         const { rows } = await pool.query(
-            'SELECT id, username, email, account_type FROM users WHERE id = $1',
+            'SELECT id, username, email, account_type, avatar_url, is_expert_verified FROM users WHERE id = $1',
             [userId]
         );
         const user  = rows[0];
@@ -234,7 +234,7 @@ router.post('/verify-email', async (req, res) => {
         res.status(200).json({
             message: 'Email verified successfully.',
             token,
-            user: { id: user.id, username: user.username, email: user.email, account_type: user.account_type },
+            user: { id: user.id, username: user.username, email: user.email, account_type: user.account_type, avatar_url: user.avatar_url || null, is_expert_verified: user.is_expert_verified || false },
         });
     } catch (err) {
         console.error('Email verification error:', err);
@@ -306,7 +306,7 @@ router.post('/login', async (req, res) => {
         res.status(200).json({
             message: 'Login successful.',
             token,
-            user: { id: user.id, username: user.username, email: user.email, account_type: user.account_type },
+            user: { id: user.id, username: user.username, email: user.email, account_type: user.account_type, avatar_url: user.avatar_url || null, is_expert_verified: user.is_expert_verified || false },
         });
     } catch (err) {
         console.error('Login error:', err);

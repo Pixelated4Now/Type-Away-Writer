@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
@@ -109,7 +109,7 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
         }
         <div className="comment-body">
           <div className="comment-header">
-            <span className="comment-username">{comment.username}</span>
+            <Link to={`/profile/${comment.username}`} className="author-link comment-username">{comment.username}</Link>
             <RoleBadge role={comment.role} />
             <span className="comment-datetime">{formatDatetime(comment.datetime)}</span>
           </div>
@@ -457,7 +457,14 @@ const ReadStory = () => {
               {story.work_status === "complete" ? "Complete" : "Ongoing"} • {totalChapters} Chapter{totalChapters !== 1 ? "s" : ""}
             </p>
             <h1 className="story-hero-title">{story.title}</h1>
-            <p className="story-hero-author">by {[...(story.authors || [])].sort().join(", ")}</p>
+            <p className="story-hero-author">
+              by {[...(story.authors || [])].sort().map((name, i, arr) => (
+                <span key={name}>
+                  <Link to={`/profile/${name}`} className="author-link">{name}</Link>
+                  {i < arr.length - 1 ? ", " : ""}
+                </span>
+              ))}
+            </p>
             <p className="story-hero-summary">{story.summary}</p>
           </div>
         </div>
