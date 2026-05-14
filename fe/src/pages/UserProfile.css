@@ -25,7 +25,16 @@
   flex-direction: column;
 }
 
-.up-hero-top-btns {
+.up-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.36;
+  z-index: 0;
+}
+
+.up-hero-header-btns {
   position: absolute;
   top: 12px;
   right: 16px;
@@ -34,36 +43,30 @@
   z-index: 2;
 }
 
-.up-hero-img-btn {
+.up-header-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-family: "Manrope", sans-serif;
-  font-weight: 600;
-  cursor: pointer;
+  justify-content: center;
+  font-size: 16px;
   color: #333;
-  transition: background 0.15s;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s, color 0.15s;
 }
 
-.up-hero-img-btn:hover {
+.up-header-icon-btn:hover {
   background: #fff;
-}
-
-.up-hero-img-btn-danger {
-  color: #c62828;
-  border-color: #c62828;
-}
-
-.up-hero-img-btn-danger:hover {
-  background: #fff5f5;
+  color: #111;
 }
 
 .up-hero-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 28px;
@@ -78,8 +81,6 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
   overflow: visible;
 }
 
@@ -189,7 +190,7 @@
   font-family: "Manrope", sans-serif;
   letter-spacing: 0.03em;
   cursor: pointer;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -244,6 +245,17 @@
   transition: background 0.15s, color 0.15s;
 }
 
+.up-btn-dark-sm {
+  background: #111;
+  color: #fff;
+  border: 1.5px solid #111;
+}
+
+.up-btn-dark-sm:hover {
+  background: #333;
+  border-color: #333;
+}
+
 .up-btn-outline-sm {
   background: #fff;
   color: #111;
@@ -256,12 +268,12 @@
 
 .up-btn-danger-sm {
   background: #fff;
-  color: #c62828;
-  border: 1.5px solid #c62828;
+  color: #1B1B1E;
+  border: 1px solid #1B1B1E;
 }
 
 .up-btn-danger-sm:hover {
-  background: #fff5f5;
+  background: #E5E5E5;
 }
 
 /* Remove / trash button */
@@ -283,28 +295,34 @@
 }
 
 /* ════════════════════════════
-   TABS
+   TABS BAR
 ════════════════════════════ */
-.up-tabs {
+.up-tabs-bar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 2px solid #e8e8e8;
   padding: 0 48px;
+  margin-top: 12px;
+}
+
+.up-tabs {
+  display: flex;
   overflow-x: auto;
 }
 
 .up-tab {
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
+  border-bottom: none;
   padding: 14px 18px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   font-family: "Manrope", sans-serif;
   color: #777;
   cursor: pointer;
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s;
 }
 
 .up-tab:hover {
@@ -313,7 +331,21 @@
 
 .up-tab.active {
   color: #111;
-  border-bottom-color: #111;
+  font-weight: 700;
+}
+
+.up-edit-profile-btn {
+  flex-shrink: 0;
+  margin-left: 16px;
+  padding: 8px 18px;
+  font-size: 13px;
+}
+
+.up-edit-bar-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
 /* ════════════════════════════
@@ -341,11 +373,24 @@
   max-width: 640px;
 }
 
+.up-bio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .up-bio {
   font-size: 14px;
   line-height: 1.75;
   color: #333;
   white-space: pre-wrap;
+  margin: 0;
+}
+
+.up-joined {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
   margin: 0;
 }
 
@@ -415,6 +460,14 @@
   gap: 0;
 }
 
+.story-card-static {
+  cursor: default;
+}
+
+.story-card-static:hover {
+  background: transparent;
+}
+
 .up-card-actions {
   display: flex;
   gap: 8px;
@@ -422,7 +475,128 @@
 }
 
 /* ════════════════════════════
-   READING LISTS
+   READING LISTS — shared
+════════════════════════════ */
+.up-list-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #ddd;
+  border-radius: 6px;
+}
+
+.up-lock-icon {
+  font-size: 12px;
+  vertical-align: middle;
+  margin-right: 4px;
+  position: relative;
+  top: -1px;
+}
+
+/* Outlined red button — list DELETE and edit-mode story removal */
+.up-rl-delete-btn {
+  background: none;
+  color: #c00;
+  border: 1px solid #e00;
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Manrope", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.up-rl-delete-btn:hover {
+  background: #fff0f0;
+}
+
+/* ════════════════════════════
+   READING LIST DETAIL
+════════════════════════════ */
+.up-list-detail-heading {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  margin: 40px 0 24px;
+  color: #111;
+}
+
+.up-list-detail-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.up-list-detail-meta {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.up-list-edit-form {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 32px;
+  padding: 20px 24px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #ececec;
+}
+
+.up-list-edit-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.up-list-edit-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  font-family: "Manrope", sans-serif;
+}
+
+.up-list-edit-input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  width: 300px;
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.up-list-edit-input:focus {
+  border-color: #3E79BD;
+}
+
+.up-list-edit-select {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: "Manrope", sans-serif;
+  color: #111;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.up-list-edit-select:focus {
+  border-color: #3E79BD;
+}
+
+/* ════════════════════════════
+   OLD READING LIST ROWS (unused — kept for safety)
 ════════════════════════════ */
 .up-list-row {
   display: flex;
@@ -605,40 +779,80 @@
 }
 
 /* ════════════════════════════
-   OVERLAYS / POPUPS
+   DELETE MODAL
 ════════════════════════════ */
-.up-overlay {
+.up-del-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
-.up-popup {
+.up-del-modal {
   background: #fff;
   border-radius: 12px;
-  padding: 32px 28px 24px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  padding: 24px;
+  width: 380px;
+  position: relative;
 }
 
-.up-popup-text {
+.up-del-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  color: #555;
+}
+
+.up-del-modal-close:hover {
+  color: #111;
+}
+
+.up-del-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 12px;
+  padding-right: 24px;
+}
+
+.up-del-modal-body {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   color: #333;
-  line-height: 1.6;
-  margin: 0 0 24px;
-  text-align: center;
+  line-height: 1.5;
+  margin: 0 0 20px;
 }
 
-.up-popup-actions {
+.up-del-modal-footer {
   display: flex;
-  gap: 12px;
-  justify-content: center;
+  justify-content: flex-end;
+}
+
+.up-del-confirm-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Manrope", sans-serif;
+  cursor: pointer;
+}
+
+.up-del-confirm-btn:hover {
+  background: #333;
 }
 
 /* ════════════════════════════
@@ -656,8 +870,14 @@
     width: 100%;
   }
 
-  .up-tabs {
+  .up-tabs-bar {
     padding: 0 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .up-edit-profile-btn {
+    margin-left: 0;
   }
 
   .up-content {

@@ -65,7 +65,7 @@ const collectDescendants = (commentId, all) => {
 const mapComment = (c, storyAuthors = []) => ({
   id:         c.id,
   username:   c.user?.username || "Unknown",
-  avatar:     c.user?.avatar_url || null,
+  avatar:     c.user?.avatar_url ? `${API}${c.user.avatar_url}` : null,
   role:       c.user?.account_type === "expert" ? "expert"
             : storyAuthors.includes(c.user?.username) ? "author"
             : "reader",

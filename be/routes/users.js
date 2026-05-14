@@ -230,7 +230,13 @@ router.get('/:username/reading-lists', optionalAuth, async (req, res) => {
         const isOwn = req.user && req.user.id === profileId;
         const { rows } = await pool.query(
             `SELECT rl.id, rl.title, rl.is_public, rl.created_at,
-                    COUNT(rls.story_id) AS story_count
+                    COUNT(rls.story_id) AS story_count,
+                    (SELECT s.cover_image_url
+                     FROM reading_list_stories rls2
+                     JOIN stories s ON s.id = rls2.story_id
+                     WHERE rls2.reading_list_id = rl.id
+                     ORDER BY rls2.added_at ASC
+                     LIMIT 1) AS cover_image_url
              FROM reading_lists rl
              LEFT JOIN reading_list_stories rls ON rls.reading_list_id = rl.id
              WHERE rl.user_id = $1 ${isOwn ? '' : 'AND rl.is_public = TRUE'}

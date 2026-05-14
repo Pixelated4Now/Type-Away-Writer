@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { BsPencil, BsTrash, BsX } from "react-icons/bs";
+import { BsPencil, BsTrash, BsX, BsImageFill, BsXCircle, BsLock } from "react-icons/bs";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import "./UserProfile.css";
+import "./ReadCategory.css";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -20,29 +21,32 @@ const authFetch = (url, options = {}) => {
 };
 
 const imgSrc = (path) => (path ? `${API}${path}` : null);
+const listCoverSrc = (url) => (!url ? null : url.startsWith("http") ? url : `${API}${url}`);
 
-// ── Story card (reuses ReadCategory story-card CSS classes) ───────────────────
+const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
-const StoryCard = ({ story, isOwn, isDraft, onEdit, onDelete }) => {
+// ── Story card — matches ReadCategory.jsx structure exactly ───────────────────
+
+const StoryCard = ({ story, isOwn, onEdit, onDelete, clickable = true, redDelete = false }) => {
   const navigate = useNavigate();
-  const cover = imgSrc(story.cover_image_url);
   return (
-    <div className="story-card">
-      <div
-        className="story-cover"
-        style={cover ? { backgroundImage: `url(${cover})` } : {}}
-        onClick={() => !isDraft && navigate(`/read/story/${story.id}`)}
-      />
+    <div
+      className={`story-card${clickable ? "" : " story-card-static"}`}
+      onClick={clickable ? () => navigate(`/read/story/${story.id}`) : undefined}
+    >
+      <div className="story-cover">
+        {story.cover_image_url && (
+          <img
+            src={story.cover_image_url}
+            alt={story.title}
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+        )}
+      </div>
       <div className="story-info">
-        <p
-          className="story-title"
-          onClick={() => !isDraft && navigate(`/read/story/${story.id}`)}
-          style={{ cursor: isDraft ? "default" : "pointer" }}
-        >
-          {story.title}
-        </p>
+        <h3 className="story-title">{story.title}</h3>
         {(story.authors || []).length > 0 && (
-          <p className="story-authors">{story.authors.join(", ")}</p>
+          <p className="story-authors">by {story.authors.join(", ")}</p>
         )}
         {story.summary && <p className="story-summary">{story.summary}</p>}
         {(story.tags || []).length > 0 && (
@@ -52,17 +56,27 @@ const StoryCard = ({ story, isOwn, isDraft, onEdit, onDelete }) => {
             ))}
           </div>
         )}
-        {!isDraft && (
-          <div className="story-meta">
-            <span className="story-stats">♥ {story.likes_count || 0}</span>
-            <span className="story-stats">{story.chapter_count || 0} ch</span>
-            <span className="story-stats">{story.comment_count || 0} comments</span>
-          </div>
-        )}
-        {isOwn && (
+        <div className="story-meta">
+          <span className="story-status">{STATUS_DISPLAY[story.status] || story.status}</span>
+          <span>{story.chapter_count} chapter{story.chapter_count !== 1 ? "s" : ""}</span>
+        </div>
+        <div className="story-stats">
+          {story.likes_count || 0} likes • {story.comment_count || 0} comments
+        </div>
+        {isOwn && (onEdit || onDelete) && (
           <div className="up-card-actions">
-            <button className="up-btn-sm up-btn-outline-sm" onClick={onEdit}>Edit</button>
-            <button className="up-btn-sm up-btn-danger-sm" onClick={onDelete}>Delete</button>
+            {onEdit && (
+              <button
+                className="up-btn-sm up-btn-dark-sm"
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              >EDIT</button>
+            )}
+            {onDelete && (
+              <button
+                className={redDelete ? "up-rl-delete-btn" : "up-btn-sm up-btn-danger-sm"}
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              >DELETE</button>
+            )}
           </div>
         )}
       </div>
@@ -120,6 +134,11 @@ const UserProfile = () => {
   // Delete confirmations
   const [deleteStory,  setDeleteStory]  = useState(null); // { id, isDraft }
   const [deleteListId, setDeleteListId] = useState(null);
+
+  // Reading list edit mode
+  const [listEditMode,   setListEditMode]   = useState(false);
+  const [listEditName,   setListEditName]   = useState("");
+  const [listEditPublic, setListEditPublic] = useState(true);
 
   const avatarInputRef = useRef(null);
   const headerInputRef = useRef(null);
@@ -255,7 +274,7 @@ const UserProfile = () => {
     } catch { /* silent */ }
   };
 
-  // Header upload
+  // Header upload / remove
   const handleHeaderUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -295,13 +314,22 @@ const UserProfile = () => {
       const r = await authFetch(`${API}/users/reading-lists/${listId}/stories`);
       const d = await r.json();
       setOpenList({ ...d.list, stories: d.stories || [] });
+      setListEditMode(false);
     } catch { /* silent */ }
   };
 
-  // Remove story from list
+  // Remove a story from the open list (edit mode — no confirmation)
   const removeFromList = async (storyId) => {
     await authFetch(`${API}/reading-lists/${openList.id}/stories/${storyId}`, { method: "DELETE" });
     setOpenList((prev) => ({ ...prev, stories: prev.stories.filter((s) => s.id !== storyId) }));
+    setTabData((prev) => ({
+      ...prev,
+      lists: (prev.lists || []).map((l) =>
+        l.id === openList.id
+          ? { ...l, story_count: Math.max(0, parseInt(l.story_count) - 1) }
+          : l
+      ),
+    }));
   };
 
   // Delete reading list
@@ -309,8 +337,36 @@ const UserProfile = () => {
     if (!deleteListId) return;
     await authFetch(`${API}/users/reading-lists/${deleteListId}`, { method: "DELETE" });
     setTabData((prev) => ({ ...prev, lists: (prev.lists || []).filter((l) => l.id !== deleteListId) }));
-    if (openList?.id === deleteListId) setOpenList(null);
+    if (openList?.id === deleteListId) { setOpenList(null); setListEditMode(false); }
     setDeleteListId(null);
+  };
+
+  // Reading list edit mode
+  const startListEdit = () => {
+    setListEditName(openList.title);
+    setListEditPublic(openList.is_public);
+    setListEditMode(true);
+  };
+
+  const cancelListEdit = () => setListEditMode(false);
+
+  const handleSaveListEdit = async () => {
+    try {
+      const r = await authFetch(`${API}/users/reading-lists/${openList.id}`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ title: listEditName.trim(), is_public: listEditPublic }),
+      });
+      const d = await r.json();
+      setOpenList((prev) => ({ ...prev, title: d.title, is_public: d.is_public }));
+      setTabData((prev) => ({
+        ...prev,
+        lists: (prev.lists || []).map((l) =>
+          l.id === openList.id ? { ...l, title: d.title, is_public: d.is_public } : l
+        ),
+      }));
+      setListEditMode(false);
+    } catch { /* silent */ }
   };
 
   // Unfollow (from own Following tab)
@@ -360,18 +416,18 @@ const UserProfile = () => {
       <Navbar />
 
       {/* ── Hero ── */}
-      <div
-        className="up-hero"
-        style={heroBg ? { backgroundImage: `url(${heroBg})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
-      >
-        {isOwnProfile && (
-          <div className="up-hero-top-btns">
-            <button className="up-hero-img-btn" onClick={() => headerInputRef.current?.click()}>
-              <BsPencil /> Change header
+      <div className="up-hero">
+        {heroBg && (
+          <div className="up-hero-bg" style={{ backgroundImage: `url(${heroBg})` }} />
+        )}
+        {isOwnProfile && editMode && (
+          <div className="up-hero-header-btns">
+            <button className="up-header-icon-btn" onClick={() => headerInputRef.current?.click()} title="Change header image">
+              <BsImageFill />
             </button>
             {profile.header_image_url && (
-              <button className="up-hero-img-btn up-hero-img-btn-danger" onClick={handleRemoveHeader}>
-                <BsX /> Remove header
+              <button className="up-header-icon-btn" onClick={handleRemoveHeader} title="Remove header image">
+                <BsXCircle />
               </button>
             )}
             <input ref={headerInputRef} type="file" accept="image/*" hidden onChange={handleHeaderUpload} />
@@ -384,7 +440,7 @@ const UserProfile = () => {
               ? <img src={avatarSrc} alt="avatar" className="up-avatar" />
               : <span className="up-avatar-initials">{profile.username[0].toUpperCase()}</span>
             }
-            {isOwnProfile && (
+            {isOwnProfile && editMode && (
               <>
                 <button className="up-avatar-edit" onClick={() => avatarInputRef.current?.click()} title="Change photo">
                   <BsPencil />
@@ -400,39 +456,50 @@ const UserProfile = () => {
               {profile.is_expert_verified && <span className="up-expert-badge">Expert</span>}
             </div>
             <p className="up-hero-stats">
-              {profile.story_count} {parseInt(profile.story_count) === 1 ? "story" : "stories"} ·{" "}
-              {profile.follower_count} {parseInt(profile.follower_count) === 1 ? "follower" : "followers"} ·{" "}
-              {profile.following_count} following
+              {profile.story_count} {parseInt(profile.story_count) === 1 ? "story" : "stories"}
             </p>
           </div>
 
-          <div className="up-hero-actions">
-            {isOwnProfile && (
-              <button className="up-btn up-btn-outline" onClick={startEdit}>Edit Profile</button>
-            )}
-            {canFollow && (
+          {canFollow && (
+            <div className="up-hero-actions">
               <button
                 className={`up-btn ${profile.is_following ? "up-btn-outline" : "up-btn-dark"}`}
                 onClick={handleFollow}
               >
                 {profile.is_following ? "Unfollow" : "Follow"}
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* ── Tabs ── */}
-      <div className="up-tabs">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={`up-tab${activeTab === t.id ? " active" : ""}`}
-            onClick={() => switchTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="up-tabs-bar">
+        <div className="up-tabs">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              className={`up-tab${activeTab === t.id ? " active" : ""}`}
+              onClick={() => switchTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {isOwnProfile && (
+          editMode ? (
+            <div className="up-edit-bar-actions">
+              <button className="up-btn up-btn-outline up-edit-profile-btn" onClick={cancelEdit} disabled={saving}>CANCEL</button>
+              <button className="up-btn up-btn-dark up-edit-profile-btn" onClick={saveEdit} disabled={saving}>
+                {saving ? "SAVING…" : "SAVE CHANGES"}
+              </button>
+            </div>
+          ) : (
+            <button className="up-btn up-btn-dark up-edit-profile-btn" onClick={startEdit}>
+              EDIT PROFILE
+            </button>
+          )
+        )}
       </div>
 
       {/* ── Tab content ── */}
@@ -466,20 +533,17 @@ const UserProfile = () => {
                   />
                 </div>
                 {editError && <p className="up-edit-error">{editError}</p>}
-                <div className="up-edit-actions">
-                  <button className="up-btn up-btn-outline" onClick={cancelEdit} disabled={saving}>Cancel</button>
-                  <button className="up-btn up-btn-dark"    onClick={saveEdit}   disabled={saving}>
-                    {saving ? "Saving…" : "Save changes"}
-                  </button>
-                </div>
               </div>
             ) : (
-              <p className="up-bio">
-                {profile.bio || (isOwnProfile
-                  ? "You haven't added a bio yet. Click Edit Profile to add one."
-                  : "No bio yet."
-                )}
-              </p>
+              <div className="up-bio-block">
+                {profile.bio && <p className="up-bio">{profile.bio}</p>}
+                <p className="up-joined">
+                  <strong>Joined</strong>{" "}
+                  {new Date(profile.created_at).toLocaleDateString("en-US", {
+                    month: "long", day: "numeric", year: "numeric",
+                  })}.
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -494,7 +558,6 @@ const UserProfile = () => {
                 key={s.id}
                 story={s}
                 isOwn={isOwnProfile}
-                isDraft={false}
                 onEdit={() => navigate(`/write/${s.id}/settings`)}
                 onDelete={() => setDeleteStory({ id: s.id, isDraft: false })}
               />
@@ -512,7 +575,7 @@ const UserProfile = () => {
                 key={s.id}
                 story={s}
                 isOwn={true}
-                isDraft={true}
+                clickable={false}
                 onEdit={() => navigate(`/write/${s.id}/settings`)}
                 onDelete={() => setDeleteStory({ id: s.id, isDraft: true })}
               />
@@ -523,53 +586,118 @@ const UserProfile = () => {
         {/* Reading Lists */}
         {activeTab === "lists" && (
           openList ? (
-            <div className="up-list-detail">
-              <button className="up-back-btn" onClick={() => setOpenList(null)}>← Back to lists</button>
-              <h3 className="up-list-detail-title">{openList.title}</h3>
-              {openList.stories.length === 0 ? (
-                <p className="up-empty">This list is empty.</p>
-              ) : openList.stories.map((s) => {
-                const cover = imgSrc(s.cover_image_url);
-                return (
-                  <div key={s.id} className="up-list-story-row">
-                    <div className="up-list-story-left" onClick={() => navigate(`/read/story/${s.id}`)}>
-                      {cover && <img src={cover} alt="" className="up-list-story-cover" />}
-                      <div>
-                        <p className="up-list-story-title">{s.title}</p>
-                        <p className="up-list-story-authors">{(s.authors || []).join(", ")}</p>
-                      </div>
+            /* ── Detail view ── */
+            <div>
+              <button className="up-back-btn" onClick={() => { setOpenList(null); setListEditMode(false); }}>
+                ← Back to lists
+              </button>
+
+              <h2 className="up-list-detail-heading">
+                {listEditMode ? (listEditName || openList.title) : openList.title}
+              </h2>
+
+              <div className="up-list-detail-meta-row">
+                <p className="up-list-detail-meta">
+                  <BsLock className="up-lock-icon" />
+                  {(listEditMode ? listEditPublic : openList.is_public) ? "Public" : "Private"}
+                  {" · "}
+                  {openList.stories.length} {openList.stories.length === 1 ? "Story" : "Stories"}
+                </p>
+                {isOwnProfile && (
+                  listEditMode ? (
+                    <div className="up-card-actions">
+                      <button className="up-btn-sm up-btn-dark-sm" onClick={handleSaveListEdit}>SAVE CHANGES</button>
+                      <button className="up-btn-sm up-btn-outline-sm" onClick={cancelListEdit}>CANCEL</button>
                     </div>
-                    {isOwnProfile && (
-                      <button className="up-remove-btn" onClick={() => removeFromList(s.id)} title="Remove">
-                        <BsX />
-                      </button>
-                    )}
+                  ) : (
+                    <div className="up-card-actions">
+                      <button className="up-btn-sm up-btn-dark-sm" onClick={startListEdit}>EDIT</button>
+                      <button className="up-rl-delete-btn" onClick={() => setDeleteListId(openList.id)}>DELETE</button>
+                    </div>
+                  )
+                )}
+              </div>
+
+              {listEditMode && (
+                <div className="up-list-edit-form">
+                  <div className="up-list-edit-field">
+                    <label className="up-list-edit-label">List Name:</label>
+                    <input
+                      className="up-list-edit-input"
+                      value={listEditName}
+                      onChange={(e) => setListEditName(e.target.value)}
+                    />
                   </div>
-                );
-              })}
+                  <div className="up-list-edit-field">
+                    <label className="up-list-edit-label">Visibility:</label>
+                    <select
+                      className="up-list-edit-select"
+                      value={listEditPublic ? "public" : "private"}
+                      onChange={(e) => setListEditPublic(e.target.value === "public")}
+                    >
+                      <option value="public">Public</option>
+                      <option value="private">Private</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {openList.stories.length === 0 ? (
+                <p className="up-empty">No stories saved here yet.</p>
+              ) : (
+                <div className="up-story-grid">
+                  {openList.stories.map((s) => (
+                    <StoryCard
+                      key={s.id}
+                      story={{ ...s, cover_image_url: listCoverSrc(s.cover_image_url) }}
+                      isOwn={listEditMode}
+                      onDelete={listEditMode ? () => removeFromList(s.id) : undefined}
+                      redDelete={true}
+                      clickable={!listEditMode}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
-            <div>
+            /* ── List view ── */
+            <div className="up-story-grid">
               {lists.length === 0 ? (
                 <p className="up-empty">No reading lists yet.</p>
               ) : lists.map((list) => (
-                <div key={list.id} className="up-list-row">
-                  <div className="up-list-row-info" onClick={() => openReadingList(list.id)}>
-                    <span className="up-list-name">{list.title}</span>
-                    <span className="up-list-meta">
-                      {list.story_count} {parseInt(list.story_count) === 1 ? "story" : "stories"} ·{" "}
-                      {list.is_public ? "Public" : "Private"}
-                    </span>
+                <div key={list.id} className="story-card story-card-static">
+                  <div className="story-cover">
+                    {list.cover_image_url ? (
+                      <img
+                        src={listCoverSrc(list.cover_image_url)}
+                        alt={list.title}
+                        onError={(e) => { e.target.style.display = "none"; }}
+                      />
+                    ) : (
+                      <div className="up-list-cover-placeholder" />
+                    )}
                   </div>
-                  {isOwnProfile && (
-                    <button
-                      className="up-remove-btn"
-                      onClick={(e) => { e.stopPropagation(); setDeleteListId(list.id); }}
-                      title="Delete list"
-                    >
-                      <BsTrash />
-                    </button>
-                  )}
+                  <div className="story-info">
+                    <h3 className="story-title">{list.title}</h3>
+                    <p className="story-authors">
+                      <BsLock className="up-lock-icon" />
+                      {list.is_public ? "Public" : "Private"}
+                      {" · "}
+                      {list.story_count} {parseInt(list.story_count) === 1 ? "story" : "stories"}
+                    </p>
+                    <div className="up-card-actions">
+                      <button
+                        className="up-btn-sm up-btn-dark-sm"
+                        onClick={() => openReadingList(list.id)}
+                      >VIEW READING LIST</button>
+                      {isOwnProfile && (
+                        <button
+                          className="up-rl-delete-btn"
+                          onClick={(e) => { e.stopPropagation(); setDeleteListId(list.id); }}
+                        >DELETE</button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -612,14 +740,13 @@ const UserProfile = () => {
 
       {/* ── Delete story confirm ── */}
       {deleteStory && (
-        <div className="up-overlay">
-          <div className="up-popup">
-            <p className="up-popup-text">
-              Delete this {deleteStory.isDraft ? "draft" : "story"}? This cannot be undone.
-            </p>
-            <div className="up-popup-actions">
-              <button className="up-btn up-btn-outline" onClick={() => setDeleteStory(null)}>Cancel</button>
-              <button className="up-btn up-btn-danger" onClick={handleDeleteStory}>Delete</button>
+        <div className="up-del-overlay" onClick={(e) => { if (e.target === e.currentTarget) setDeleteStory(null); }}>
+          <div className="up-del-modal">
+            <button className="up-del-modal-close" onClick={() => setDeleteStory(null)}>×</button>
+            <h2 className="up-del-modal-title">Delete Your Story</h2>
+            <p className="up-del-modal-body">Are you sure you want to delete this story? 😢</p>
+            <div className="up-del-modal-footer">
+              <button className="up-del-confirm-btn" onClick={handleDeleteStory}>YES</button>
             </div>
           </div>
         </div>
@@ -627,14 +754,13 @@ const UserProfile = () => {
 
       {/* ── Delete list confirm ── */}
       {deleteListId && (
-        <div className="up-overlay">
-          <div className="up-popup">
-            <p className="up-popup-text">
-              Delete this reading list? This cannot be undone.
-            </p>
-            <div className="up-popup-actions">
-              <button className="up-btn up-btn-outline" onClick={() => setDeleteListId(null)}>Cancel</button>
-              <button className="up-btn up-btn-danger" onClick={handleDeleteList}>Delete</button>
+        <div className="up-del-overlay" onClick={(e) => { if (e.target === e.currentTarget) setDeleteListId(null); }}>
+          <div className="up-del-modal">
+            <button className="up-del-modal-close" onClick={() => setDeleteListId(null)}>×</button>
+            <h2 className="up-del-modal-title">Delete Reading List</h2>
+            <p className="up-del-modal-body">Are you sure you want to delete this reading list? 😢</p>
+            <div className="up-del-modal-footer">
+              <button className="up-del-confirm-btn" onClick={handleDeleteList}>YES</button>
             </div>
           </div>
         </div>

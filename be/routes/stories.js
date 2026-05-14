@@ -437,8 +437,8 @@ router.post('/stories', authenticateToken, async (req, res) => {
     try {
         await client.query('BEGIN');
         const { rows } = await client.query(
-            `INSERT INTO stories (title, summary, work_status, category_id, cover_image_url, author_id)
-             VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO stories (title, summary, work_status, category_id, cover_image_url, author_id, status)
+             VALUES ($1, $2, $3, $4, $5, $6, 'writing')
              RETURNING id`,
             [title.trim(), summary || '', work_status || 'ongoing', category_id || null, cover_image_url || null, req.user.id]
         );

@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS stories (
     cover_image_url    VARCHAR(500),
     author_id          INT NOT NULL REFERENCES users(id),
     category_id        INT REFERENCES categories(id),
-    status             VARCHAR(10) DEFAULT 'draft'     CHECK (status IN ('draft', 'published')),
+    status             VARCHAR(10) DEFAULT 'writing'   CHECK (status IN ('writing', 'draft', 'published')),
     comment_permission VARCHAR(10) DEFAULT 'everyone'  CHECK (comment_permission IN ('everyone', 'experts', 'none')),
     likes_count        INT DEFAULT 0,
     created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -151,6 +151,11 @@ ALTER TABLE review_requests ADD COLUMN IF NOT EXISTS status VARCHAR(10) DEFAULT 
 -- User profile extensions
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(500);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS header_image_url VARCHAR(500);
+
+-- Migrate existing status column: add 'writing' as valid status and change default
+ALTER TABLE stories ALTER COLUMN status SET DEFAULT 'writing';
+ALTER TABLE stories DROP CONSTRAINT IF EXISTS stories_status_check;
+ALTER TABLE stories ADD CONSTRAINT stories_status_check CHECK (status IN ('writing', 'draft', 'published'));
 
 CREATE TABLE IF NOT EXISTS follows (
     follower_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
