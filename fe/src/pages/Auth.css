@@ -4,7 +4,7 @@
   align-items: center;
   min-width: 100vw;
   min-height: 100vh;
-  background: url("../assets/blueBackground.jpg") no-repeat center / cover;
+  background: url("/assets/blueBackground.jpg") no-repeat center / cover;
   overflow: hidden;
 }
 
