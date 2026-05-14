@@ -23,6 +23,8 @@ import Review        from './pages/Review';
 import UserProfile   from './pages/UserProfile';
 import AccountSettings from "./pages/AccountSettings";
 
+import AdminDashboard from "./pages/AdminDashboard";
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -72,6 +74,7 @@ function App() {
           <Route path="/profile/:username"     element={<UserProfile />} />
           <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
