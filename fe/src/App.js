@@ -17,8 +17,11 @@ import ReadStory     from './pages/ReadStory';
 import StorySettings from './pages/StorySettings';
 import StoryEditor   from './pages/StoryEditor';
 import StoryPreview  from './pages/StoryPreview';
+
 import Review        from './pages/Review';
+
 import UserProfile   from './pages/UserProfile';
+import AccountSettings from "./pages/AccountSettings";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -67,6 +70,8 @@ function App() {
 
           {/* User profiles — public */}
           <Route path="/profile/:username"     element={<UserProfile />} />
+          <Route path="/settings"     element={<AccountSettings />} />
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>

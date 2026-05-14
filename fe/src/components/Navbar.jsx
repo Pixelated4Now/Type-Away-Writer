@@ -164,7 +164,6 @@ const Navbar = () => {
                             )}
                         </li>
                         <li><Link to="/read"       className={location.pathname.startsWith('/read')       ? 'active' : ''}>Read</Link></li>
-                        <li><Link to="/contact"    className={isActive('/contact')                        ? 'active' : ''}>Contact Us</Link></li>
                         <li><Link to="/guidelines" className={isActive('/guidelines')                     ? 'active' : ''}>Guidelines</Link></li>
                     </ul>
                 )}

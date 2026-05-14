@@ -216,14 +216,13 @@
 }
 
 .up-btn-danger {
-  background: #c62828;
+  background: #1B1B1E;;
   color: #fff;
-  border-color: #c62828;
+  border-color: #1B1B1E;;
 }
 
 .up-btn-danger:hover {
-  background: #a01c1c;
-  border-color: #a01c1c;
+  background: #E5E5E5;
 }
 
 .up-btn:disabled {
@@ -495,8 +494,8 @@
 /* Outlined red button — list DELETE and edit-mode story removal */
 .up-rl-delete-btn {
   background: none;
-  color: #c00;
-  border: 1px solid #e00;
+  color: #1B1B1E;
+  border: 1px solid #1B1B1E;
   border-radius: 6px;
   padding: 4px 14px;
   font-size: 13px;
@@ -507,7 +506,7 @@
 }
 
 .up-rl-delete-btn:hover {
-  background: #fff0f0;
+  background: #E5E5E5;
 }
 
 /* ════════════════════════════
