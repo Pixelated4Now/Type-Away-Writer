@@ -163,3 +163,21 @@ CREATE TABLE IF NOT EXISTS follows (
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (follower_id, following_id)
 );
+
+-- Collaboration feature
+CREATE TABLE IF NOT EXISTS collaboration_invitations (
+    id         SERIAL PRIMARY KEY,
+    story_id   INT REFERENCES stories(id)  ON DELETE CASCADE,
+    inviter_id INT REFERENCES users(id)    ON DELETE CASCADE,
+    invitee_id INT REFERENCES users(id)    ON DELETE CASCADE,
+    status     VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
+ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
+    CHECK (type IN ('like', 'follow', 'comment', 'reply', 'save', 'review', 'review_request',
+                    'collab_invite', 'collab_accepted', 'collab_declined'));
+
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS invitation_id INT
+    REFERENCES collaboration_invitations(id) ON DELETE SET NULL;

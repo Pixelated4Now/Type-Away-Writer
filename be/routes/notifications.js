@@ -9,10 +9,11 @@ router.get('/', authenticateToken, async (req, res) => {
         const { rows } = await pool.query(
             `SELECT
                 n.id, n.type, n.is_read, n.created_at,
-                a.username  AS actor_username,
+                n.invitation_id,
+                a.username   AS actor_username,
                 a.avatar_url AS actor_avatar,
-                s.title     AS story_title,
-                s.id        AS story_id
+                s.title      AS story_title,
+                s.id         AS story_id
              FROM notifications n
              LEFT JOIN users   a ON a.id = n.actor_id
              LEFT JOIN stories s ON s.id = n.story_id

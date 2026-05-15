@@ -7,7 +7,6 @@ import "./ReadStory.css";
 import "./Commenting.css";
 
 import readingListImg from "../assets/addToList.png";
-import shareImg       from "../assets/share.png";
 import likeImg        from "../assets/likeAChapter.png";
 import likedImg       from "../assets/likedAChapter.png";
 import reviewImg from "../assets/reviewSubmit.png";
@@ -576,10 +575,6 @@ const ReadStory = () => {
               </div>
             )}
           </div>
-
-          <button className="sidebar-btn sidebar-btn-secondary" style={{ marginBottom: "40px" }}>
-            <img src={shareImg} alt="Share" /> Share
-          </button>
 
           {isAuthor && (
             <>

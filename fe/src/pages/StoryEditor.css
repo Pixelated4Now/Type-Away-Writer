@@ -297,3 +297,133 @@
   gap: 12px;
   justify-content: center;
 }
+
+/* ── Invite collaborator button ── */
+.editor-invite-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 0;
+  background: transparent;
+  border: 1.5px solid #111;
+  border-radius: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.editor-invite-btn:hover:not(:disabled) {
+  background: #111;
+  color: #fff;
+}
+
+.editor-invite-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Invite modal ── */
+.editor-invite-popup {
+  max-width: 460px;
+  position: relative;
+}
+
+.editor-invite-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #888;
+  line-height: 1;
+}
+
+.editor-invite-close:hover { color: #111; }
+
+.editor-invite-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.editor-invite-search-wrap {
+  position: relative;
+}
+
+.editor-invite-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.editor-invite-input:focus { border-color: #3b82f6; }
+
+.editor-invite-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px 0;
+}
+
+.editor-invite-item {
+  padding: 10px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.editor-invite-item:hover { background: #f5f7fa; }
+
+.editor-invite-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0 4px;
+}
+
+.editor-invite-success-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.editor-invite-success-text {
+  font-family: "Manrope", sans-serif;
+  font-size: 15px;
+  color: #222;
+  margin: 0;
+  text-align: center;
+}

@@ -197,6 +197,10 @@ const UserProfile = () => {
         const r = await authFetch(`${API}/users/${username}/stories`);
         const d = await r.json();
         setTabData((prev) => ({ ...prev, stories: Array.isArray(d) ? d : [] }));
+      } else if (tab === "collaborations") {
+        const r = await authFetch(`${API}/users/${username}/collaborations`);
+        const d = await r.json();
+        setTabData((prev) => ({ ...prev, collaborations: Array.isArray(d) ? d : [] }));
       } else if (tab === "drafts") {
         const r = await authFetch(`${API}/users/${username}/drafts`);
         const d = await r.json();
@@ -319,9 +323,9 @@ const UserProfile = () => {
   // Story delete
   const handleDeleteStory = async () => {
     if (!deleteStory) return;
-    const { id, isDraft } = deleteStory;
+    const { id, isDraft, tabKey } = deleteStory;
     await authFetch(`${API}/stories/${id}`, { method: "DELETE" });
-    const key = isDraft ? "drafts" : "stories";
+    const key = tabKey ?? (isDraft ? "drafts" : "stories");
     setTabData((prev) => ({ ...prev, [key]: (prev[key] || []).filter((s) => s.id !== id) }));
     setDeleteStory(null);
   };
@@ -425,11 +429,12 @@ const UserProfile = () => {
   );
   if (!profile) return null;
 
-  const stories   = tabData.stories   || [];
-  const drafts    = tabData.drafts    || [];
-  const lists     = tabData.lists     || [];
-  const following = tabData.following || [];
-  const followers = tabData.followers || [];
+  const stories        = tabData.stories        || [];
+  const collaborations = tabData.collaborations || [];
+  const drafts         = tabData.drafts         || [];
+  const lists          = tabData.lists          || [];
+  const following      = tabData.following      || [];
+  const followers      = tabData.followers      || [];
 
   const isExpertProfile = profile.account_type === "expert";
   const canFollow  = user && !isOwnProfile && user.account_type === "student";
@@ -443,12 +448,13 @@ const UserProfile = () => {
         { id: "followers", label: "Followers" },
       ]
     : [
-        { id: "about",     label: "About" },
-        { id: "stories",   label: "Stories" },
-        ...(isOwnProfile ? [{ id: "drafts", label: "Drafts" }] : []),
-        { id: "lists",     label: "Reading Lists" },
-        { id: "following", label: "Following" },
-        { id: "followers", label: "Followers" },
+        { id: "about",           label: "About" },
+        { id: "stories",         label: "Stories" },
+        ...(isOwnProfile ? [{ id: "collaborations", label: "Collaborations" }] : []),
+        ...(isOwnProfile ? [{ id: "drafts",         label: "Drafts" }] : []),
+        { id: "lists",           label: "Reading Lists" },
+        { id: "following",       label: "Following" },
+        { id: "followers",       label: "Followers" },
       ];
 
   return (
@@ -602,6 +608,26 @@ const UserProfile = () => {
                 isOwn={isOwnProfile}
                 onEdit={() => navigate(`/write/${s.id}/settings`)}
                 onDelete={() => setDeleteStory({ id: s.id, isDraft: false })}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Collaborations */}
+        {activeTab === "collaborations" && (
+          <div className="up-story-grid">
+            {collaborations.length === 0 ? (
+              <p className="up-empty">No collaborations yet.</p>
+            ) : collaborations.map((s) => (
+              <StoryCard
+                key={s.id}
+                story={s}
+                isOwn={true}
+                clickable={false}
+                onEdit={() => navigate(`/write/${s.id}/chapters`)}
+                onDelete={user?.id === s.author_id
+                  ? () => setDeleteStory({ id: s.id, tabKey: "collaborations" })
+                  : undefined}
               />
             ))}
           </div>

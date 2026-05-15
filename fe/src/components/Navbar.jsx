@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BsBell, BsHeart, BsChevronDown, BsChat, BsChatDots, BsBookmark, BsStar, BsPerson, BsEnvelope, } from 'react-icons/bs';
+import ReactDOM from 'react-dom';
+import { BsBell, BsHeart, BsChevronDown, BsChat, BsChatDots, BsBookmark, BsStar, BsPerson, BsEnvelope, BsCheckCircle, BsXCircle, BsPeople, } from 'react-icons/bs';
 
 import { GoHeartFill } from "react-icons/go";
 
@@ -14,27 +15,33 @@ const notificationText = (n, accountType) => {
     const actor = n.actor_username || 'Someone';
     const title = n.story_title   || 'a story';
     switch (n.type) {
-        case 'like':           return `${actor} liked ${title}`;
-        case 'comment':        return `${actor} commented on ${title}`;
-        case 'reply':          return `${actor} replied to your comment on ${title}`;
-        case 'save':           return `${actor} added ${title} to a reading list`;
-        case 'review':         return `Language expert ${actor} reviewed ${title}`;
-        case 'follow':         return `${actor} started following you`;
-        case 'review_request': return accountType === 'expert'
+        case 'like':             return `${actor} liked ${title}`;
+        case 'comment':          return `${actor} commented on ${title}`;
+        case 'reply':            return `${actor} replied to your comment on ${title}`;
+        case 'save':             return `${actor} added ${title} to a reading list`;
+        case 'review':           return `Language expert ${actor} reviewed ${title}`;
+        case 'follow':           return `${actor} started following you`;
+        case 'review_request':   return accountType === 'expert'
             ? 'You received a new review request'
             : `${actor} requested a review of ${title}`;
-        default:               return 'You have a new notification';
+        case 'collab_invite':    return `${actor} invited you to collaborate on "${title}"`;
+        case 'collab_accepted':  return `${actor} accepted your collaboration invite for "${title}"`;
+        case 'collab_declined':  return `${actor} declined your collaboration invite for "${title}"`;
+        default:                 return 'You have a new notification';
     }
 };
 
 const NOTIF_ICONS = {
-    like:           <BsHeart />,
-    comment:        <BsChat />,
-    reply:          <BsChatDots />,
-    save:           <BsBookmark />,
-    review:         <BsStar />,
-    follow:         <BsPerson />,
-    review_request: <BsEnvelope />,
+    like:            <BsHeart />,
+    comment:         <BsChat />,
+    reply:           <BsChatDots />,
+    save:            <BsBookmark />,
+    review:          <BsStar />,
+    follow:          <BsPerson />,
+    review_request:  <BsEnvelope />,
+    collab_invite:   <BsPeople />,
+    collab_accepted: <BsCheckCircle />,
+    collab_declined: <BsXCircle />,
 };
 
 const formatTime = (ts) =>
@@ -54,11 +61,13 @@ const Navbar = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    const [profileOpen,   setProfileOpen]   = useState(false);
-    const [notifOpen,     setNotifOpen]     = useState(false);
-    const [writeOpen,     setWriteOpen]     = useState(false);
-    const [notifications, setNotifications] = useState([]);
-    const [unread,        setUnread]        = useState(0);
+    const [profileOpen,          setProfileOpen]          = useState(false);
+    const [notifOpen,            setNotifOpen]            = useState(false);
+    const [writeOpen,            setWriteOpen]            = useState(false);
+    const [notifications,        setNotifications]        = useState([]);
+    const [unread,               setUnread]               = useState(0);
+    const [inviteModal,          setInviteModal]          = useState(null);
+    const [inviteActionLoading,  setInviteActionLoading]  = useState(false);
 
     const profileRef = useRef(null);
     const notifRef   = useRef(null);
@@ -127,6 +136,38 @@ const Navbar = () => {
         navigate('/');
     };
 
+    const handleAcceptInvite = async () => {
+        if (!inviteModal) return;
+        setInviteActionLoading(true);
+        try {
+            const token = localStorage.getItem('authToken');
+            await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/accept`, {
+                method:  'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        } catch { /* silent */ }
+        finally {
+            setInviteActionLoading(false);
+            setInviteModal(null);
+        }
+    };
+
+    const handleDeclineInvite = async () => {
+        if (!inviteModal) return;
+        setInviteActionLoading(true);
+        try {
+            const token = localStorage.getItem('authToken');
+            await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/decline`, {
+                method:  'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        } catch { /* silent */ }
+        finally {
+            setInviteActionLoading(false);
+            setInviteModal(null);
+        }
+    };
+
     return (
         <nav className="navbar">
             <div className="navbar-inner">
@@ -157,7 +198,7 @@ const Navbar = () => {
                                     <div className="write-dropdown-item" onClick={() => { navigate('/write/new'); setWriteOpen(false); }}>
                                         Individual
                                     </div>
-                                    <div className="write-dropdown-item write-dropdown-item-disabled">
+                                    <div className="write-dropdown-item" onClick={() => { navigate('/write/new?mode=collab'); setWriteOpen(false); }}>
                                         Collaboration
                                     </div>
                                 </div>
@@ -199,12 +240,25 @@ const Navbar = () => {
                                                         className={`notif-item${!n.is_read ? ' unread' : ''}`}
                                                         style={{ cursor: 'pointer' }}
                                                         onClick={() => {
+                                                            if (n.type === 'collab_invite') {
+                                                                setNotifOpen(false);
+                                                                markRead();
+                                                                setInviteModal({
+                                                                    storyId:       n.story_id,
+                                                                    invId:         n.invitation_id,
+                                                                    storyTitle:    n.story_title || 'a story',
+                                                                    actorUsername: n.actor_username || 'Someone',
+                                                                });
+                                                                return;
+                                                            }
                                                             setNotifOpen(false);
                                                             markRead();
                                                             if (n.type === 'follow') {
                                                                 navigate(`/profile/${n.actor_username}`);
                                                             } else if (n.type === 'review_request' && user?.account_type === 'expert') {
                                                                 navigate('/review');
+                                                            } else if (n.type === 'collab_accepted' || n.type === 'collab_declined') {
+                                                                if (n.story_id) navigate(`/read/story/${n.story_id}`);
                                                             } else if (n.story_id) {
                                                                 navigate(`/read/story/${n.story_id}`);
                                                             }
@@ -265,6 +319,36 @@ const Navbar = () => {
                 </div>
 
             </div>
+
+            {/* ── Collab invite modal (portal) ── */}
+            {inviteModal && ReactDOM.createPortal(
+                <div
+                    className="collab-modal-overlay"
+                    onClick={(e) => { if (e.target === e.currentTarget) setInviteModal(null); }}
+                >
+                    <div className="collab-modal">
+                        <button className="collab-modal-close" onClick={() => setInviteModal(null)}>×</button>
+                        <h2 className="collab-modal-title">Collaboration Invite</h2>
+                        <p className="collab-modal-body">
+                            <strong>{inviteModal.actorUsername}</strong> has invited you to collaborate on{' '}
+                            <strong>"{inviteModal.storyTitle}"</strong>.
+                        </p>
+                        <div className="collab-modal-actions">
+                            <button
+                                className="collab-modal-btn collab-modal-btn-decline"
+                                onClick={handleDeclineInvite}
+                                disabled={inviteActionLoading}
+                            >DECLINE</button>
+                            <button
+                                className="collab-modal-btn collab-modal-btn-accept"
+                                onClick={handleAcceptInvite}
+                                disabled={inviteActionLoading}
+                            >ACCEPT</button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </nav>
     );
 };

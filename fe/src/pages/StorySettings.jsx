@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -27,8 +27,10 @@ const MAX_TAG_LEN = 100;
 const StorySettings = () => {
   useEffect(() => { document.title = "Story Details | Type-Away-Writer"; }, []);
 
-  const navigate        = useNavigate();
-  const { id: storyId } = useParams();       // undefined for /write/new
+  const navigate          = useNavigate();
+  const { id: storyId }   = useParams();       // undefined for /write/new
+  const [searchParams]    = useSearchParams();
+  const mode              = searchParams.get('mode');
   useAuth();
 
   // ── Form state
@@ -200,7 +202,7 @@ const StorySettings = () => {
         const data = await res.json();
         id = data.id;
       }
-      navigate(`/write/${id}/chapters`);
+      navigate(`/write/${id}/chapters${mode === 'collab' ? '?mode=collab' : ''}`);
     } catch {
       setErrors({ submit: "Something went wrong. Please try again." });
     } finally {

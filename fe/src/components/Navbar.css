@@ -418,3 +418,94 @@
   text-align: center;
   margin: 0;
 }
+
+/* ── Collab invite modal ── */
+.collab-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.collab-modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px 36px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.collab-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #888;
+  line-height: 1;
+}
+
+.collab-modal-close:hover { color: #111; }
+
+.collab-modal-title {
+  font-family: "Manrope", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 14px;
+}
+
+.collab-modal-body {
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  color: #444;
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+
+.collab-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.collab-modal-btn {
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.collab-modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.collab-modal-btn-accept {
+  background: #111;
+  border: none;
+  color: #fff;
+}
+
+.collab-modal-btn-accept:hover:not(:disabled) { background: #3b82f6; }
+
+.collab-modal-btn-decline {
+  background: transparent;
+  border: 1.5px solid #ccc;
+  color: #444;
+}
+
+.collab-modal-btn-decline:hover:not(:disabled) {
+  border-color: #888;
+  color: #111;
+}

@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, } from 'recharts';
+
+// Images abd icons
+import logoImg from "../assets/logoBase.png";
+import { BsBarChartFill } from "react-icons/bs";
+import { FaUsers } from "react-icons/fa6";
+import { FaUserGraduate } from "react-icons/fa";
+import { IoBook } from "react-icons/io5";
+import { IoIosPricetags } from "react-icons/io";
+import { BiSolidCategory } from "react-icons/bi";
+import { FaHouseUser } from "react-icons/fa6";
+import { FaUserAlt } from "react-icons/fa";
+import { CiLogout } from "react-icons/ci";
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 
 const authFetch = (url, options = {}) => {
   const token = localStorage.getItem('authToken');
@@ -19,7 +29,7 @@ const authFetch = (url, options = {}) => {
   });
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers
 
 const actionBtn = (bg) => ({
   background: bg, color: '#fff', border: 'none', borderRadius: 6,
@@ -40,7 +50,7 @@ const StatCard = ({ label, value, bg }) => (
 
 const STATUS_STYLES = {
   Active:          { background: '#e8f5e9', color: '#2e7d32' },
-  Suspended:       { background: '#ffebee', color: '#c62828' },
+  Suspended:       { background: '#ffebee', color: '#FF1212' },
   Published:       { background: '#e8f5e9', color: '#2e7d32' },
   'Under Review':  { background: '#fff8e1', color: '#f57f17' },
 };
@@ -99,6 +109,8 @@ const COLAB_COLORS = ['#0d2d5e', '#8fa8cf'];
 // ── Main component ────────────────────────────────────────────────────────────
 
 const AdminDashboard = () => {
+  useEffect(() => { document.title = 'Dashboard | Type-Away-Writer'; }, []);
+  
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
 
@@ -342,8 +354,8 @@ const AdminDashboard = () => {
         justifyContent: 'space-between', overflowY: 'auto', zIndex: 100,
       }}>
         <div>
-          <div style={{ padding: '0 24px', marginBottom: 32, fontWeight: 700, fontSize: 18 }}>
-            ✏️ TypeAway.
+          <div style={{ padding: '0 12px', marginBottom: 32 }}>
+            <img src={logoImg} style={{ width: '200px' }} />
           </div>
           {navItems.map((item) => (
             <div
@@ -364,7 +376,7 @@ const AdminDashboard = () => {
             onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
           >
-            <span>👤</span><span>Profile</span>
+            <span><FaUserAlt /></span><span>Profile</span>
           </div>
           <div
             style={{ padding: '10px 24px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.8)' }}
@@ -372,7 +384,7 @@ const AdminDashboard = () => {
             onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
           >
-            <span>🚪</span><span>Logout</span>
+            <span><CiLogout /></span><span>Logout</span>
           </div>
         </div>
       </div>
@@ -382,7 +394,7 @@ const AdminDashboard = () => {
 
         {/* ── Dashboard ── */}
         {activeSection === 'dashboard' && (
-          <Section title="Dashboard">
+          <Section>
             <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
               <StatCard label="Total Users"            value={stats.total_users}    bg="#3b4270" />
               <StatCard label="Total Students"         value={stats.total_students} bg="#1a2340" />
@@ -446,7 +458,7 @@ const AdminDashboard = () => {
 
         {/* ── Students ── */}
         {activeSection === 'students' && (
-          <Section title="Students">
+          <Section>
             {students === null
               ? <p style={{ color: '#666' }}>Loading…</p>
               : <AdminTable
@@ -459,7 +471,7 @@ const AdminDashboard = () => {
 
         {/* ── Experts ── */}
         {activeSection === 'experts' && (
-          <Section title="Experts">
+          <Section>
             {experts === null
               ? <p style={{ color: '#666' }}>Loading…</p>
               : <AdminTable
@@ -472,7 +484,7 @@ const AdminDashboard = () => {
 
         {/* ── Content ── */}
         {activeSection === 'content' && (
-          <Section title="Content">
+          <Section>
             {stories === null
               ? <p style={{ color: '#666' }}>Loading…</p>
               : <AdminTable
@@ -485,7 +497,7 @@ const AdminDashboard = () => {
 
         {/* ── Tags ── */}
         {activeSection === 'tags' && (
-          <Section title="Tags">
+          <Section>
             <input
               type="text"
               placeholder="Search tags…"
@@ -539,7 +551,7 @@ const AdminDashboard = () => {
 
         {/* ── Categories ── */}
         {activeSection === 'categories' && (
-          <Section title="Categories">
+          <Section>
             {categories === null
               ? <p style={{ color: '#666' }}>Loading…</p>
               : <>
@@ -557,7 +569,7 @@ const AdminDashboard = () => {
 
         {/* ── Admins ── */}
         {activeSection === 'admins' && (
-          <Section title="Admins">
+          <Section>
             {admins === null
               ? <p style={{ color: '#666' }}>Loading…</p>
               : <AdminTable

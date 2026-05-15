@@ -26,7 +26,7 @@ const AUTHORS_SUBQ = `
 const STORY_SELECT = `
     SELECT
         s.id, s.title, s.summary, s.cover_image_url, s.status,
-        s.likes_count, s.created_at,
+        s.likes_count, s.created_at, s.author_id,
         ${TAGS_SUBQ}    AS tags,
         ${AUTHORS_SUBQ} AS authors,
         (SELECT COUNT(*) FROM chapters  c WHERE c.story_id = s.id) AS chapter_count,
@@ -153,6 +153,43 @@ router.delete('/me/header', authenticateToken, async (req, res) => {
     }
 });
 
+// ── GET /users/search?username=&exclude_story= ────────────────────────────────
+
+router.get('/search', authenticateToken, async (req, res) => {
+    const { username = '', exclude_story } = req.query;
+    try {
+        const params = [`%${username.toLowerCase()}%`, req.user.id];
+        let excludeClause = '';
+        if (exclude_story) {
+            params.push(parseInt(exclude_story, 10));
+            excludeClause = `
+                AND u.id NOT IN (
+                    SELECT user_id   FROM story_collaborators         WHERE story_id = $3
+                    UNION
+                    SELECT author_id FROM stories                     WHERE id       = $3
+                    UNION
+                    SELECT invitee_id FROM collaboration_invitations  WHERE story_id = $3 AND status = 'pending'
+                )`;
+        }
+        const { rows } = await pool.query(
+            `SELECT id, username, avatar_url
+             FROM users u
+             WHERE account_type = 'student'
+               AND is_active = TRUE
+               AND id != $2
+               AND LOWER(username) LIKE $1
+               ${excludeClause}
+             ORDER BY username ASC
+             LIMIT 10`,
+            params
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error('GET /users/search error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
 // ── GET /users/:username — public profile ─────────────────────────────────────
 
 router.get('/:username', optionalAuth, async (req, res) => {
@@ -217,7 +254,11 @@ router.get('/:username/drafts', authenticateToken, async (req, res) => {
 
         const { rows } = await pool.query(
             `${STORY_SELECT}
-             WHERE s.author_id = $1 AND s.status = 'draft'
+             WHERE s.author_id = $1
+               AND s.status = 'draft'
+               AND NOT EXISTS (
+                   SELECT 1 FROM story_collaborators sc WHERE sc.story_id = s.id
+               )
              ORDER BY s.created_at DESC`,
             [req.user.id]
         );
@@ -451,6 +492,39 @@ router.delete('/:username/followers/:followerId', authenticateToken, async (req,
         res.sendStatus(204);
     } catch (err) {
         console.error('DELETE /users/:username/followers/:followerId error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── GET /users/:username/collaborations — own profile only ────────────────────
+
+router.get('/:username/collaborations', authenticateToken, async (req, res) => {
+    try {
+        const user = await pool.query(`SELECT id FROM users WHERE LOWER(username) = LOWER($1)`, [req.params.username]);
+        if (!user.rows[0]) return res.status(404).json({ message: 'User not found.' });
+        if (user.rows[0].id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
+
+        const { rows } = await pool.query(
+            `${STORY_SELECT}
+             WHERE (
+                 EXISTS (
+                     SELECT 1 FROM story_collaborators sc
+                     WHERE sc.story_id = s.id AND sc.user_id = $1
+                 )
+                 OR (
+                     s.author_id = $1
+                     AND s.status != 'published'
+                     AND EXISTS (
+                         SELECT 1 FROM story_collaborators sc2 WHERE sc2.story_id = s.id
+                     )
+                 )
+             )
+             ORDER BY s.created_at DESC`,
+            [req.user.id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error('GET /users/:username/collaborations error:', err);
         res.status(500).json({ message: 'An error occurred.' });
     }
 });

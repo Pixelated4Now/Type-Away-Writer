@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
@@ -26,6 +26,8 @@ const StoryEditor = () => {
   const navigate        = useNavigate();
   const { id: storyId } = useParams();
   const { user }        = useAuth();
+  const [searchParams]  = useSearchParams();
+  const mode            = searchParams.get('mode');
 
   const [chapters,          setChapters]          = useState([]);
   const [currentChapterId,  setCurrentChapterId]  = useState(null);
@@ -37,6 +39,16 @@ const StoryEditor = () => {
   const [backConfirm,       setBackConfirm]        = useState(false);
   const [publishError,      setPublishError]       = useState(null);
   const [publishing,        setPublishing]         = useState(false);
+
+  // Invite collaborator state
+  const [isAuthor,          setIsAuthor]           = useState(true);
+  const [isCollabStory,     setIsCollabStory]      = useState(false);
+
+  const [inviteOpen,        setInviteOpen]         = useState(false);
+  const [inviteSearch,      setInviteSearch]       = useState("");
+  const [inviteSuggestions, setInviteSuggestions]  = useState([]);
+  const [inviteSuccess,     setInviteSuccess]      = useState(null);
+  const [inviteLoading,     setInviteLoading]      = useState(false);
 
   const quillRef          = useRef(null);   // Quill instance
   const editorContainerRef = useRef(null);  // DOM node for Quill
@@ -141,6 +153,18 @@ const StoryEditor = () => {
 
     return () => { ignore = true; };
   }, [storyId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Check author status and whether story already has collaborators
+  useEffect(() => {
+    if (!storyId || !user) return;
+    authFetch(`${API}/stories/${storyId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.author_id) setIsAuthor(data.author_id === user.id);
+        if (Array.isArray(data?.authors) && data.authors.length > 1) setIsCollabStory(true);
+      })
+      .catch(() => {});
+  }, [storyId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── When currentChapterId changes (and Quill is ready), update editor content
   useEffect(() => {
@@ -295,6 +319,45 @@ const StoryEditor = () => {
     navigate(`/write/${storyId}/preview`);
   };
 
+  // ── Invite collaborator
+  const handleInviteSearch = async (value) => {
+    setInviteSearch(value);
+    if (!value.trim()) { setInviteSuggestions([]); return; }
+    try {
+      const r = await authFetch(
+        `${API}/users/search?username=${encodeURIComponent(value)}&exclude_story=${storyId}`
+      );
+      const d = await r.json();
+      setInviteSuggestions(Array.isArray(d) ? d : []);
+    } catch {
+      setInviteSuggestions([]);
+    }
+  };
+
+  const handleSendInvite = async (invitee) => {
+    setInviteLoading(true);
+    try {
+      const r = await authFetch(`${API}/stories/${storyId}/invitations`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ invitee_id: invitee.id }),
+      });
+      if (r.ok) {
+        setInviteSuccess(invitee.username);
+        setInviteSuggestions([]);
+        setInviteSearch("");
+      }
+    } catch { /* silent */ }
+    finally { setInviteLoading(false); }
+  };
+
+  const closeInviteModal = () => {
+    setInviteOpen(false);
+    setInviteSearch("");
+    setInviteSuggestions([]);
+    setInviteSuccess(null);
+  };
+
   const currentIndex = chapters.findIndex(c => c.id === currentChapterId);
 
   return (
@@ -330,9 +393,11 @@ const StoryEditor = () => {
             <button className="editor-btn editor-btn-outline" onClick={handleBack} disabled={loading}>BACK</button>
             <button className="editor-btn editor-btn-outline" onClick={handlePreview} disabled={loading}>PREVIEW</button>
             <button className="editor-btn editor-btn-outline" onClick={handleSaveAsDraft} disabled={loading}>SAVE AS DRAFT</button>
-            <button className="editor-btn editor-btn-dark" onClick={handlePublish} disabled={publishing || loading}>
-              {publishing ? "Publishing…" : "PUBLISH"}
-            </button>
+            {isAuthor && (
+              <button className="editor-btn editor-btn-dark" onClick={handlePublish} disabled={publishing || loading}>
+                {publishing ? "Publishing…" : "PUBLISH"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -362,6 +427,11 @@ const StoryEditor = () => {
           <button className="editor-add-chapter-btn" onClick={handleAddChapter} disabled={loading}>
             <span>+</span> ADD CHAPTER
           </button>
+          {(mode === 'collab' || isCollabStory) && (
+            <button className="editor-invite-btn" onClick={() => setInviteOpen(true)} disabled={loading}>
+              + INVITE COLLABORATOR
+            </button>
+          )}
         </aside>
       </div>
 
@@ -394,6 +464,58 @@ const StoryEditor = () => {
           </div>
         </div>
       )}
+
+      {/* ── Invite collaborator popup ── */}
+      {inviteOpen && (
+        <div className="editor-overlay">
+          <div className="editor-popup editor-invite-popup">
+            <button className="editor-invite-close" onClick={closeInviteModal}>×</button>
+            <h3 className="editor-invite-title">Invite a Collaborator</h3>
+
+            {inviteSuccess ? (
+              <div className="editor-invite-success">
+                <div className="editor-invite-success-icon">✓</div>
+                <p className="editor-invite-success-text">
+                  Invitation sent to <strong>{inviteSuccess}</strong>!
+                </p>
+                <button className="editor-btn editor-btn-outline" onClick={closeInviteModal}>CLOSE</button>
+              </div>
+            ) : (
+              <>
+                <p className="editor-popup-text" style={{ marginBottom: 16 }}>
+                  Search for a student to write this story together.
+                </p>
+                <div className="editor-invite-search-wrap">
+                  <input
+                    className="editor-invite-input"
+                    placeholder="Search by username…"
+                    value={inviteSearch}
+                    onChange={e => handleInviteSearch(e.target.value)}
+                    autoFocus
+                  />
+                  {inviteSuggestions.length > 0 && (
+                    <ul className="editor-invite-dropdown">
+                      {inviteSuggestions.map(u => (
+                        <li
+                          key={u.id}
+                          className="editor-invite-item"
+                          onMouseDown={() => handleSendInvite(u)}
+                        >
+                          {u.username}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {inviteSearch.trim() && inviteSuggestions.length === 0 && !inviteLoading && (
+                    <p style={{ fontSize: 13, color: '#999', margin: '8px 0 0' }}>No users found.</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

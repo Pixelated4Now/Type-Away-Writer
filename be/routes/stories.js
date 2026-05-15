@@ -706,4 +706,108 @@ router.post('/stories/:id/review-requests', authenticateToken, async (req, res) 
     }
 });
 
+// ── POST /stories/:id/invitations ─────────────────────────────────────────────
+
+router.post('/stories/:id/invitations', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    const { invitee_id } = req.body;
+    if (!invitee_id) return res.status(400).json({ message: 'invitee_id is required.' });
+
+    try {
+        const storyRes = await pool.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
+        if (storyRes.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        if (storyRes.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        const existingCollab = await pool.query(
+            'SELECT 1 FROM story_collaborators WHERE story_id = $1 AND user_id = $2',
+            [storyId, invitee_id]
+        );
+        if (existingCollab.rows.length > 0) return res.status(409).json({ message: 'Already a collaborator.' });
+
+        const existingInv = await pool.query(
+            "SELECT 1 FROM collaboration_invitations WHERE story_id = $1 AND invitee_id = $2 AND status = 'pending'",
+            [storyId, invitee_id]
+        );
+        if (existingInv.rows.length > 0) return res.status(409).json({ message: 'Invitation already sent.' });
+
+        const { rows } = await pool.query(
+            'INSERT INTO collaboration_invitations (story_id, inviter_id, invitee_id) VALUES ($1, $2, $3) RETURNING id',
+            [storyId, req.user.id, invitee_id]
+        );
+        const invId = rows[0].id;
+
+        await pool.query(
+            'INSERT INTO notifications (user_id, type, actor_id, story_id, invitation_id) VALUES ($1, $2, $3, $4, $5)',
+            [invitee_id, 'collab_invite', req.user.id, storyId, invId]
+        );
+
+        res.status(201).json({ id: invId });
+    } catch (err) {
+        console.error('POST /stories/:id/invitations error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── POST /stories/:id/invitations/:invId/accept ───────────────────────────────
+
+router.post('/stories/:id/invitations/:invId/accept', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    const invId   = parseInt(req.params.invId, 10);
+
+    try {
+        const inv = await pool.query(
+            "SELECT * FROM collaboration_invitations WHERE id = $1 AND story_id = $2 AND status = 'pending'",
+            [invId, storyId]
+        );
+        if (inv.rows.length === 0) return res.status(404).json({ message: 'Invitation not found.' });
+        if (inv.rows[0].invitee_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        const invitation = inv.rows[0];
+
+        await pool.query("UPDATE collaboration_invitations SET status = 'accepted' WHERE id = $1", [invId]);
+        await pool.query(
+            'INSERT INTO story_collaborators (story_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [storyId, req.user.id]
+        );
+        await pool.query(
+            'INSERT INTO notifications (user_id, type, actor_id, story_id) VALUES ($1, $2, $3, $4)',
+            [invitation.inviter_id, 'collab_accepted', req.user.id, storyId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('POST /stories/:id/invitations/:invId/accept error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
+// ── POST /stories/:id/invitations/:invId/decline ──────────────────────────────
+
+router.post('/stories/:id/invitations/:invId/decline', authenticateToken, async (req, res) => {
+    const storyId = parseInt(req.params.id, 10);
+    const invId   = parseInt(req.params.invId, 10);
+
+    try {
+        const inv = await pool.query(
+            "SELECT * FROM collaboration_invitations WHERE id = $1 AND story_id = $2 AND status = 'pending'",
+            [invId, storyId]
+        );
+        if (inv.rows.length === 0) return res.status(404).json({ message: 'Invitation not found.' });
+        if (inv.rows[0].invitee_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+
+        const invitation = inv.rows[0];
+
+        await pool.query("UPDATE collaboration_invitations SET status = 'declined' WHERE id = $1", [invId]);
+        await pool.query(
+            'INSERT INTO notifications (user_id, type, actor_id, story_id) VALUES ($1, $2, $3, $4)',
+            [invitation.inviter_id, 'collab_declined', req.user.id, storyId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('POST /stories/:id/invitations/:invId/decline error:', err);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+
 module.exports = router;
