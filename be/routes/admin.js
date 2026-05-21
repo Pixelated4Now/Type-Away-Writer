@@ -8,13 +8,13 @@ const guard = [authenticateToken, requireRole('admin')];
 const toTitleCase = (str) =>
     str.trim().split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
-// ── GET /admin/stats ──────────────────────────────────────────────────────────
+// GET statistics (total users, students, language experts, stories)
 
 router.get('/stats', guard, async (req, res) => {
     try {
         const { rows } = await pool.query(`
             SELECT
-                (SELECT COUNT(*)::int FROM users)                                AS total_users,
+                (SELECT COUNT(*)::int FROM users) AS total_users,
                 (SELECT COUNT(*)::int FROM users WHERE account_type = 'student') AS total_students,
                 (SELECT COUNT(*)::int FROM users WHERE account_type = 'expert')  AS total_experts,
                 (SELECT COUNT(*)::int FROM stories WHERE status = 'published')   AS total_stories
@@ -26,7 +26,7 @@ router.get('/stats', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/stats/stories-over-time ────────────────────────────────────────
+// GET statistics of stories per month
 
 router.get('/stats/stories-over-time', guard, async (req, res) => {
     try {
@@ -57,7 +57,7 @@ router.get('/stats/stories-over-time', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/stats/stories-by-category ─────────────────────────────────────
+// GET no. of stories per category
 
 router.get('/stats/stories-by-category', guard, async (req, res) => {
     try {
@@ -75,7 +75,7 @@ router.get('/stats/stories-by-category', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/stats/collaboration ────────────────────────────────────────────
+// GET no. of individual and collaboration stories.
 
 router.get('/stats/collaboration', guard, async (req, res) => {
     try {
@@ -98,7 +98,7 @@ router.get('/stats/collaboration', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/users?type=student|expert ─────────────────────────────────────
+// GET student and expert info.
 
 router.get('/users', guard, async (req, res) => {
     const { type } = req.query;
@@ -106,6 +106,7 @@ router.get('/users', guard, async (req, res) => {
         return res.status(400).json({ message: 'type must be student or expert.' });
     }
     try {
+        // GET Students.
         let rows;
         if (type === 'student') {
             ({ rows } = await pool.query(`
@@ -118,6 +119,7 @@ router.get('/users', guard, async (req, res) => {
                 ORDER BY u.created_at DESC
             `));
         } else {
+            // GET experts.
             ({ rows } = await pool.query(`
                 SELECT u.id, u.username, u.email, u.created_at, u.is_active,
                        COUNT(rr.id)::int AS review_count
@@ -135,7 +137,7 @@ router.get('/users', guard, async (req, res) => {
     }
 });
 
-// ── PATCH /admin/users/:id/suspend ────────────────────────────────────────────
+// PATCH suspend
 
 router.patch('/users/:id/suspend', guard, async (req, res) => {
     try {
@@ -151,7 +153,7 @@ router.patch('/users/:id/suspend', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/stories ────────────────────────────────────────────────────────
+// GET story details.
 
 router.get('/stories', guard, async (req, res) => {
     try {
@@ -171,7 +173,7 @@ router.get('/stories', guard, async (req, res) => {
     }
 });
 
-// ── DELETE /admin/stories/:id ─────────────────────────────────────────────────
+// DELETE story.
 
 router.delete('/stories/:id', guard, async (req, res) => {
     try {
@@ -183,7 +185,7 @@ router.delete('/stories/:id', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/tags ───────────────────────────────────────────────────────────
+// GET all available tags.
 
 router.get('/tags', guard, async (req, res) => {
     try {
@@ -195,7 +197,7 @@ router.get('/tags', guard, async (req, res) => {
     }
 });
 
-// ── POST /admin/tags ──────────────────────────────────────────────────────────
+// Create new tag.
 
 router.post('/tags', guard, async (req, res) => {
     const { name } = req.body;
@@ -207,7 +209,7 @@ router.post('/tags', guard, async (req, res) => {
             [titled]
         );
         if (rows.length === 0) {
-            // Already exists — return the existing row
+            // If it already exists. return the existing row
             const existing = await pool.query('SELECT * FROM tags WHERE LOWER(name) = LOWER($1)', [titled]);
             return res.json(existing.rows[0]);
         }
@@ -218,7 +220,7 @@ router.post('/tags', guard, async (req, res) => {
     }
 });
 
-// ── DELETE /admin/tags/:id ────────────────────────────────────────────────────
+// DELETE a tag.
 
 router.delete('/tags/:id', guard, async (req, res) => {
     try {
@@ -230,7 +232,7 @@ router.delete('/tags/:id', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/categories ─────────────────────────────────────────────────────
+// GET all categories (or genres)
 
 router.get('/categories', guard, async (req, res) => {
     try {
@@ -248,7 +250,7 @@ router.get('/categories', guard, async (req, res) => {
     }
 });
 
-// ── POST /admin/categories ────────────────────────────────────────────────────
+// Create new category.
 
 router.post('/categories', guard, async (req, res) => {
     const { name } = req.body;
@@ -265,7 +267,7 @@ router.post('/categories', guard, async (req, res) => {
     }
 });
 
-// ── PUT /admin/categories/:id ─────────────────────────────────────────────────
+// Update category name.
 
 router.put('/categories/:id', guard, async (req, res) => {
     const { name } = req.body;
@@ -283,7 +285,7 @@ router.put('/categories/:id', guard, async (req, res) => {
     }
 });
 
-// ── DELETE /admin/categories/:id ──────────────────────────────────────────────
+// DELETE cateogory.
 
 router.delete('/categories/:id', guard, async (req, res) => {
     try {
@@ -295,7 +297,7 @@ router.delete('/categories/:id', guard, async (req, res) => {
     }
 });
 
-// ── GET /admin/admins ─────────────────────────────────────────────────────────
+// GET all admin details.
 
 router.get('/admins', guard, async (req, res) => {
     try {

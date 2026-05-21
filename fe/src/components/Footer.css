@@ -63,15 +63,18 @@
   padding-top: 8px;
 }
 
-.footer-links a {
+.footer-links a,
+.footer-links span {
   font-size: 20px;
   font-weight: 600;
   color: #333;
   text-decoration: none;
+  cursor: pointer;
   transition: color 0.15s ease;
 }
 
-.footer-links a:hover {
+.footer-links a:hover,
+.footer-links span:hover {
   color: #0e72e5;
 }
 

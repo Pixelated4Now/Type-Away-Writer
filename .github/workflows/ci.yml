@@ -10,7 +10,7 @@ on:
 
 
 # Two jobs: back-end and front-end.
-# Download code onto temporary machine GitHub males to run the workflow.
+# Download code onto temporary machine GitHub makes to run the workflow.
 
 jobs:
   # BACKEND

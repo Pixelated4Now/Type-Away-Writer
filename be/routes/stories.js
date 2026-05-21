@@ -651,11 +651,15 @@ router.delete('/chapters/:chapterId', authenticateToken, async (req, res) => {
     const chapterId = parseInt(req.params.chapterId, 10);
     try {
         const chapRes = await pool.query(
-            'SELECT c.story_id, s.author_id FROM chapters c JOIN stories s ON s.id = c.story_id WHERE c.id = $1',
-            [chapterId]
+            `SELECT c.story_id, s.author_id,
+                    EXISTS(SELECT 1 FROM story_collaborators sc
+                           WHERE sc.story_id = c.story_id AND sc.user_id = $2) AS is_collaborator
+             FROM chapters c JOIN stories s ON s.id = c.story_id WHERE c.id = $1`,
+            [chapterId, req.user.id]
         );
         if (chapRes.rows.length === 0) return res.status(404).json({ message: 'Chapter not found.' });
-        if (chapRes.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+        const { author_id, is_collaborator } = chapRes.rows[0];
+        if (author_id !== req.user.id && !is_collaborator) return res.status(403).json({ message: 'Not authorised.' });
 
         const { story_id } = chapRes.rows[0];
         const { rows: countRows } = await pool.query(

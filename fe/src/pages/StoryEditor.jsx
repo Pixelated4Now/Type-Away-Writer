@@ -41,6 +41,8 @@ const StoryEditor = () => {
   const [publishing,        setPublishing]         = useState(false);
 
   // Invite collaborator state
+  const [quillReady,        setQuillReady]         = useState(false);
+
   const [isAuthor,          setIsAuthor]           = useState(true);
   const [isCollabStory,     setIsCollabStory]      = useState(false);
 
@@ -103,15 +105,7 @@ const StoryEditor = () => {
         },
       });
       quillRef.current = quill;
-
-      // Load initial chapter once Quill is ready
-      if (chapters.length > 0 && currentChapterId) {
-        const ch = chapters.find(c => c.id === currentChapterId);
-        if (ch) {
-          quill.root.innerHTML = ch.content || "";
-          setSavedContent(ch.content || "");
-        }
-      }
+      setQuillReady(true);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -140,10 +134,6 @@ const StoryEditor = () => {
         setCurrentChapterId(first.id);
         setChapterName(first.title || "");
         setSavedName(first.title || "");
-        setSavedContent(first.content || "");
-        if (quillRef.current) {
-          quillRef.current.root.innerHTML = first.content || "";
-        }
       } catch (err) {
         if (!ignore) console.error(err);
       } finally {
@@ -166,14 +156,15 @@ const StoryEditor = () => {
       .catch(() => {});
   }, [storyId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── When currentChapterId changes (and Quill is ready), update editor content
+  // ── Load chapter content into Quill once both Quill is ready and chapter data is available
   useEffect(() => {
-    if (!quillRef.current || !currentChapterId) return;
+    if (!quillReady || !quillRef.current || !currentChapterId) return;
     const ch = chapters.find(c => c.id === currentChapterId);
     if (ch) {
       quillRef.current.root.innerHTML = ch.content || "";
+      setSavedContent(ch.content || "");
     }
-  }, [currentChapterId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [quillReady, currentChapterId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Save current chapter
   const saveCurrentChapter = useCallback(async () => {
@@ -427,7 +418,7 @@ const StoryEditor = () => {
           <button className="editor-add-chapter-btn" onClick={handleAddChapter} disabled={loading}>
             <span>+</span> ADD CHAPTER
           </button>
-          {(mode === 'collab' || isCollabStory) && (
+          {isAuthor && (mode === 'collab' || isCollabStory) && (
             <button className="editor-invite-btn" onClick={() => setInviteOpen(true)} disabled={loading}>
               + INVITE COLLABORATOR
             </button>

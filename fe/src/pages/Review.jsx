@@ -98,7 +98,7 @@ const Review = () => {
         ) : (
           <div className="review-list">
             {requests.map(req => (
-              <div key={req.id} className="review-card">
+              <div key={req.id} className="review-card" onClick={() => navigate(`/read/story/${req.story_id}`)} style={{ cursor: "pointer" }}>
 
                 <span className={`review-badge${req.status === "reviewed" ? " review-badge-reviewed" : " review-badge-new"}`}>
                   {req.status === "reviewed" ? "REVIEWED" : "NEW REQUEST"}
@@ -116,7 +116,7 @@ const Review = () => {
                 <div className="review-card-menu">
                   <button
                     className="review-menu-btn"
-                    onClick={() => setOpenMenuId(prev => prev === req.id ? null : req.id)}
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === req.id ? null : req.id); }}
                     aria-label="Actions"
                   >
                     &#8942;

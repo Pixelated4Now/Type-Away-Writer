@@ -51,7 +51,6 @@ jobs:
           tags: ghcr.io/${{ env.OWNER }}/taw-frontend:latest
 
   # Deploy images after succesful build and push.
-  # This job is a placeholder. Replace the step below with the deployment steps for your chosen platform (Render, Railway, AWS...)
   deploy:
     name: Deploy
     runs-on: ubuntu-latest

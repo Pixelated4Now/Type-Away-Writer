@@ -14,6 +14,7 @@ const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
 const ReadCategory = () => {
   useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
 
   const { categoryId } = useParams();

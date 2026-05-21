@@ -89,7 +89,7 @@ const ReadPage = () => {
                   <span className="category-name">{cat.name}</span>
                   <div className="category-image">
                     <img
-                      src={cat.image_path || categoryImage(cat.name)}
+                      src={cat.image_path ? `${API}${cat.image_path}` : categoryImage(cat.name)}
                       alt={cat.name}
                       onError={(e) => { e.target.style.display = "none"; }}
                     />
