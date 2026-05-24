@@ -9,16 +9,16 @@ const ForgotPassword = () => {
 
     const navigate = useNavigate();
 
-    const [email, setEmail]             = useState('');
-    const [emailSent, setEmailSent]     = useState(false);
-    const [emailError, setEmailError]   = useState('');
+    const [email, setEmail]  = useState('');
+    const [emailSent, setEmailSent] = useState(false);
+    const [emailError, setEmailError] = useState('');
     const [serverError, setServerError] = useState('');
-    const [loading, setLoading]         = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault();  // Prevents default browser form submission behaviour.
         setServerError('');
 
         if (!email) { setEmailError('Please fill in this field.'); return; }
@@ -39,7 +39,7 @@ const ForgotPassword = () => {
                 return;
             }
 
-            setEmailSent(true);
+            setEmailSent(true);  // Set to TRUE after successful response.
         } catch {
             setServerError('A network error occurred. Please try again.');
         } finally {

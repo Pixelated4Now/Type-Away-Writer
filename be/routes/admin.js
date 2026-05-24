@@ -3,8 +3,11 @@ const router  = express.Router();
 const pool    = require('../db');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
+// Every route is protected by guard.
+// Checks that the user is logged in and an admin.
 const guard = [authenticateToken, requireRole('admin')];
 
+// Ensures correct formatting when making new tags.
 const toTitleCase = (str) =>
     str.trim().split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
@@ -26,10 +29,11 @@ router.get('/stats', guard, async (req, res) => {
     }
 });
 
-// GET statistics of stories per month
+// GET statistics of stories per month pfor current year.
 
 router.get('/stats/stories-over-time', guard, async (req, res) => {
     try {
+        // Uses a PostgreSQL technique 'generate_series' to produce all 12 months of the year first.
         const { rows } = await pool.query(`
             WITH months AS (
                 SELECT generate_series(
@@ -57,7 +61,7 @@ router.get('/stats/stories-over-time', guard, async (req, res) => {
     }
 });
 
-// GET no. of stories per category
+// GET no. of stories per category, ordered from most to least.
 
 router.get('/stats/stories-by-category', guard, async (req, res) => {
     try {
@@ -75,7 +79,7 @@ router.get('/stats/stories-by-category', guard, async (req, res) => {
     }
 });
 
-// GET no. of individual and collaboration stories.
+// GET no. of individual and collaboration published stories.
 
 router.get('/stats/collaboration', guard, async (req, res) => {
     try {
@@ -98,7 +102,7 @@ router.get('/stats/collaboration', guard, async (req, res) => {
     }
 });
 
-// GET student and expert info.
+// GET all users of a specified type.
 
 router.get('/users', guard, async (req, res) => {
     const { type } = req.query;
@@ -106,7 +110,7 @@ router.get('/users', guard, async (req, res) => {
         return res.status(400).json({ message: 'type must be student or expert.' });
     }
     try {
-        // GET Students.
+        // GET Students, with count of published stories.
         let rows;
         if (type === 'student') {
             ({ rows } = await pool.query(`
@@ -119,7 +123,7 @@ router.get('/users', guard, async (req, res) => {
                 ORDER BY u.created_at DESC
             `));
         } else {
-            // GET experts.
+            // GET experts, with count of reviews.
             ({ rows } = await pool.query(`
                 SELECT u.id, u.username, u.email, u.created_at, u.is_active,
                        COUNT(rr.id)::int AS review_count
@@ -137,7 +141,7 @@ router.get('/users', guard, async (req, res) => {
     }
 });
 
-// PATCH suspend
+// PATCH request to chnage a user's active status.
 
 router.patch('/users/:id/suspend', guard, async (req, res) => {
     try {
@@ -153,7 +157,7 @@ router.patch('/users/:id/suspend', guard, async (req, res) => {
     }
 });
 
-// GET story details.
+// GET story details of publishes stories.
 
 router.get('/stories', guard, async (req, res) => {
     try {
@@ -220,7 +224,7 @@ router.post('/tags', guard, async (req, res) => {
     }
 });
 
-// DELETE a tag.
+// DELETE a tag. Will be automatically removed from any stories that have it.
 
 router.delete('/tags/:id', guard, async (req, res) => {
     try {
@@ -232,7 +236,7 @@ router.delete('/tags/:id', guard, async (req, res) => {
     }
 });
 
-// GET all categories (or genres)
+// GET all categories (or genres) with published story count.
 
 router.get('/categories', guard, async (req, res) => {
     try {
@@ -285,7 +289,7 @@ router.put('/categories/:id', guard, async (req, res) => {
     }
 });
 
-// DELETE cateogory.
+// DELETE cateogory. Stories in said category will have cateegory set to NULL.
 
 router.delete('/categories/:id', guard, async (req, res) => {
     try {
@@ -297,7 +301,7 @@ router.delete('/categories/:id', guard, async (req, res) => {
     }
 });
 
-// GET all admin details.
+// GET details of all admins.
 
 router.get('/admins', guard, async (req, res) => {
     try {

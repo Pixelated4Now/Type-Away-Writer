@@ -24,7 +24,7 @@ const Home = () => {
     <div className="home-page">
       <Navbar />
 
-      {/* ── Hero ── */}
+      {/* Hero */}
       <section className="hero-section">
         <div className="hero-text">
           <h1>Become a writer!</h1>
@@ -39,7 +39,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Get Started Banner ── */}
+      {/* Get Started Banner */}
       <section className="get-started-banner">
         <div className="banner-image">
           <img src={writingPadImg} alt="Writing pad and pen" />
@@ -50,13 +50,11 @@ const Home = () => {
             Write captivating stories, read enchanting novels, and
             discover hidden talents
           </p>
-          <button className="btn-start-writing" onClick={() => navigate(user ? "/write/new" : "/login")}>
-            START WRITING
-          </button>
+          <button className="btn-start-writing" onClick={() => navigate(user ? "/write/new" : "/login")}>START WRITING</button>
         </div>
       </section>
 
-      {/* ── How it Works ── */}
+      {/* How it Works */}
       <section className="how-it-works">
         <h2>How it Works</h2>
 
@@ -140,7 +138,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── There's More ── */}
+      {/* There's More */}
       <section className="theres-more">
         <h2>There's more</h2>
         <div className="expert-review-card">

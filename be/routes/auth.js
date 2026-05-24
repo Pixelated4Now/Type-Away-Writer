@@ -10,8 +10,7 @@ const pool     = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 require('dotenv').config();
 
-// ── Email transporter ────────────────────────────────────────────────────────
-
+//  Configure Nodemail with Gmail credentials to send emails.
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -20,8 +19,8 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// ── Multer — qualification file uploads for expert registration ──────────────
 
+// Configure Multer storage specifically for qualification file uploads.
 const storage = multer.diskStorage({
     destination: path.join(__dirname, '../uploads/qualifications'),
     filename: (req, file, cb) => {
@@ -43,13 +42,14 @@ const upload = multer({
     },
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// Utility functions
 
 const MONTH_NAMES = [
     'January','February','March','April','May','June',
     'July','August','September','October','November','December',
 ];
 
+// Convert a day, month name, and year into a 'YYYY-MM-DD' date string for the database.
 const buildDOB = (day, month, year) => {
     const monthNum = MONTH_NAMES.indexOf(month) + 1;
     if (!monthNum) return null;
@@ -58,9 +58,11 @@ const buildDOB = (day, month, year) => {
     return `${year}-${m}-${d}`;
 };
 
+// Generate a random 6-digit number as a string for email verification codes.
 const generateCode = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
+// Creates a signed JWT containing the user's id, username, email, and account type.
 const signToken = (user) =>
     jwt.sign(
         { id: user.id, username: user.username, email: user.email, account_type: user.account_type },
@@ -68,6 +70,7 @@ const signToken = (user) =>
         { expiresIn: '24h' }
     );
 
+//  Sends a formatted email containing the verification code.
 const sendVerificationEmail = async (email, username, code) => {
     await transporter.sendMail({
         from: `"Type-Away-Writer" <${process.env.GMAIL_USER}>`,
@@ -83,9 +86,11 @@ const sendVerificationEmail = async (email, username, code) => {
     });
 };
 
-// ── Shared registration logic ─────────────────────────────────────────────────
+
+// Common registration logic for student and expert. Runs on Step 3.
 
 const registerUser = async (res, { username, email, password, birthDay, birthMonth, birthYear, account_type }) => {
+    // Presence check
     if (!username || !email || !password || !birthDay || !birthMonth || !birthYear) {
         return res.status(400).json({ message: 'All fields are required.' });
     }
@@ -94,6 +99,7 @@ const registerUser = async (res, { username, email, password, birthDay, birthMon
     try {
         await client.query('BEGIN');
 
+        // Uniqueness check for username and email.
         const existing = await client.query(
             'SELECT id, username, email FROM users WHERE username = $1 OR email = $2',
             [username, email]
@@ -106,9 +112,10 @@ const registerUser = async (res, { username, email, password, birthDay, birthMon
             return res.status(409).json({ message: 'Email address is already registered.' });
         }
 
-        const dob       = buildDOB(birthDay, birthMonth, birthYear);
+        const dob = buildDOB(birthDay, birthMonth, birthYear);
         const hashedPwd = await bcrypt.hash(password, 10);
 
+        // Creates new user in DB.
         const { rows } = await client.query(
             `INSERT INTO users (username, email, password, account_type, date_of_birth)
              VALUES ($1, $2, $3, $4, $5)
@@ -117,14 +124,14 @@ const registerUser = async (res, { username, email, password, birthDay, birthMon
         );
         const user = rows[0];
 
-        const code      = generateCode();
+        const code = generateCode();
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await client.query(
             'INSERT INTO email_verification_codes (user_id, code, expires_at) VALUES ($1, $2, $3)',
             [user.id, code, expiresAt]
         );
 
-        // Send email before committing — rolls back if this throws
+        // Send email before committing. If email fails to send, no user record is stored.
         await sendVerificationEmail(email, username, code);
 
         await client.query('COMMIT');
@@ -141,7 +148,8 @@ const registerUser = async (res, { username, email, password, birthDay, birthMon
     }
 };
 
-// ── GET /auth/check-username?username= ───────────────────────────────────────
+
+// GET request to check whether a username is already taken.
 
 router.get('/check-username', async (req, res) => {
     const { username } = req.query;
@@ -158,7 +166,7 @@ router.get('/check-username', async (req, res) => {
     }
 });
 
-// ── GET /auth/check-email?email= ─────────────────────────────────────────────
+// GET request to check whether an email already exists.
 
 router.get('/check-email', async (req, res) => {
     const { email } = req.query;
@@ -175,11 +183,12 @@ router.get('/check-email', async (req, res) => {
     }
 });
 
-// ── POST /auth/register/student ───────────────────────────────────────────────
+// POST request to register a student.
 
 router.post('/register/student', async (req, res) => {
     const { username, email, password, birthDay, birthMonth, birthYear } = req.body;
     try {
+        // Calls registerUser with student account type.
         await registerUser(res, { username, email, password, birthDay, birthMonth, birthYear, account_type: 'student' });
     } catch (err) {
         console.error('Student registration error:', err);
@@ -187,14 +196,16 @@ router.post('/register/student', async (req, res) => {
     }
 });
 
-// ── POST /auth/register/expert ────────────────────────────────────────────────
+// POST request to register an expert.
 
 router.post('/register/expert', upload.array('files', 10), async (req, res) => {
     const { username, email, password, birthDay, birthMonth, birthYear } = req.body;
+    // Checks that at least one qualification file was uploaded
     try {
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: 'At least one qualification file is required.' });
         }
+        // Calls registerUser with expert account type.
         await registerUser(res, { username, email, password, birthDay, birthMonth, birthYear, account_type: 'expert' });
     } catch (err) {
         console.error('Expert registration error:', err);
@@ -202,7 +213,7 @@ router.post('/register/expert', upload.array('files', 10), async (req, res) => {
     }
 });
 
-// ── POST /auth/verify-email ───────────────────────────────────────────────────
+// POST request to check verification code.
 
 router.post('/verify-email', async (req, res) => {
     const { userId, code } = req.body;
@@ -210,6 +221,7 @@ router.post('/verify-email', async (req, res) => {
         return res.status(400).json({ message: 'userId and code are required.' });
     }
 
+    // Looks up the code, checking that it matches and has not expired.
     try {
         const result = await pool.query(
             `SELECT * FROM email_verification_codes
@@ -232,6 +244,7 @@ router.post('/verify-email', async (req, res) => {
         const user  = rows[0];
         const token = signToken(user);
 
+        // Returns JWT token
         res.status(200).json({
             message: 'Email verified successfully.',
             token,
@@ -243,7 +256,7 @@ router.post('/verify-email', async (req, res) => {
     }
 });
 
-// ── POST /auth/resend-verification ───────────────────────────────────────────
+// PST request to resend email with verification code.
 
 router.post('/resend-verification', async (req, res) => {
     const { userId } = req.body;
@@ -260,9 +273,9 @@ router.post('/resend-verification', async (req, res) => {
 
         const user = rows[0];
 
-        // Replace any existing code
+        // Delete any existing code and make new one.
         await pool.query('DELETE FROM email_verification_codes WHERE user_id = $1', [userId]);
-        const code      = generateCode();
+        const code = generateCode();
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await pool.query(
             'INSERT INTO email_verification_codes (user_id, code, expires_at) VALUES ($1, $2, $3)',
@@ -277,7 +290,7 @@ router.post('/resend-verification', async (req, res) => {
     }
 });
 
-// ── POST /auth/login ──────────────────────────────────────────────────────────
+// POSt request to log in.
 
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -315,7 +328,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ── POST /auth/forgot-password ────────────────────────────────────────────────
+// POST request to send reset password email.
 
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
@@ -327,6 +340,7 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(200).json({ message: 'If this email exists, a reset link has been sent.' });
         }
 
+        // Generate a secure 32-byte random token using crypto.
         const resetToken  = crypto.randomBytes(32).toString('hex');
         const resetExpiry = new Date(Date.now() + 3600000); // 1 hour
 
@@ -356,7 +370,7 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
-// ── POST /auth/reset-password ─────────────────────────────────────────────────
+// POST request to reset the password.
 
 router.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
@@ -385,7 +399,7 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// ── POST /auth/change-password ────────────────────────────────────────────────
+// POST request to change the password.
 
 router.post('/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body;

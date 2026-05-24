@@ -1,8 +1,6 @@
--- ============================================================
--- Type-Away-Writer — full database schema
--- All tables use CREATE TABLE IF NOT EXISTS so this file can
--- be run safely on every container startup.
--- ============================================================
+-- Full database schema
+-- All tables use CREATE TABLE IF NOT EXISTS so this file can be run safely on every container startup.
+
 
 CREATE TABLE IF NOT EXISTS users (
     id                 SERIAL PRIMARY KEY,
@@ -106,15 +104,10 @@ CREATE TABLE IF NOT EXISTS reading_list_stories (
     PRIMARY KEY (reading_list_id, story_id)
 );
 
--- ============================================================
 -- Seed data  (safe to re-run — ignored if rows already exist)
--- ============================================================
 
 INSERT INTO categories (name) VALUES
-    ('Adventure'), ('Animal Stories'), ('Dreams'), ('Family'),
-    ('Friendship'), ('Funny'), ('Horror'), ('Magic'),
-    ('Mystery'), ('Romance'), ('School Life'), ('Science Fiction'),
-    ('Sports Fiction'), ('Superheroes')
+    ('Adventure'), ('Animal Stories'), ('Dreams'), ('Family'), ('Friendship'), ('Funny'), ('Horror'), ('Magic'), ('Mystery'), ('Romance'), ('School Life'), ('Science Fiction'),  ('Sports Fiction'), ('Superheroes')
 ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS notifications (
@@ -128,10 +121,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 INSERT INTO tags (name) VALUES
-    ('Happy'), ('Sad'), ('Danger'), ('School'), ('Family'),
-    ('Friendship'), ('Funny'), ('Dark'), ('Magic'), ('Adventure'),
-    ('Animals'), ('Mystery'), ('Love'), ('Action'), ('Nature'),
-    ('Fear'), ('Hope'), ('Courage'), ('Teamwork'), ('Dreams')
+    ('Happy'), ('Sad'), ('Danger'), ('School'), ('Family'), ('Friendship'), ('Funny'), ('Dark'), ('Magic'), ('Adventure'), ('Animals'), ('Mystery'), ('Love'), ('Action'), ('Nature'), ('Fear'), ('Hope'), ('Courage'), ('Teamwork'), ('Dreams')
 ON CONFLICT DO NOTHING;
 
 -- Add work_status to stories if not present (safe to re-run)
@@ -164,7 +154,7 @@ CREATE TABLE IF NOT EXISTS follows (
     PRIMARY KEY (follower_id, following_id)
 );
 
--- Collaboration feature
+-- Collaboration features
 CREATE TABLE IF NOT EXISTS collaboration_invitations (
     id         SERIAL PRIMARY KEY,
     story_id   INT REFERENCES stories(id)  ON DELETE CASCADE,
@@ -176,8 +166,7 @@ CREATE TABLE IF NOT EXISTS collaboration_invitations (
 
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
 ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
-    CHECK (type IN ('like', 'follow', 'comment', 'reply', 'save', 'review', 'review_request',
-                    'collab_invite', 'collab_accepted', 'collab_declined'));
+    CHECK (type IN ('like', 'follow', 'comment', 'reply', 'save', 'review', 'review_request', 'collab_invite', 'collab_accepted', 'collab_declined'));
 
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS invitation_id INT
     REFERENCES collaboration_invitations(id) ON DELETE SET NULL;

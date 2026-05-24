@@ -20,4 +20,5 @@ pool.connect((err, client, release) => {
     }
 });
 
+// Any file that wants to query the DB must import this file.
 module.exports = pool;

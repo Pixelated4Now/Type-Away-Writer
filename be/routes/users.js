@@ -1,11 +1,12 @@
 const express = require('express');
-const router  = express.Router();
-const pool    = require('../db');
+const router = express.Router();
+const pool = require('../db');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { createNotification } = require('../utils/notifications');
 
-// ── Shared SQL for story shape ────────────────────────────────────────────────
+// Shared SQL fragments.
 
+// Subquery to fetch all tags for a story as an array, ordered alphabetically.
 const TAGS_SUBQ = `
     COALESCE(
         (SELECT ARRAY_AGG(t.name ORDER BY t.name)
@@ -14,6 +15,7 @@ const TAGS_SUBQ = `
         ARRAY[]::TEXT[]
     )`;
 
+// Subquery to fetch all authors (original and collaborators) for a story as an array.
 const AUTHORS_SUBQ = `
     (SELECT ARRAY_AGG(u2.username ORDER BY u2.username)
      FROM (
@@ -23,17 +25,18 @@ const AUTHORS_SUBQ = `
      ) combined
      JOIN users u2 ON u2.id = combined.uid)`;
 
+//  Combines both subqueries along with chapter count and comment count. Ensures every story-shaped response has a consistent structure.
 const STORY_SELECT = `
     SELECT
         s.id, s.title, s.summary, s.cover_image_url, s.status,
         s.likes_count, s.created_at, s.author_id,
         ${TAGS_SUBQ}    AS tags,
         ${AUTHORS_SUBQ} AS authors,
-        (SELECT COUNT(*) FROM chapters  c WHERE c.story_id = s.id) AS chapter_count,
-        (SELECT COUNT(*) FROM comments  cm WHERE cm.story_id = s.id) AS comment_count
+        (SELECT COUNT(*) FROM chapters c WHERE c.story_id = s.id) AS chapter_count,
+        (SELECT COUNT(*) FROM comments cm WHERE cm.story_id = s.id) AS comment_count
     FROM stories s`;
 
-// ── GET /users/experts ────────────────────────────────────────────────────────
+// GET request to find language expert with matching username.
 
 router.get('/experts', authenticateToken, async (req, res) => {
     const { username = '' } = req.query;
@@ -53,7 +56,7 @@ router.get('/experts', authenticateToken, async (req, res) => {
     }
 });
 
-// ── GET /users/me — current user profile data ─────────────────────────────────
+// GET request to retrieve current user profile data.
 
 router.get('/me', authenticateToken, async (req, res) => {
     try {
@@ -70,7 +73,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     }
 });
 
-// ── PUT /users/me — update username and/or bio ────────────────────────────────
+// PUT request to update username, bio, email, and date of birth.
 
 router.put('/me', authenticateToken, async (req, res) => {
     const { username, bio, email, date_of_birth } = req.body;
@@ -82,12 +85,12 @@ router.put('/me', authenticateToken, async (req, res) => {
         return res.status(400).json({ message: 'Username must be 3-30 characters (letters, numbers, underscores).' });
     }
     try {
-        // Build update dynamically so callers that omit email/date_of_birth don't overwrite those fields
+        // Builds the UPDATE query dynamically so that fields not included in the request body are not accidentally overwritten. 
         const setClauses = ['username = $1', 'bio = $2'];
-        const params     = [trimmed, bio?.trim() || null];
+        const params = [trimmed, bio?.trim() || null];
         let idx = 3;
 
-        if (email !== undefined)         { setClauses.push(`email = $${idx++}`);         params.push(email || null); }
+        if (email !== undefined) { setClauses.push(`email = $${idx++}`); params.push(email || null); }
         if (date_of_birth !== undefined) { setClauses.push(`date_of_birth = $${idx++}`); params.push(date_of_birth || null); }
 
         params.push(req.user.id);
@@ -99,13 +102,14 @@ router.put('/me', authenticateToken, async (req, res) => {
         if (!rows[0]) return res.status(404).json({ message: 'User not found.' });
         res.json(rows[0]);
     } catch (err) {
+        // Returns a 409 conflict error if the new username is already taken.
         if (err.code === '23505') return res.status(409).json({ message: 'Username is already taken.' });
         console.error('PUT /users/me error:', err);
         res.status(500).json({ message: 'An error occurred.' });
     }
 });
 
-// ── PUT /users/me/avatar ──────────────────────────────────────────────────────
+// PUT request to update avatar URL after user uploads profile photo.
 
 router.put('/me/avatar', authenticateToken, async (req, res) => {
     const { avatar_url } = req.body;
@@ -123,7 +127,7 @@ router.put('/me/avatar', authenticateToken, async (req, res) => {
     }
 });
 
-// ── PUT /users/me/header ──────────────────────────────────────────────────────
+// PUT request to update header image URL after user uploads header image.
 
 router.put('/me/header', authenticateToken, async (req, res) => {
     const { header_image_url } = req.body;
@@ -141,7 +145,7 @@ router.put('/me/header', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /users/me/header ───────────────────────────────────────────────────
+// DELETE request to remove header image.
 
 router.delete('/me/header', authenticateToken, async (req, res) => {
     try {
@@ -153,7 +157,7 @@ router.delete('/me/header', authenticateToken, async (req, res) => {
     }
 });
 
-// ── GET /users/search?username=&exclude_story= ────────────────────────────────
+// GET request to search for students with matching name for collaboration invites.
 
 router.get('/search', authenticateToken, async (req, res) => {
     const { username = '', exclude_story } = req.query;
@@ -164,11 +168,11 @@ router.get('/search', authenticateToken, async (req, res) => {
             params.push(parseInt(exclude_story, 10));
             excludeClause = `
                 AND u.id NOT IN (
-                    SELECT user_id   FROM story_collaborators         WHERE story_id = $3
+                    SELECT user_id   FROM story_collaborators WHERE story_id = $3
                     UNION
-                    SELECT author_id FROM stories                     WHERE id       = $3
+                    SELECT author_id FROM stories WHERE id = $3
                     UNION
-                    SELECT invitee_id FROM collaboration_invitations  WHERE story_id = $3 AND status = 'pending'
+                    SELECT invitee_id FROM collaboration_invitations WHERE story_id = $3 AND status = 'pending'
                 )`;
         }
         const { rows } = await pool.query(
@@ -190,7 +194,7 @@ router.get('/search', authenticateToken, async (req, res) => {
     }
 });
 
-// ── GET /users/:username — public profile ─────────────────────────────────────
+// GET request to retrieve other user's profiles.
 
 router.get('/:username', optionalAuth, async (req, res) => {
     try {
@@ -207,6 +211,7 @@ router.get('/:username', optionalAuth, async (req, res) => {
         if (!rows[0]) return res.status(404).json({ message: 'User not found.' });
 
         const profile = rows[0];
+        // Returns whether or not current user is following other user if former is logged in.
         if (req.user) {
             const follow = await pool.query(
                 `SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = $2`,
@@ -223,7 +228,7 @@ router.get('/:username', optionalAuth, async (req, res) => {
     }
 });
 
-// ── GET /users/:username/stories ──────────────────────────────────────────────
+// GET request to retrieve all published stories by user, ordered by most recent first.
 
 router.get('/:username/stories', optionalAuth, async (req, res) => {
     try {
@@ -244,12 +249,13 @@ router.get('/:username/stories', optionalAuth, async (req, res) => {
     }
 });
 
-// ── GET /users/:username/drafts — own profile only ────────────────────────────
+// GET request to retrieve all drafts of stories with no collaborators belonging to user. 
 
 router.get('/:username/drafts', authenticateToken, async (req, res) => {
     try {
         const user = await pool.query(`SELECT id FROM users WHERE LOWER(username) = LOWER($1)`, [req.params.username]);
         if (!user.rows[0]) return res.status(404).json({ message: 'User not found.' });
+        // Returns 403 if another user is trying to access this.
         if (user.rows[0].id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
 
         const { rows } = await pool.query(
@@ -269,7 +275,7 @@ router.get('/:username/drafts', authenticateToken, async (req, res) => {
     }
 });
 
-// ── GET /users/:username/reading-lists ────────────────────────────────────────
+// GET request to return all reading lists for a user.
 
 router.get('/:username/reading-lists', optionalAuth, async (req, res) => {
     try {
@@ -301,7 +307,7 @@ router.get('/:username/reading-lists', optionalAuth, async (req, res) => {
     }
 });
 
-// ── GET /reading-lists/:id/stories ────────────────────────────────────────────
+// GET request to return all stories in a reading list.
 
 router.get('/reading-lists/:id/stories', optionalAuth, async (req, res) => {
     try {
@@ -326,7 +332,7 @@ router.get('/reading-lists/:id/stories', optionalAuth, async (req, res) => {
     }
 });
 
-// ── PUT /reading-lists/:id ────────────────────────────────────────────────────
+// PUT request to change reading list title and visibility.
 
 router.put('/reading-lists/:id', authenticateToken, async (req, res) => {
     const { title, is_public } = req.body;
@@ -347,12 +353,13 @@ router.put('/reading-lists/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /reading-lists/:id ─────────────────────────────────────────────────
+// DELETE request to delete reading list.
 
 router.delete('/reading-lists/:id', authenticateToken, async (req, res) => {
     try {
         const list = await pool.query(`SELECT user_id FROM reading_lists WHERE id = $1`, [req.params.id]);
         if (!list.rows[0]) return res.status(404).json({ message: 'Reading list not found.' });
+        // Verify ownership
         if (list.rows[0].user_id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
 
         await pool.query(`DELETE FROM reading_lists WHERE id = $1`, [req.params.id]);
@@ -363,7 +370,7 @@ router.delete('/reading-lists/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /reading-lists/:id/stories/:storyId ────────────────────────────────
+// DELLETE request to remove a story from a list.
 
 router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (req, res) => {
     try {
@@ -382,7 +389,7 @@ router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (r
     }
 });
 
-// ── GET /users/:username/following ────────────────────────────────────────────
+// GET request to retrieve the list of following users, ordered by most recently followed first.
 
 router.get('/:username/following', optionalAuth, async (req, res) => {
     try {
@@ -404,7 +411,7 @@ router.get('/:username/following', optionalAuth, async (req, res) => {
     }
 });
 
-// ── GET /users/:username/followers ────────────────────────────────────────────
+// GET request to retrieve followers.
 
 router.get('/:username/followers', optionalAuth, async (req, res) => {
     try {
@@ -426,9 +433,10 @@ router.get('/:username/followers', optionalAuth, async (req, res) => {
     }
 });
 
-// ── POST /users/:username/follow ──────────────────────────────────────────────
+// POST request to follow a user.
 
 router.post('/:username/follow', authenticateToken, async (req, res) => {
+    // Block expert attempts to follow.
     if (req.user.account_type !== 'student') {
         return res.status(403).json({ message: 'Only students can follow users.' });
     }
@@ -445,6 +453,7 @@ router.post('/:username/follow', authenticateToken, async (req, res) => {
             `INSERT INTO follows (follower_id, following_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
             [req.user.id, targetId]
         );
+        // Sends a follow notification to the followed user.
         await createNotification(targetId, 'follow', req.user.id, null);
         res.sendStatus(204);
     } catch (err) {
@@ -453,7 +462,7 @@ router.post('/:username/follow', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /users/:username/follow ────────────────────────────────────────────
+// DELETE request to unfollow a user.
 
 router.delete('/:username/follow', authenticateToken, async (req, res) => {
     try {
@@ -474,7 +483,7 @@ router.delete('/:username/follow', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /users/:username/followers/:followerId ─────────────────────────────
+// DELETE request to remove a follower from your followers list.
 
 router.delete('/:username/followers/:followerId', authenticateToken, async (req, res) => {
     try {
@@ -483,6 +492,7 @@ router.delete('/:username/followers/:followerId', authenticateToken, async (req,
             [req.params.username]
         );
         if (!target.rows[0]) return res.status(404).json({ message: 'User not found.' });
+        // Only allowed for profile owner.
         if (target.rows[0].id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
 
         await pool.query(
@@ -496,14 +506,16 @@ router.delete('/:username/followers/:followerId', authenticateToken, async (req,
     }
 });
 
-// ── GET /users/:username/collaborations — own profile only ────────────────────
+// GET request to return all unpublished collaboration stories for the logged-in user.
 
 router.get('/:username/collaborations', authenticateToken, async (req, res) => {
     try {
         const user = await pool.query(`SELECT id FROM users WHERE LOWER(username) = LOWER($1)`, [req.params.username]);
         if (!user.rows[0]) return res.status(404).json({ message: 'User not found.' });
+        // Only accessible by the profile owner.
         if (user.rows[0].id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
 
+        // Stories where user is a collaborator, and where user is original author, but has collaborators working on story.
         const { rows } = await pool.query(
             `${STORY_SELECT}
              WHERE (

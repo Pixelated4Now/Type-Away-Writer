@@ -3,17 +3,13 @@ const router  = express.Router();
 const pool    = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 
-// GET /review-requests — all requests assigned to the logged-in expert
+// GET request to fetch all the review requests that have been sent.
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT
-                rr.id,
-                rr.story_id,
-                rr.status,
-                rr.created_at,
-                s.title        AS story_title,
-                u.username     AS student_username
+            `SELECT rr.id, rr.story_id, rr.status, rr.created_at,
+                s.title AS story_title,
+                u.username AS student_username
              FROM review_requests rr
              JOIN stories s ON s.id = rr.story_id
              JOIN users   u ON u.id = rr.student_id
@@ -28,7 +24,7 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-// PATCH /review-requests/:id — update status
+// PATCH request to update the status of a review request.
 router.patch('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -48,7 +44,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// DELETE /review-requests/:id — remove the request
+// DELETE request to remove a request
 router.delete('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     try {

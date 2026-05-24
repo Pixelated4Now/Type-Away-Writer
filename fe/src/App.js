@@ -1,30 +1,32 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
-import Home            from './pages/Home';
-import Login           from './pages/Login';
-import Register        from './pages/Register';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import RegisterStudent from './pages/RegisterStudent';
-import RegisterExpert  from './pages/RegisterExpert';
-import ForgotPassword  from './pages/ForgotPassword';
-import ResetPassword   from './pages/ResetPassword';
-import Guidelines      from './pages/Guidelines';
+import RegisterExpert from './pages/RegisterExpert';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
-import Read          from './pages/ReadPage';
-import ReadCategory  from './pages/ReadCategory';
-import ReadStory     from './pages/ReadStory';
+import Guidelines from './pages/Guidelines';
+
+import Read from './pages/ReadPage';
+import ReadCategory from './pages/ReadCategory';
+import ReadStory from './pages/ReadStory';
 
 import StorySettings from './pages/StorySettings';
-import StoryEditor   from './pages/StoryEditor';
-import StoryPreview  from './pages/StoryPreview';
+import StoryEditor from './pages/StoryEditor';
+import StoryPreview from './pages/StoryPreview';
 
-import Review        from './pages/Review';
+import Review from './pages/Review';
 
-import UserProfile   from './pages/UserProfile';
+import UserProfile from './pages/UserProfile';
 import AccountSettings from "./pages/AccountSettings";
 
 import AdminDashboard from "./pages/AdminDashboard";
 
+// Checks if the user is logged in.
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -32,6 +34,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Checks if the user is logged in and an expert.
 const ExpertRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -57,33 +60,33 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public */}
-          <Route path="/"                    element={<Home />} />
+          <Route path="/" element={<Home />} />
 
-          <Route path="/login"               element={<Login />} />
-          <Route path="/register"            element={<Register />} />
-          <Route path="/register/student"    element={<RegisterStudent />} />
-          <Route path="/register/expert"     element={<RegisterExpert />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/register/student" element={<RegisterStudent />} />
+          <Route path="/register/expert" element={<RegisterExpert />} />
 
-          <Route path="/forgot-password"     element={<ForgotPassword />} />
-          <Route path="/reset-password"      element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-          <Route path="/guidelines"          element={<Guidelines />} />
+          <Route path="/guidelines" element={<Guidelines />} />
 
-          <Route path="/read"                element={<Read />} />
-          <Route path="/read/:categoryId"    element={<ReadCategory />} />
+          <Route path="/read" element={<Read />} />
+          <Route path="/read/:categoryId" element={<ReadCategory />} />
           <Route path="/read/story/:storyId" element={<ReadStory />} />
 
-          {/* Protected — writing flow */}
-          <Route path="/write/new"             element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
-          <Route path="/write/:id/settings"    element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
-          <Route path="/write/:id/chapters"    element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
-          <Route path="/write/:id/preview"     element={<ProtectedRoute><StoryPreview /></ProtectedRoute>} />
+          {/* Protected writing flow */}
+          <Route path="/write/new" element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
+          <Route path="/write/:id/settings" element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
+          <Route path="/write/:id/chapters" element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
+          <Route path="/write/:id/preview" element={<ProtectedRoute><StoryPreview /></ProtectedRoute>} />
 
           {/* Expert only */}
-          <Route path="/review"                element={<ExpertRoute><Review /></ExpertRoute>} />
+          <Route path="/review" element={<ExpertRoute><Review /></ExpertRoute>} />
 
-          {/* User profiles — public */}
-          <Route path="/profile/:username"     element={<UserProfile />} />
+          {/* User profiles public */}
+          <Route path="/profile/:username" element={<UserProfile />} />
           <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

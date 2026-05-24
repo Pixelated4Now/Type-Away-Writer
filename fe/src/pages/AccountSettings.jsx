@@ -25,9 +25,10 @@ const authFetch = (url, options = {}) => {
   });
 };
 
+// Parse a date string from the database and split it into three separate values.
 const parseDOB = (isoDate) => {
   if (!isoDate) return { dobDay: "01", dobMonth: "January", dobYear: "" };
-  const str   = typeof isoDate === "string" ? isoDate : isoDate.toISOString();
+  const str = typeof isoDate === "string" ? isoDate : isoDate.toISOString();
   const parts = str.split("T")[0].split("-");
   return {
     dobDay:   parts[2],
@@ -41,30 +42,31 @@ const AccountSettings = () => {
   const navigate = useNavigate();
   const { user: authUser, login } = useAuth();
 
-  const [userData,    setUserData]    = useState(null);
-  const [isEditing,   setIsEditing]   = useState(false);
-  const [editData,    setEditData]    = useState({});
+  const [userData, setUserData] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);   // View or Edit mode
+  const [editData, setEditData] = useState({});
 
   const [usernameError, setUsernameError] = useState("");
-  const [emailError,    setEmailError]    = useState("");
-  const [saveError,     setSaveError]     = useState("");
-  const [saving,        setSaving]        = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [currentPassword,   setCurrentPassword]   = useState("");
-  const [newPassword,       setNewPassword]       = useState("");
-  const [reenterPassword,   setReenterPassword]   = useState("");
-  const [showCurrent,       setShowCurrent]       = useState(false);
-  const [showNew,           setShowNew]           = useState(false);
-  const [showReenter,       setShowReenter]       = useState(false);
-  const [pwdCurrentError,   setPwdCurrentError]   = useState("");
-  const [pwdNewError,       setPwdNewError]       = useState("");
-  const [pwdMatchError,     setPwdMatchError]     = useState("");
-  const [pwdSaving,         setPwdSaving]         = useState(false);
-  const [pwdSuccess,        setPwdSuccess]        = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [reenterPassword, setReenterPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showReenter, setShowReenter] = useState(false);
+  const [pwdCurrentError, setPwdCurrentError] = useState("");
+  const [pwdNewError, setPwdNewError] = useState("");
+  const [pwdMatchError, setPwdMatchError] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdSuccess, setPwdSuccess] = useState("");
 
-  const modalRef = useRef(null);
+  const modalRef = useRef(null);  // Detects if user clicks outside modal.
 
+  // Outside click closes modal.
   useEffect(() => {
     const handleClick = (e) => {
       if (modalRef.current && !modalRef.current.contains(e.target))
@@ -74,6 +76,7 @@ const AccountSettings = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showPasswordModal]);
 
+  // Fetch user data
   useEffect(() => {
     authFetch(`${API}/users/me`)
       .then((r) => r.json())
@@ -87,15 +90,17 @@ const AccountSettings = () => {
     ? Array.from({ length: 35 }, (_, i) => String(2005 - i))
     : Array.from({ length: 10 }, (_, i) => String(2020 - i));
 
+    // Populate edit form.
   const handleEdit = () => {
     setEditData({ ...userData });
     setUsernameError("");
     setEmailError("");
     setSaveError("");
     setPwdSuccess("");
-    setIsEditing(true);
+    setIsEditing(true);      // Switch to edit mode.
   };
 
+  // Cancel changes.
   const handleCancel = () => setIsEditing(false);
 
   const handleSave = async () => {
@@ -125,10 +130,11 @@ const AccountSettings = () => {
       const monthNum = String(MONTHS.indexOf(editData.dobMonth) + 1).padStart(2, "0");
       const dob = `${editData.dobYear}-${monthNum}-${editData.dobDay}`;
 
+      // API call to update user info.
       const res  = await authFetch(`${API}/users/me`, {
-        method:  "PUT",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ username: editData.username, email: editData.email, date_of_birth: dob }),
+        body: JSON.stringify({ username: editData.username, email: editData.email, date_of_birth: dob }),
       });
       const data = await res.json();
 
@@ -140,9 +146,11 @@ const AccountSettings = () => {
       const newDob = parseDOB(data.date_of_birth || dob);
       setUserData({ username: data.username, email: data.email ?? editData.email, ...newDob });
 
+      // Updates username in JWT token so changes are reflected real-time.
       const token = localStorage.getItem("authToken");
       login(token, { ...authUser, username: data.username });
 
+      // Back to view mode.
       setIsEditing(false);
     } catch {
       setSaveError("Something went wrong. Changes could not be saved.");
@@ -182,10 +190,11 @@ const AccountSettings = () => {
 
     setPwdSaving(true);
     try {
+      // API call to update password.
       const res = await authFetch(`${API}/auth/change-password`, {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ currentPassword, newPassword }),
       });
 
       if (res.status === 401) {
@@ -560,7 +569,7 @@ const AccountSettings = () => {
           <hr className="account-settings-divider" />
 
           {!isEditing ? (
-            /* ── View mode ── */
+            /* View mode */
             <div className="settings-view">
               <div className="settings-row">
                 <span className="settings-label">Username:</span>
@@ -572,9 +581,7 @@ const AccountSettings = () => {
               </div>
               <div className="settings-row">
                 <span className="settings-label">Password:</span>
-                <button className="change-password-btn" onClick={openPasswordModal}>
-                  CHANGE PASSWORD
-                </button>
+                <button className="change-password-btn" onClick={openPasswordModal}>CHANGE PASSWORD</button>
               </div>
               <div className="settings-row">
                 <span className="settings-label">Date of Birth:</span>
@@ -588,7 +595,7 @@ const AccountSettings = () => {
               </div>
             </div>
           ) : (
-            /* ── Edit mode ── */
+            /* Edit mode */
             <div className="settings-edit">
               <div className="settings-row">
                 <span className="settings-label">Username:</span>
@@ -651,7 +658,7 @@ const AccountSettings = () => {
           )}
         </div>
 
-        {/* ── Change Password modal ── */}
+        {/* Change Password modal */}
         {showPasswordModal && (
           <div className="modal-overlay">
             <div className="modal" ref={modalRef}>

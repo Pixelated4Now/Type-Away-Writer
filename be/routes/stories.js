@@ -4,9 +4,9 @@ const pool    = require('../db');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { createNotification } = require('../utils/notifications');
 
-// ── Shared SQL fragments ──────────────────────────────────────────────────────
+// Shared SQL subqueries.
 
-// Returns the tags array for a given story_id
+// Returns the tags array for a given story in alphabetical order.
 const TAGS_SUBQ = `
     COALESCE(
         (SELECT ARRAY_AGG(t.name ORDER BY t.name)
@@ -15,7 +15,7 @@ const TAGS_SUBQ = `
         ARRAY[]::TEXT[]
     )`;
 
-// Returns the authors array (original author + collaborators) for a given story_id
+// Returns the authors array (original and collaborators) for a given story.
 const AUTHORS_SUBQ = `
     (SELECT ARRAY_AGG(u.username ORDER BY u.username)
      FROM (
@@ -25,8 +25,8 @@ const AUTHORS_SUBQ = `
      ) combined
      JOIN users u ON u.id = combined.uid)`;
 
-// ── GET /stories ──────────────────────────────────────────────────────────────
 
+// GET request to get all published stories for a category.
 router.get('/stories', optionalAuth, async (req, res) => {
     const { category_id, title, author, tags: tagsParam, status } = req.query;
 
@@ -34,7 +34,7 @@ router.get('/stories', optionalAuth, async (req, res) => {
     let p = 1;
     const conditions = [];
 
-    // Status: default to published only; honour explicit filter
+    // Published stories only
     if (status === 'complete') {
         conditions.push(`s.status = $${p++}`);
         params.push('published');
@@ -45,6 +45,7 @@ router.get('/stories', optionalAuth, async (req, res) => {
         conditions.push(`s.status = 'published'`);
     }
 
+    // Optional parameters for filtering.
     if (category_id) {
         conditions.push(`s.category_id = $${p++}`);
         params.push(parseInt(category_id, 10));
@@ -84,11 +85,12 @@ router.get('/stories', optionalAuth, async (req, res) => {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     try {
+        // Order by likes so most liked story appears first.
         const { rows } = await pool.query(`
             SELECT
                 s.id, s.title, s.summary, s.cover_image_url, s.status,
                 s.likes_count, s.created_at,
-                ${TAGS_SUBQ}    AS tags,
+                ${TAGS_SUBQ} AS tags,
                 ${AUTHORS_SUBQ} AS authors,
                 (SELECT COUNT(*)::INT FROM chapters  WHERE story_id = s.id) AS chapter_count,
                 (SELECT COUNT(*)::INT FROM comments  WHERE story_id = s.id) AS comment_count
@@ -103,13 +105,13 @@ router.get('/stories', optionalAuth, async (req, res) => {
     }
 });
 
-// ── GET /stories/:id ──────────────────────────────────────────────────────────
 
+// GET request to fetch a story with all details and content.
 router.get('/stories/:id', optionalAuth, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
 
     try {
-        // Story row — tags returned as [{id,name}] objects for editor/settings use
+        // Tags returned as [{id,name}] objects for editor/settings use.
         const storyResult = await pool.query(`
             SELECT
                 s.id, s.title, s.summary, s.cover_image_url, s.status,
@@ -120,7 +122,7 @@ router.get('/stories/:id', optionalAuth, async (req, res) => {
                      FROM story_tags st JOIN tags t ON st.tag_id = t.id
                      WHERE st.story_id = s.id),
                     '[]'::JSON
-                )               AS tags,
+                ) AS tags,
                 ${AUTHORS_SUBQ} AS authors
             FROM stories s
             WHERE s.id = $1
@@ -132,7 +134,7 @@ router.get('/stories/:id', optionalAuth, async (req, res) => {
 
         const story = storyResult.rows[0];
 
-        // Chapters
+        // Chapters in order.
         const chapResult = await pool.query(
             `SELECT id, chapter_number, title, content, created_at
              FROM chapters WHERE story_id = $1 ORDER BY chapter_number ASC`,
@@ -140,7 +142,7 @@ router.get('/stories/:id', optionalAuth, async (req, res) => {
         );
         story.chapters = chapResult.rows;
 
-        // Has the requesting user liked this story?
+        // Checks if user has already liked the story.
         story.user_liked = false;
         if (req.user) {
             const likeResult = await pool.query(
@@ -157,8 +159,8 @@ router.get('/stories/:id', optionalAuth, async (req, res) => {
     }
 });
 
-// ── GET /stories/:id/comments ─────────────────────────────────────────────────
 
+// GET request to retrieve all comments for a story.
 router.get('/stories/:id/comments', optionalAuth, async (req, res) => {
     const storyId   = parseInt(req.params.id, 10);
     const chapterId = req.query.chapter ? parseInt(req.query.chapter, 10) : null;
@@ -181,7 +183,7 @@ router.get('/stories/:id/comments', optionalAuth, async (req, res) => {
             ORDER BY c.created_at ASC
         `, params);
 
-        // Reshape so each comment has a nested `user` object
+        // Reshape so each comment has a nested 'user' object
         const comments = rows.map(r => ({
             id:         r.id,
             content:    r.content,
@@ -203,12 +205,13 @@ router.get('/stories/:id/comments', optionalAuth, async (req, res) => {
     }
 });
 
-// ── POST /stories/:id/comments ────────────────────────────────────────────────
 
+// POST request to post new comment on reply.
 router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
     const storyId  = parseInt(req.params.id, 10);
     const { chapter_id, content, parent_id } = req.body;
 
+    // Presence check to validate it is not empty.
     if (!content || !content.trim()) {
         return res.status(400).json({ message: 'Comment content is required.' });
     }
@@ -232,7 +235,7 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
 
         const comment = rows[0];
 
-        // Attach user info for the frontend
+        // Attach user information for the frontend
         const userResult = await pool.query(
             'SELECT id, username, avatar_url, account_type FROM users WHERE id = $1',
             [req.user.id]
@@ -241,7 +244,7 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
 
         res.status(201).json(comment);
 
-        // ── Notifications (fire-and-forget after response) ─────────────────────
+        // Notifications
         if (parent_id) {
             if (parentAuthorId && parentAuthorId !== req.user.id) {
                 createNotification(parentAuthorId, 'reply', req.user.id, storyId).catch(console.error);
@@ -256,8 +259,8 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /comments/:id ──────────────────────────────────────────────────────
 
+// DELETE request to delete a comment.
 router.delete('/comments/:id', authenticateToken, async (req, res) => {
     const commentId = parseInt(req.params.id, 10);
 
@@ -270,11 +273,12 @@ router.delete('/comments/:id', authenticateToken, async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Comment not found.' });
         }
+        // Only comment author can delete commnet.
         if (result.rows[0].user_id !== req.user.id) {
             return res.status(403).json({ message: 'Not authorised to delete this comment.' });
         }
 
-        // ON DELETE CASCADE in schema handles descendant replies
+        // ON DELETE CASCADE in schema handles descendant replies.
         await pool.query('DELETE FROM comments WHERE id = $1', [commentId]);
         res.status(204).send();
     } catch (err) {
@@ -283,8 +287,8 @@ router.delete('/comments/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /stories/:id/like ────────────────────────────────────────────────────
 
+// POST request to like and unlike a story.
 router.post('/stories/:id/like', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     const userId  = req.user.id;
@@ -296,16 +300,19 @@ router.post('/stories/:id/like', authenticateToken, async (req, res) => {
         );
 
         let liked;
+        // Unlike if already liked.
         if (existing.rows.length > 0) {
             await pool.query('DELETE FROM likes WHERE user_id = $1 AND story_id = $2', [userId, storyId]);
             await pool.query('UPDATE stories SET likes_count = GREATEST(0, likes_count - 1) WHERE id = $1', [storyId]);
             liked = false;
         } else {
+            // Like if not liked.
             await pool.query('INSERT INTO likes (user_id, story_id) VALUES ($1, $2)', [userId, storyId]);
             await pool.query('UPDATE stories SET likes_count = likes_count + 1 WHERE id = $1', [storyId]);
             liked = true;
         }
 
+        // Returns new liked state and likes count.
         const { rows } = await pool.query('SELECT likes_count, author_id FROM stories WHERE id = $1', [storyId]);
         res.json({ liked, likes_count: rows[0].likes_count });
         if (liked && rows[0].author_id !== userId) {
@@ -317,8 +324,8 @@ router.post('/stories/:id/like', authenticateToken, async (req, res) => {
     }
 });
 
-// ── GET /users/me/reading-lists ───────────────────────────────────────────────
 
+// GEt request to get logged-in user's reading lists
 router.get('/users/me/reading-lists', authenticateToken, async (req, res) => {
     try {
         const { rows } = await pool.query(`
@@ -341,8 +348,8 @@ router.get('/users/me/reading-lists', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /users/me/reading-lists ──────────────────────────────────────────────
 
+// POST request to create a new list with title & visibility.
 router.post('/users/me/reading-lists', authenticateToken, async (req, res) => {
     const { title, is_public } = req.body;
     if (!title || !title.trim()) {
@@ -362,8 +369,8 @@ router.post('/users/me/reading-lists', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /reading-lists/:id/stories ──────────────────────────────────────────
 
+// POST request to add a story to a reading list.
 router.post('/reading-lists/:id/stories', authenticateToken, async (req, res) => {
     const listId  = parseInt(req.params.id, 10);
     const { story_id } = req.body;
@@ -375,13 +382,13 @@ router.post('/reading-lists/:id/stories', authenticateToken, async (req, res) =>
             'SELECT id FROM reading_lists WHERE id = $1 AND user_id = $2',
             [listId, req.user.id]
         );
+        // Verifies ownership of reading list.
         if (ownership.rows.length === 0) {
             return res.status(403).json({ message: 'Not authorised.' });
         }
 
         const insertRes = await pool.query(
-            'INSERT INTO reading_list_stories (reading_list_id, story_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-            [listId, story_id]
+            'INSERT INTO reading_list_stories (reading_list_id, story_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [listId, story_id]
         );
 
         let saveAuthorId = null;
@@ -392,6 +399,7 @@ router.post('/reading-lists/:id/stories', authenticateToken, async (req, res) =>
 
         res.status(204).send();
 
+        // Sends notification to story author.
         if (saveAuthorId && saveAuthorId !== req.user.id) {
             createNotification(saveAuthorId, 'save', req.user.id, story_id).catch(console.error);
         }
@@ -401,8 +409,8 @@ router.post('/reading-lists/:id/stories', authenticateToken, async (req, res) =>
     }
 });
 
-// ── DELETE /reading-lists/:id/stories/:storyId ────────────────────────────────
 
+// DELETE request to remove a story from reading list
 router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (req, res) => {
     const listId  = parseInt(req.params.id, 10);
     const storyId = parseInt(req.params.storyId, 10);
@@ -427,8 +435,8 @@ router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (r
     }
 });
 
-// ── POST /stories ─────────────────────────────────────────────────────────────
 
+// POST request to create new story record.
 router.post('/stories', authenticateToken, async (req, res) => {
     const { title, summary, work_status, category_id, tag_ids, cover_image_url } = req.body;
     if (!title || !title.trim()) return res.status(400).json({ message: 'Title is required.' });
@@ -436,6 +444,7 @@ router.post('/stories', authenticateToken, async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        // Status set to 'writing' until explicitly saved as draft or published.
         const { rows } = await client.query(
             `INSERT INTO stories (title, summary, work_status, category_id, cover_image_url, author_id, status)
              VALUES ($1, $2, $3, $4, $5, $6, 'writing')
@@ -462,8 +471,8 @@ router.post('/stories', authenticateToken, async (req, res) => {
     }
 });
 
-// ── PUT /stories/:id ──────────────────────────────────────────────────────────
 
+// PUT request to update a story's details.
 router.put('/stories/:id', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     const { title, summary, work_status, category_id, tag_ids, cover_image_url, status } = req.body;
@@ -496,6 +505,7 @@ router.put('/stories/:id', authenticateToken, async (req, res) => {
             ]
         );
 
+        // Replace all existing tags with new tag list.
         if (Array.isArray(tag_ids)) {
             await client.query('DELETE FROM story_tags WHERE story_id = $1', [storyId]);
             for (const tid of tag_ids) {
@@ -517,8 +527,8 @@ router.put('/stories/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /stories/:id ───────────────────────────────────────────────────────
 
+// DELETE request to delete a story.
 router.delete('/stories/:id', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     try {
@@ -534,8 +544,8 @@ router.delete('/stories/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /stories/:id/publish ─────────────────────────────────────────────────
 
+// POST request to publish a story.
 router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     try {
@@ -554,6 +564,7 @@ router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
             [storyId]
         );
 
+        // Validates all publish requirements on the server side
         const errors = [];
         if (!s.cover_image_url)          errors.push('Cover image is required.');
         if (!s.title || !s.title.trim()) errors.push('Story title is required.');
@@ -578,8 +589,8 @@ router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
     }
 });
 
-// ── GET /stories/:id/chapters ─────────────────────────────────────────────────
 
+// GET request to retrieve all chapters for a story ordered by chapter number for story editor.
 router.get('/stories/:id/chapters', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     try {
@@ -594,8 +605,8 @@ router.get('/stories/:id/chapters', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /stories/:id/chapters ────────────────────────────────────────────────
 
+// POST request to create new empty chapter.
 router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     try {
@@ -607,6 +618,7 @@ router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
             'SELECT COALESCE(MAX(chapter_number), 0) AS max FROM chapters WHERE story_id = $1',
             [storyId]
         );
+        // Automatically numbers the chapter.
         const nextNum = parseInt(maxRows[0].max, 10) + 1;
 
         const { rows } = await pool.query(
@@ -621,8 +633,8 @@ router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
     }
 });
 
-// ── PUT /chapters/:chapterId ──────────────────────────────────────────────────
 
+// PUT request to save chapter title and content.
 router.put('/chapters/:chapterId', authenticateToken, async (req, res) => {
     const chapterId = parseInt(req.params.chapterId, 10);
     const { title, content } = req.body;
@@ -645,11 +657,12 @@ router.put('/chapters/:chapterId', authenticateToken, async (req, res) => {
     }
 });
 
-// ── DELETE /chapters/:chapterId ───────────────────────────────────────────────
 
+// DELETE request to delete chapter.
 router.delete('/chapters/:chapterId', authenticateToken, async (req, res) => {
     const chapterId = parseInt(req.params.chapterId, 10);
     try {
+        // Both the original author and collaborators can delete chapters.
         const chapRes = await pool.query(
             `SELECT c.story_id, s.author_id,
                     EXISTS(SELECT 1 FROM story_collaborators sc
@@ -678,25 +691,28 @@ router.delete('/chapters/:chapterId', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /stories/:id/review-requests ────────────────────────────────────────
 
+// POST request to submit a story for review.
 router.post('/stories/:id/review-requests', authenticateToken, async (req, res) => {
     const storyId  = parseInt(req.params.id, 10);
     const { expert_id } = req.body;
     if (!expert_id) return res.status(400).json({ message: 'expert_id is required.' });
 
     try {
+        // Checks that expert exists and is verified.
         const expertRes = await pool.query(
             "SELECT id FROM users WHERE id = $1 AND account_type = 'expert' AND is_expert_verified = TRUE",
             [expert_id]
         );
         if (expertRes.rows.length === 0) return res.status(400).json({ message: 'Invalid expert.' });
 
+        // Creates request.
         await pool.query(
             'INSERT INTO review_requests (story_id, student_id, expert_id) VALUES ($1, $2, $3)',
             [storyId, req.user.id, expert_id]
         );
 
+        // Sends notification to expert.
         await pool.query(
             `INSERT INTO notifications (user_id, type, actor_id, story_id)
              VALUES ($1, 'review_request', $2, $3)`,
@@ -710,8 +726,8 @@ router.post('/stories/:id/review-requests', authenticateToken, async (req, res) 
     }
 });
 
-// ── POST /stories/:id/invitations ─────────────────────────────────────────────
 
+// POST request to send collaboration invite.
 router.post('/stories/:id/invitations', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     const { invitee_id } = req.body;
@@ -740,6 +756,7 @@ router.post('/stories/:id/invitations', authenticateToken, async (req, res) => {
         );
         const invId = rows[0].id;
 
+        // Send notification to invitee.
         await pool.query(
             'INSERT INTO notifications (user_id, type, actor_id, story_id, invitation_id) VALUES ($1, $2, $3, $4, $5)',
             [invitee_id, 'collab_invite', req.user.id, storyId, invId]
@@ -752,8 +769,8 @@ router.post('/stories/:id/invitations', authenticateToken, async (req, res) => {
     }
 });
 
-// ── POST /stories/:id/invitations/:invId/accept ───────────────────────────────
 
+// POST request when user accepts invite.
 router.post('/stories/:id/invitations/:invId/accept', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     const invId   = parseInt(req.params.invId, 10);
@@ -768,11 +785,14 @@ router.post('/stories/:id/invitations/:invId/accept', authenticateToken, async (
 
         const invitation = inv.rows[0];
 
+        // Marks invitation as "accepted".
         await pool.query("UPDATE collaboration_invitations SET status = 'accepted' WHERE id = $1", [invId]);
+        // Adds user to collaborators.
         await pool.query(
             'INSERT INTO story_collaborators (story_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
             [storyId, req.user.id]
         );
+        // Sends notification to original author.
         await pool.query(
             'INSERT INTO notifications (user_id, type, actor_id, story_id) VALUES ($1, $2, $3, $4)',
             [invitation.inviter_id, 'collab_accepted', req.user.id, storyId]
@@ -785,8 +805,8 @@ router.post('/stories/:id/invitations/:invId/accept', authenticateToken, async (
     }
 });
 
-// ── POST /stories/:id/invitations/:invId/decline ──────────────────────────────
 
+// POST request when user declines invite.
 router.post('/stories/:id/invitations/:invId/decline', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     const invId   = parseInt(req.params.invId, 10);

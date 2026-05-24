@@ -18,7 +18,7 @@ const Guidelines = () => {
           width: 100vw;
         }
  
-        /* ── Hero Banner ── */
+        /* Hero Banner */
         .guidelines-hero {
           background: #CCCCCC;
           display: flex;
@@ -65,7 +65,7 @@ const Guidelines = () => {
           margin: 0;
         }
  
-        /* ── Main Content ── */
+        /* Main Content */
         .guidelines-content {
           max-width: 860px;
           margin: 0 auto;
@@ -93,7 +93,7 @@ const Guidelines = () => {
           margin: 0 0 32px;
         }
  
-        /* ── Individual Sections ── */
+        /* Individual Sections */
         .guidelines-section {
           margin-bottom: 32px;
         }
@@ -137,7 +137,7 @@ const Guidelines = () => {
           color: #555;
         }
  
-        /* ── Responsive ── */
+        /* Responsive */
         @media (max-width: 768px) {
           .guidelines-hero {
             flex-direction: column;
@@ -179,7 +179,7 @@ const Guidelines = () => {
         </div>
       </section>
 
-      {/* ── Main Content ── */}
+      {/* Main Content */}
       <main className="guidelines-content">
         <h2>Guidelines</h2>
 

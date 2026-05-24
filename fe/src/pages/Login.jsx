@@ -12,13 +12,13 @@ const Login = () => {
     const { login } = useAuth();
     const navigate  = useNavigate();
 
-    const [show, setShow]                 = useState(false);
-    const [email, setEmail]               = useState('');
-    const [password, setPassword]         = useState('');
-    const [emailError, setEmailError]     = useState('');
+    const [show, setShow] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
-    const [serverError, setServerError]   = useState('');
-    const [loading, setLoading]           = useState(false);
+    const [serverError, setServerError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -39,9 +39,9 @@ const Login = () => {
         setLoading(true);
         try {
             const res  = await fetch(`${API}/auth/login`, {
-                method:  'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password }),
             });
             const data = await res.json();
 

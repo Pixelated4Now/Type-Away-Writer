@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import { BsBell, BsHeart, BsChevronDown, BsChat, BsChatDots, BsBookmark, BsStar, BsPerson, BsEnvelope, BsCheckCircle, BsXCircle, BsPeople, } from 'react-icons/bs';
-
 import { GoHeartFill } from "react-icons/go";
 
 import { useAuth } from '../context/AuthContext';
@@ -15,64 +14,67 @@ const notificationText = (n, accountType) => {
     const actor = n.actor_username || 'Someone';
     const title = n.story_title   || 'a story';
     switch (n.type) {
-        case 'like':             return `${actor} liked ${title}`;
-        case 'comment':          return `${actor} commented on ${title}`;
-        case 'reply':            return `${actor} replied to your comment on ${title}`;
-        case 'save':             return `${actor} added ${title} to a reading list`;
-        case 'review':           return `Language expert ${actor} reviewed ${title}`;
-        case 'follow':           return `${actor} started following you`;
-        case 'review_request':   return accountType === 'expert'
+        case 'like': return `${actor} liked ${title}`;
+        case 'comment': return `${actor} commented on ${title}`;
+        case 'reply': return `${actor} replied to your comment on ${title}`;
+        case 'save': return `${actor} added ${title} to a reading list`;
+        case 'review': return `Language expert ${actor} reviewed ${title}`;
+        case 'follow': return `${actor} started following you`;
+        case 'review_request': return accountType === 'expert'
             ? 'You received a new review request'
             : `${actor} requested a review of ${title}`;
-        case 'collab_invite':    return `${actor} invited you to collaborate on "${title}"`;
-        case 'collab_accepted':  return `${actor} accepted your collaboration invite for "${title}"`;
-        case 'collab_declined':  return `${actor} declined your collaboration invite for "${title}"`;
-        default:                 return 'You have a new notification';
+        case 'collab_invite': return `${actor} invited you to collaborate on "${title}"`;
+        case 'collab_accepted': return `${actor} accepted your collaboration invite for "${title}"`;
+        case 'collab_declined': return `${actor} declined your collaboration invite for "${title}"`;
+        default: return 'You have a new notification';
     }
 };
 
 const NOTIF_ICONS = {
-    like:            <BsHeart />,
-    comment:         <BsChat />,
-    reply:           <BsChatDots />,
-    save:            <BsBookmark />,
-    review:          <BsStar />,
-    follow:          <BsPerson />,
-    review_request:  <BsEnvelope />,
-    collab_invite:   <BsPeople />,
+    like: <BsHeart />,
+    comment: <BsChat />,
+    reply: <BsChatDots />,
+    save: <BsBookmark />,
+    review: <BsStar />,
+    follow: <BsPerson />,
+    review_request: <BsEnvelope />,
+    collab_invite: <BsPeople />,
     collab_accepted: <BsCheckCircle />,
     collab_declined: <BsXCircle />,
 };
 
+// Format timestamp into human-readable date and time string.
 const formatTime = (ts) =>
     new Date(ts).toLocaleString('en-US', {
         timeZone: 'Asia/Colombo',
-        month:    'short',
-        day:      'numeric',
-        hour:     'numeric',
-        minute:   '2-digit',
-        hour12:   true,
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
     });
 
 const Navbar = () => {
-    const navigate         = useNavigate();
-    const location         = useLocation();
+    const navigate = useNavigate();
+    const location = useLocation();
     const { user, logout } = useAuth();
 
     const isActive = (path) => location.pathname === path;
 
-    const [profileOpen,          setProfileOpen]          = useState(false);
-    const [notifOpen,            setNotifOpen]            = useState(false);
-    const [writeOpen,            setWriteOpen]            = useState(false);
-    const [notifications,        setNotifications]        = useState([]);
-    const [unread,               setUnread]               = useState(0);
-    const [inviteModal,          setInviteModal]          = useState(null);
-    const [inviteActionLoading,  setInviteActionLoading]  = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [notifOpen, setNotifOpen] = useState(false);
+    const [writeOpen, setWriteOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unread, setUnread] = useState(0);
+    const [inviteModal, setInviteModal] = useState(null);
+    const [inviteActionLoading, setInviteActionLoading]  = useState(false);
 
+    // Detect outside clicks.
     const profileRef = useRef(null);
-    const notifRef   = useRef(null);
-    const writeRef   = useRef(null);
+    const notifRef = useRef(null);
+    const writeRef = useRef(null);
 
+    // Fetch notifications
     useEffect(() => {
         if (!user) return;
         const token = localStorage.getItem('authToken');
@@ -97,7 +99,7 @@ const Navbar = () => {
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     };
 
-    // Close dropdowns on outside click; mark notifications read when notif dropdown closes
+    // Close dropdowns on outside click; mark notifications read when notif dropdown closes.
     useEffect(() => {
         const handler = (e) => {
             if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -113,6 +115,7 @@ const Navbar = () => {
                 setWriteOpen(false);
             }
         };
+        // Listens for mouseclicks
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -122,6 +125,7 @@ const Navbar = () => {
             if (v) markRead();
             return !v;
         });
+        // Close dropdown if click was outside dropdown.
         setProfileOpen(false);
     };
 
@@ -142,7 +146,7 @@ const Navbar = () => {
         try {
             const token = localStorage.getItem('authToken');
             await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/accept`, {
-                method:  'POST',
+                method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
         } catch { /* silent */ }
@@ -158,7 +162,7 @@ const Navbar = () => {
         try {
             const token = localStorage.getItem('authToken');
             await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/decline`, {
-                method:  'POST',
+                method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
         } catch { /* silent */ }
@@ -178,21 +182,16 @@ const Navbar = () => {
 
                 {user?.account_type === 'expert' ? (
                     <ul className="navbar-links">
-                        <li><Link to="/"          className={isActive('/')          ? 'active' : ''}>Home</Link></li>
-                        <li><Link to="/review"    className={isActive('/review')    ? 'active' : ''}>Review</Link></li>
-                        <li><Link to="/read"      className={location.pathname.startsWith('/read') ? 'active' : ''}>Read</Link></li>
+                        <li><Link to="/" className={isActive('/') ? 'active' : ''}>Home</Link></li>
+                        <li><Link to="/review" className={isActive('/review') ? 'active' : ''}>Review</Link></li>
+                        <li><Link to="/read" className={location.pathname.startsWith('/read') ? 'active' : ''}>Read</Link></li>
                         <li><Link to="/guidelines" className={isActive('/guidelines') ? 'active' : ''}>Guidelines</Link></li>
                     </ul>
                 ) : (
                     <ul className="navbar-links">
-                        <li><Link to="/"          className={isActive('/')                                ? 'active' : ''}>Home</Link></li>
+                        <li><Link to="/" className={isActive('/') ? 'active' : ''}>Home</Link></li>
                         <li ref={writeRef} className="write-nav-item">
-                            <button
-                                className={`write-nav-btn${location.pathname.startsWith('/write') ? ' active' : ''}`}
-                                onClick={() => setWriteOpen(v => !v)}
-                            >
-                                Write
-                            </button>
+                            <button className={`write-nav-btn${location.pathname.startsWith('/write') ? ' active' : ''}`} onClick={() => setWriteOpen(v => !v)}>Write</button>
                             {writeOpen && (
                                 <div className="write-dropdown">
                                     <div className="write-dropdown-item" onClick={() => { navigate('/write/new'); setWriteOpen(false); }}>
@@ -204,8 +203,8 @@ const Navbar = () => {
                                 </div>
                             )}
                         </li>
-                        <li><Link to="/read"       className={location.pathname.startsWith('/read')       ? 'active' : ''}>Read</Link></li>
-                        <li><Link to="/guidelines" className={isActive('/guidelines')                     ? 'active' : ''}>Guidelines</Link></li>
+                        <li><Link to="/read" className={location.pathname.startsWith('/read') ? 'active' : ''}>Read</Link></li>
+                        <li><Link to="/guidelines" className={isActive('/guidelines') ? 'active' : ''}>Guidelines</Link></li>
                     </ul>
                 )}
 
@@ -244,9 +243,9 @@ const Navbar = () => {
                                                                 setNotifOpen(false);
                                                                 markRead();
                                                                 setInviteModal({
-                                                                    storyId:       n.story_id,
-                                                                    invId:         n.invitation_id,
-                                                                    storyTitle:    n.story_title || 'a story',
+                                                                    storyId: n.story_id,
+                                                                    invId: n.invitation_id,
+                                                                    storyTitle: n.story_title || 'a story',
                                                                     actorUsername: n.actor_username || 'Someone',
                                                                 });
                                                                 return;
@@ -320,12 +319,9 @@ const Navbar = () => {
 
             </div>
 
-            {/* ── Collab invite modal (portal) ── */}
+            {/* Collab invite modal (portal) */}
             {inviteModal && ReactDOM.createPortal(
-                <div
-                    className="collab-modal-overlay"
-                    onClick={(e) => { if (e.target === e.currentTarget) setInviteModal(null); }}
-                >
+                <div className="collab-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setInviteModal(null); }}>
                     <div className="collab-modal">
                         <button className="collab-modal-close" onClick={() => setInviteModal(null)}>×</button>
                         <h2 className="collab-modal-title">Collaboration Invite</h2>
@@ -334,11 +330,7 @@ const Navbar = () => {
                             <strong>"{inviteModal.storyTitle}"</strong>.
                         </p>
                         <div className="collab-modal-actions">
-                            <button
-                                className="collab-modal-btn collab-modal-btn-decline"
-                                onClick={handleDeclineInvite}
-                                disabled={inviteActionLoading}
-                            >DECLINE</button>
+                            <button className="collab-modal-btn collab-modal-btn-decline" onClick={handleDeclineInvite} disabled={inviteActionLoading}>DECLINE</button>
                             <button
                                 className="collab-modal-btn collab-modal-btn-accept"
                                 onClick={handleAcceptInvite}

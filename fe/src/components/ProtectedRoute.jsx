@@ -3,9 +3,9 @@ import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
-    const location          = useLocation();
+    const location = useLocation();
 
-    // Wait for the auth state to rehydrate from localStorage before redirecting.
+    // Wait for the auth state to read JWT token from localStorage before redirecting.
     if (loading) return null;
 
     if (!user) {
