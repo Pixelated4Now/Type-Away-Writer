@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { BsTrash } from "react-icons/bs";
 import "./StoryEditor.css";
-import "quill/dist/quill.snow.css";
+import "quill/dist/quill.snow.css"; // Import Quill's CSS stylesheet
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -23,40 +23,39 @@ const authFetch = (url, options = {}) => {
 const StoryEditor = () => {
   useEffect(() => { document.title = "Write | Type-Away-Writer"; }, []);
 
-  const navigate        = useNavigate();
+  const navigate = useNavigate();
   const { id: storyId } = useParams();
-  const { user }        = useAuth();
+  const { user } = useAuth();
   const [searchParams]  = useSearchParams();
-  const mode            = searchParams.get('mode');
+  const mode = searchParams.get('mode');
 
-  const [chapters,          setChapters]          = useState([]);
-  const [currentChapterId,  setCurrentChapterId]  = useState(null);
-  const [chapterName,       setChapterName]        = useState("");
-  const [savedName,         setSavedName]          = useState("");
-  const [savedContent,      setSavedContent]       = useState("");
-  const [loading,           setLoading]            = useState(true);
-  const [deleteConfirmId,   setDeleteConfirmId]    = useState(null);
-  const [backConfirm,       setBackConfirm]        = useState(false);
-  const [publishError,      setPublishError]       = useState(null);
-  const [publishing,        setPublishing]         = useState(false);
+  const [chapters, setChapters] = useState([]);
+  const [currentChapterId, setCurrentChapterId] = useState(null);
+  const [chapterName, setChapterName] = useState("");
+  const [savedName, setSavedName] = useState("");
+  const [savedContent, setSavedContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [backConfirm, setBackConfirm] = useState(false);  // Unsaved changes confirmation
+  const [publishError, setPublishError] = useState(null);
+  const [publishing, setPublishing] = useState(false);
 
-  // Invite collaborator state
-  const [quillReady,        setQuillReady]         = useState(false);
+  const [quillReady,  setQuillReady]  = useState(false); // Set to TRUE after Quill finishes initialising.
 
-  const [isAuthor,          setIsAuthor]           = useState(true);
-  const [isCollabStory,     setIsCollabStory]      = useState(false);
+  const [isAuthor, setIsAuthor]  = useState(true);
+  const [isCollabStory, setIsCollabStory]  = useState(false);
 
-  const [inviteOpen,        setInviteOpen]         = useState(false);
-  const [inviteSearch,      setInviteSearch]       = useState("");
-  const [inviteSuggestions, setInviteSuggestions]  = useState([]);
-  const [inviteSuccess,     setInviteSuccess]      = useState(null);
-  const [inviteLoading,     setInviteLoading]      = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [inviteSuggestions, setInviteSuggestions] = useState([]);
+  const [inviteSuccess, setInviteSuccess] = useState(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
 
-  const quillRef          = useRef(null);   // Quill instance
+  const quillRef = useRef(null);   // Quill instance
   const editorContainerRef = useRef(null);  // DOM node for Quill
-  const quillInitialized  = useRef(false);
+  const quillInitialized = useRef(false);
 
-  // ── Image upload handler (stored in ref so Quill toolbar can call it)
+  // Image upload handler (stored in ref so Quill toolbar can call it)
   const imageHandlerRef = useRef(null);
   imageHandlerRef.current = useCallback(() => {
     const input = document.createElement("input");
@@ -69,7 +68,7 @@ const StoryEditor = () => {
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const res  = await authFetch(`${API}/upload/image`, { method: "POST", body: formData });
+        const res = await authFetch(`${API}/upload/image`, { method: "POST", body: formData });
         const data = await res.json();
         const quill = quillRef.current;
         const range = quill.getSelection(true);
@@ -86,7 +85,9 @@ const StoryEditor = () => {
     if (quillInitialized.current || !editorContainerRef.current) return;
     quillInitialized.current = true;
 
+    // Import Quill dynamically
     import("quill").then(({ default: Quill }) => {
+      // Create new Quill instance with Snow theme toolbar.
       const quill = new Quill(editorContainerRef.current, {
         theme: "snow",
         placeholder: "Start writing here...",
@@ -99,7 +100,7 @@ const StoryEditor = () => {
               ["image"],
             ],
             handlers: {
-              image: () => imageHandlerRef.current(),
+              image: () => imageHandlerRef.current(),  // Imagw button overidden with custom image handler.
             },
           },
         },
@@ -109,21 +110,21 @@ const StoryEditor = () => {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Fetch chapters on mount
+  // Fetch chapters on mount
   useEffect(() => {
     let ignore = false;
     setLoading(true);
 
     (async () => {
       try {
-        const r    = await authFetch(`${API}/stories/${storyId}/chapters`);
+        const r = await authFetch(`${API}/stories/${storyId}/chapters`);
         if (ignore) return;
         const data = await r.json();
         if (ignore) return;
 
         let chs = Array.isArray(data) ? data : [];
         if (chs.length === 0) {
-          const res   = await authFetch(`${API}/stories/${storyId}/chapters`, { method: "POST" });
+          const res  = await authFetch(`${API}/stories/${storyId}/chapters`, { method: "POST" });
           if (ignore) return;
           const newCh = await res.json();
           chs = [newCh];
@@ -144,7 +145,7 @@ const StoryEditor = () => {
     return () => { ignore = true; };
   }, [storyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Check author status and whether story already has collaborators
+  // Check author status and whether story already has collaborators
   useEffect(() => {
     if (!storyId || !user) return;
     authFetch(`${API}/stories/${storyId}`)
@@ -156,7 +157,7 @@ const StoryEditor = () => {
       .catch(() => {});
   }, [storyId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Load chapter content into Quill once both Quill is ready and chapter data is available
+  // Load chapter content into Quill once both Quill is ready and chapter data is available
   useEffect(() => {
     if (!quillReady || !quillRef.current || !currentChapterId) return;
     const ch = chapters.find(c => c.id === currentChapterId);
@@ -166,7 +167,7 @@ const StoryEditor = () => {
     }
   }, [quillReady, currentChapterId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Save current chapter
+  // Save current chapter
   const saveCurrentChapter = useCallback(async () => {
     if (!currentChapterId || !quillRef.current) return;
     const content = quillRef.current.root.innerHTML;
@@ -187,7 +188,7 @@ const StoryEditor = () => {
     }
   }, [currentChapterId, chapterName]);
 
-  // ── Switch chapter
+  // Switch chapter
   const switchToChapter = async (chId) => {
     if (chId === currentChapterId) return;
     await saveCurrentChapter();
@@ -202,7 +203,7 @@ const StoryEditor = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ── Add chapter
+  // Add chapter
   const handleAddChapter = async () => {
     await saveCurrentChapter();
     try {
@@ -219,7 +220,7 @@ const StoryEditor = () => {
     }
   };
 
-  // ── Delete chapter
+  // Delete chapter
   const handleDeleteChapter = async (chId) => {
     if (chapters.length <= 1) return;
     try {
@@ -240,21 +241,20 @@ const StoryEditor = () => {
     }
   };
 
-  // ── Unsaved check
+  //  Used by the BACK button to warn the user before navigating away.
   const hasUnsavedChanges = () => {
     const currentContent = quillRef.current?.root.innerHTML || "";
     return chapterName !== savedName || currentContent !== savedContent;
   };
 
-  // ── Publish
+  // Publish
   const handlePublish = async () => {
     setPublishing(true);
     setPublishError(null);
     await saveCurrentChapter();
 
     // Validate every chapter before hitting the server.
-    // Use live values for the current chapter because the state update
-    // from saveCurrentChapter hasn't been applied yet.
+    // Use live values for the current chapter because the state update from saveCurrentChapter hasn't been applied yet.
     const liveContent = quillRef.current?.root.innerHTML || "";
     const errs = [];
     chapters.forEach((ch, i) => {
@@ -287,13 +287,13 @@ const StoryEditor = () => {
     }
   };
 
-  // ── Back
+  // Back
   const handleBack = () => {
     if (hasUnsavedChanges()) { setBackConfirm(true); return; }
     navigate(`/write/${storyId}/settings`);
   };
 
-  // ── Save as draft
+  // Save as draft
   const handleSaveAsDraft = async () => {
     await saveCurrentChapter();
     await authFetch(`${API}/stories/${storyId}`, {
@@ -304,13 +304,13 @@ const StoryEditor = () => {
     navigate(`/profile/${user?.username}`);
   };
 
-  // ── Preview
+  // Preview
   const handlePreview = async () => {
     await saveCurrentChapter();
     navigate(`/write/${storyId}/preview`);
   };
 
-  // ── Invite collaborator
+  // Invite collaborator
   const handleInviteSearch = async (value) => {
     setInviteSearch(value);
     if (!value.trim()) { setInviteSuggestions([]); return; }
@@ -357,7 +357,7 @@ const StoryEditor = () => {
 
       <div className="editor-layout">
 
-        {/* ── Main Editor ── */}
+        {/* Main Editor */}
         <div className="editor-main">
           <h2 className="editor-chapter-heading">
             {loading ? "Loading…" : `Chapter ${currentIndex + 1}`}
@@ -392,7 +392,7 @@ const StoryEditor = () => {
           </div>
         </div>
 
-        {/* ── Chapter Sidebar ── */}
+        {/* Chapter Sidebar */}
         <aside className="editor-sidebar">
           <p className="editor-sidebar-label">Chapters</p>
           <ul className="editor-chapter-list">
@@ -426,7 +426,7 @@ const StoryEditor = () => {
         </aside>
       </div>
 
-      {/* ── Delete confirmation popup ── */}
+      {/* Delete confirmation popup */}
       {deleteConfirmId && (
         <div className="editor-overlay">
           <div className="editor-popup">
@@ -441,7 +441,7 @@ const StoryEditor = () => {
         </div>
       )}
 
-      {/* ── Back confirmation popup ── */}
+      {/* Back confirmation popup */}
       {backConfirm && (
         <div className="editor-overlay">
           <div className="editor-popup">
@@ -456,7 +456,7 @@ const StoryEditor = () => {
         </div>
       )}
 
-      {/* ── Invite collaborator popup ── */}
+      {/* Invite collaborator popup */}
       {inviteOpen && (
         <div className="editor-overlay">
           <div className="editor-popup editor-invite-popup">

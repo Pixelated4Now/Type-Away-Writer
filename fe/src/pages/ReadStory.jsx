@@ -7,8 +7,8 @@ import "./ReadStory.css";
 import "./Commenting.css";
 
 import readingListImg from "../assets/addToList.png";
-import likeImg        from "../assets/likeAChapter.png";
-import likedImg       from "../assets/likedAChapter.png";
+import likeImg from "../assets/likeAChapter.png";
+import likedImg from "../assets/likedAChapter.png";
 import reviewImg from "../assets/reviewSubmit.png";
 import { ImPencil } from "react-icons/im";
 
@@ -26,15 +26,15 @@ const authFetch = (url, options = {}) => {
   });
 };
 
+// Reads chapter content.
 const renderContent = (content) => {
   if (!content) return null;
   if (/<[a-z][\s\S]*>/i.test(content)) {
+    // Render HTML tags
     return <div dangerouslySetInnerHTML={{ __html: content }} />;
   }
   return content.split("\n\n").map((para, i) => <p key={i}>{para}</p>);
 };
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const formatDatetime = (isoString) =>
   new Date(isoString).toLocaleString("en-GB", {
@@ -62,7 +62,7 @@ const collectDescendants = (commentId, all) => {
 
 // Map a raw API comment to the shape the components expect
 const mapComment = (c, storyAuthors = []) => ({
-  id:         c.id,
+  id: c.id,
   username:   c.user?.username || "Unknown",
   avatar:     c.user?.avatar_url ? `${API}${c.user.avatar_url}` : null,
   role:       c.user?.account_type === "expert" ? "expert"
@@ -74,15 +74,14 @@ const mapComment = (c, storyAuthors = []) => ({
   chapter_id: c.chapter_id ?? null,
 });
 
-// ── RoleBadge ─────────────────────────────────────────────────────────────────
-
+// Badge identifying user's role
 const RoleBadge = ({ role }) => {
   if (role === "expert") return <span className="badge badge-expert">LANGUAGE EXPERT</span>;
   if (role === "author") return <span className="badge badge-author">AUTHOR</span>;
   return null;
 };
 
-// ── CommentThread (recursive) ─────────────────────────────────────────────────
+// Renders comment and all its replies.
 
 const CommentThread = ({ comment, allComments, depth, onReply, onDelete, currentUser }) => {
   const [replyOpen, setReplyOpen] = useState(false);
@@ -143,57 +142,57 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
   );
 };
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+// Main page
 
 const ReadStory = () => {
   useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
 
-  const { storyId }    = useParams();
-  const navigate       = useNavigate();
-  const { user }       = useAuth();
-  const currentUser    = user?.username ?? null;
+  const { storyId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentUser = user?.username ?? null;
 
-  // ── Submit for Review modal
-  const [reviewModalOpen,   setReviewModalOpen]   = useState(false);
-  const [expertSearch,      setExpertSearch]      = useState("");
+  // Submit for Review modal
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [expertSearch, setExpertSearch] = useState("");
   const [expertSuggestions, setExpertSuggestions] = useState([]);
-  const [selectedExpert,    setSelectedExpert]    = useState(null); // {id, username}
-  const [reviewSubmitting,  setReviewSubmitting]  = useState(false);
-  const [reviewSuccess,     setReviewSuccess]     = useState(false);
-  const [reviewError,       setReviewError]       = useState(null);
+  const [selectedExpert, setSelectedExpert] = useState(null); // {id, username}
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [reviewError, setReviewError] = useState(null);
 
-  // ── Story data
-  const [story, setStory]     = useState(null);
+  // Story data
+  const [story, setStory]  = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
-  // ── Chapter
+  // Chapter navigation
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
-  const [dropdownOpen, setDropdownOpen]               = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // ── Like
-  const [liked, setLiked]         = useState(false);
+  // Likes
+  const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
 
-  // ── Comments (flat list for current chapter)
-  const [comments, setComments]     = useState([]);
+  // Comments (flat list for current chapter)
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
 
-  // ── Reading lists
-  const [readingLists, setReadingLists]   = useState([]);
+  // Reading lists
+  const [readingLists, setReadingLists] = useState([]);
   const [listDropdownOpen, setListDropdownOpen] = useState(false);
-  const [showCreateForm, setShowCreateForm]     = useState(false);
-  const [newListTitle, setNewListTitle]         = useState("");
-  const [newListPublic, setNewListPublic]       = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newListTitle, setNewListTitle] = useState("");
+  const [newListPublic, setNewListPublic] = useState(false);
 
-  // ── Hero colour
+  // Background colour extracted from cover.
   const [heroColor, setHeroColor] = useState("rgba(201, 212, 232, 0.4)");
 
-  // ── Refs
+  // Refs
   const chapterDropdownRef = useRef(null);
-  const listDropdownRef    = useRef(null);
+  const listDropdownRef = useRef(null);
 
-  // ── Fetch story on mount
+  // Fetch story on mount
   useEffect(() => {
     setLoading(true);
     authFetch(`${API}/stories/${storyId}`)
@@ -207,7 +206,7 @@ const ReadStory = () => {
       .finally(() => setLoading(false));
   }, [storyId]);
 
-  // ── Fetch comments for the current chapter whenever chapter changes
+  // Fetch comments for the current chapter whenever chapter changes
   useEffect(() => {
     if (!story) return;
     const chapter = story.chapters[currentChapterIndex];
@@ -220,7 +219,7 @@ const ReadStory = () => {
       .catch(console.error);
   }, [story, storyId, currentChapterIndex]);
 
-  // ── Fetch reading lists if logged in
+  // Fetch reading lists if logged in
   useEffect(() => {
     if (!user) return;
     authFetch(`${API}/users/me/reading-lists`)
@@ -236,7 +235,7 @@ const ReadStory = () => {
       .catch(console.error);
   }, [user]);
 
-  // ── Extract dominant colour from cover
+  // Extract dominant colour from cover
   useEffect(() => {
     if (!story?.cover_image_url) return;
     const img = new Image();
@@ -254,7 +253,7 @@ const ReadStory = () => {
     };
   }, [story?.cover_image_url]);
 
-  // ── Close chapter dropdown on outside click
+  // Close chapter dropdown on outside click
   useEffect(() => {
     const fn = (e) => {
       if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(e.target))
@@ -264,7 +263,7 @@ const ReadStory = () => {
     return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  // ── Close list dropdown on outside click
+  // Close list dropdown on outside click
   useEffect(() => {
     const fn = (e) => {
       if (listDropdownRef.current && !listDropdownRef.current.contains(e.target)) {
@@ -276,10 +275,10 @@ const ReadStory = () => {
     return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  // ── Scroll to top on mount
+  // Scroll to top on mount
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // ── Early returns for loading / error
+  // Early returns for loading / error
   if (loading) return (
     <div className="story-page"><Navbar />
       <p style={{ padding: "60px 40px", color: "#888" }}>Loading story…</p>
@@ -291,13 +290,13 @@ const ReadStory = () => {
     <Footer /></div>
   );
 
-  const chapter      = story.chapters[currentChapterIndex];
+  const chapter = story.chapters[currentChapterIndex];
   const totalChapters = story.chapters.length;
-  const isFirst      = currentChapterIndex === 0;
-  const isLast       = currentChapterIndex === totalChapters - 1;
-  const topLevel     = sortTopLevel(comments.filter((c) => c.parentId === null));
+  const isFirst = currentChapterIndex === 0;
+  const isLast = currentChapterIndex === totalChapters - 1;
+  const topLevel = sortTopLevel(comments.filter((c) => c.parentId === null));
 
-  // ── Chapter navigation
+  // Chapter navigation
   const goToChapter = (index) => {
     setCurrentChapterIndex(index);
     setDropdownOpen(false);
@@ -305,7 +304,7 @@ const ReadStory = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ── Like toggle
+  // Like toggle
   const handleLike = async () => {
     if (!user) return;
     try {
@@ -316,14 +315,14 @@ const ReadStory = () => {
     } catch (err) { console.error("Like error:", err); }
   };
 
-  // ── Post comment (top-level, on current chapter)
+  // Post comment (top-level, on current chapter)
   const handleComment = async () => {
     if (!commentText.trim() || !user) return;
     try {
       const res  = await authFetch(`${API}/stories/${storyId}/comments`, {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ chapter_id: chapter.id, content: commentText.trim() }),
+        body: JSON.stringify({ chapter_id: chapter.id, content: commentText.trim() }),
       });
       const data = await res.json();
       setComments((prev) => [...prev, mapComment(data, story.authors)]);
@@ -331,21 +330,21 @@ const ReadStory = () => {
     } catch (err) { console.error("Comment error:", err); }
   };
 
-  // ── Post reply
+  // Post reply
   const handleReply = async (parentId, text) => {
     if (!user) return;
     try {
       const res  = await authFetch(`${API}/stories/${storyId}/comments`, {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ chapter_id: chapter.id, content: text, parent_id: parentId }),
+        body: JSON.stringify({ chapter_id: chapter.id, content: text, parent_id: parentId }),
       });
       const data = await res.json();
       setComments((prev) => [...prev, mapComment(data, story.authors)]);
     } catch (err) { console.error("Reply error:", err); }
   };
 
-  // ── Delete comment
+  // Delete comment
   const handleDelete = async (commentId) => {
     try {
       await authFetch(`${API}/comments/${commentId}`, { method: "DELETE" });
@@ -356,7 +355,7 @@ const ReadStory = () => {
     } catch (err) { console.error("Delete error:", err); }
   };
 
-  // ── Add story to existing reading list
+  // Add story to existing reading list
   const handleAddToList = async (listId) => {
     const list = readingLists.find((l) => l.id === listId);
     if (!list || list.storyIds.includes(parseInt(storyId, 10))) return;
@@ -373,14 +372,14 @@ const ReadStory = () => {
     } catch (err) { console.error("Add to list error:", err); }
   };
 
-  // ── Create new reading list then add story
+  // Create new reading list then add story
   const handleCreateList = async () => {
     if (!newListTitle.trim()) return;
     try {
-      const res      = await authFetch(`${API}/users/me/reading-lists`, {
-        method:  "POST",
+      const res = await authFetch(`${API}/users/me/reading-lists`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ title: newListTitle.trim(), is_public: newListPublic }),
+        body: JSON.stringify({ title: newListTitle.trim(), is_public: newListPublic }),
       });
       const newList  = await res.json();
       const mapped   = { id: newList.id, title: newList.title, isPublic: newList.is_public, storyIds: [] };
@@ -399,7 +398,7 @@ const ReadStory = () => {
     setNewListTitle(""); setNewListPublic(false); setShowCreateForm(false);
   };
 
-  // ── Expert search
+  // Expert search
   const handleExpertSearch = async (value) => {
     setExpertSearch(value);
     setSelectedExpert(null);
@@ -447,7 +446,7 @@ const ReadStory = () => {
     <div className="story-page">
       <Navbar />
 
-      {/* ── Story Hero ── */}
+      {/* Story Hero*/}
       <section className="story-hero" style={{ background: heroColor }}>
         <div className="story-hero-inner">
           <img src={story.cover_image_url} alt={story.title} className="story-hero-cover" />
@@ -470,10 +469,10 @@ const ReadStory = () => {
         <div className="story-hero-doodle" />
       </section>
 
-      {/* ── Content Area ── */}
+      {/* Content Area*/}
       <div className="story-content-area">
 
-        {/* ── Left Sidebar ── */}
+        {/* Left Sidebar*/}
         <aside className="story-sidebar">
           
           <p className="sidebar-label">Chapters</p>
@@ -589,7 +588,7 @@ const ReadStory = () => {
 
         </aside>
 
-        {/* ── Main Reading Area ── */}
+        {/* Main Reading Area */}
         <main className="story-main">
           <h2 className="chapter-title">
             Chapter {chapter.chapter_number}: {chapter.title}
@@ -655,7 +654,7 @@ const ReadStory = () => {
 
       <Footer />
 
-      {/* ── Submit for Review modal ── */}
+      {/* Submit for Review modal */}
       {reviewModalOpen && (
         <div className="review-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setReviewModalOpen(false); }}>
           <div className="review-modal">

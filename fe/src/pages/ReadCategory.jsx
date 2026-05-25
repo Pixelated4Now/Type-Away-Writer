@@ -6,10 +6,10 @@ import Footer from "../components/Footer";
 import "./ReadCategory.css";
 import bannerImg from "../assets/readBanner.jpg";
 
-const API     = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const MAX_TAGS = 20;
 
-// Map DB status values to display labels and back
+// Maps the database completion status values to user-friendly labels.
 const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
 const ReadCategory = () => {
@@ -18,32 +18,31 @@ const ReadCategory = () => {
 
 
   const { categoryId } = useParams();
-  const navigate       = useNavigate();
-  const { user }       = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // ── Category & tag data from API
-  const [category, setCategory]   = useState(null);
-  const [allTags, setAllTags]     = useState([]);   // string[]
+  const [category, setCategory] = useState(null); // Category object from backend
+  const [allTags, setAllTags] = useState([]);   // Full list of tags in the DB
 
-  // ── Search form state
-  const [titleInput, setTitleInput]         = useState("");
-  const [authorInput, setAuthorInput]       = useState("");
-  const [tagInput, setTagInput]             = useState("");
-  const [selectedTags, setSelectedTags]     = useState([]);
-  const [tagDropdown, setTagDropdown]       = useState([]);
-  const [showDropdown, setShowDropdown]     = useState(false);
+  // Search form states
+  const [titleInput, setTitleInput] = useState("");
+  const [authorInput, setAuthorInput] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [tagDropdown, setTagDropdown] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [completionStatus, setCompletionStatus] = useState("All");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
-  // ── Results state
-  const [stories, setStories]         = useState([]);
-  const [storiesLoading, setStoriesLoading] = useState(true);
+  // Results state
+  const [stories, setStories] = useState([]); //Array of story objects currently displayed
+  const [storiesLoading, setStoriesLoading] = useState(true); // TRUE while stories are being fetched.
 
-  // ── Refs for outside-click closing
-  const tagRef    = useRef(null);
+  // Refs for outside-click closing
+  const tagRef = useRef(null);
   const statusRef = useRef(null);
 
-  // ── Fetch categories + tags once on mount
+  //  Fetch categories and tags when page loads.
   useEffect(() => {
     Promise.all([
       fetch(`${API}/categories`).then((r) => r.json()),
@@ -56,18 +55,18 @@ const ReadCategory = () => {
       .catch(console.error);
   }, [categoryId]);
 
-  // ── Fetch stories (called on mount and on search)
+  // Fetch stories (called on page load and on search)
   const fetchStories = useCallback(
     async (filters = {}) => {
       setStoriesLoading(true);
       try {
         const params = new URLSearchParams({ category_id: categoryId });
-        if (filters.title)  params.set("title",  filters.title);
+        if (filters.title) params.set("title", filters.title);
         if (filters.author) params.set("author", filters.author);
-        if (filters.tags)   params.set("tags",   filters.tags);
+        if (filters.tags) params.set("tags", filters.tags);
         if (filters.status) params.set("status", filters.status);
 
-        const res  = await fetch(`${API}/stories?${params}`);
+        const res = await fetch(`${API}/stories?${params}`);
         const data = await res.json();
         setStories(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -82,17 +81,17 @@ const ReadCategory = () => {
 
   useEffect(() => { fetchStories(); }, [fetchStories]);
 
-  // ── Close dropdowns on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClick = (e) => {
-      if (tagRef.current    && !tagRef.current.contains(e.target))    setShowDropdown(false);
+      if (tagRef.current && !tagRef.current.contains(e.target)) setShowDropdown(false);
       if (statusRef.current && !statusRef.current.contains(e.target)) setShowStatusDropdown(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // ── Tag autocomplete
+  // Tag autocomplete
   const handleTagInput = (e) => {
     const val = e.target.value;
     setTagInput(val);
@@ -114,12 +113,12 @@ const ReadCategory = () => {
 
   const removeTag = (tag) => setSelectedTags((prev) => prev.filter((t) => t !== tag));
 
-  // ── Search handler — fires a new API fetch
+  // Search handler fires a new API fetch
   const handleSearch = () => {
     const filters = {};
-    if (titleInput.trim())   filters.title  = titleInput.trim();
-    if (authorInput.trim())  filters.author = authorInput.trim();
-    if (selectedTags.length) filters.tags   = selectedTags.join(",");
+    if (titleInput.trim()) filters.title = titleInput.trim();
+    if (authorInput.trim()) filters.author = authorInput.trim();
+    if (selectedTags.length) filters.tags = selectedTags.join(",");
     if (completionStatus !== "All") filters.status = completionStatus.toLowerCase();
     fetchStories(filters);
   };
@@ -148,7 +147,7 @@ const ReadCategory = () => {
 
       <div className="category-main">
 
-        {/* ── Story List ── */}
+        {/* Story List */}
         <div className="story-list">
           {storiesLoading ? (
             <p style={{ color: "#888", padding: "24px 0" }}>Loading stories…</p>
@@ -202,30 +201,18 @@ const ReadCategory = () => {
           )}
         </div>
 
-        {/* ── Work Search ── */}
+        {/* Work Search */}
         <aside className="work-search">
           <h3 className="work-search-title">Work Search</h3>
 
           <div className="search-field">
             <label>Title:</label>
-            <input
-              type="text"
-              placeholder="Search title"
-              value={titleInput}
-              onChange={(e) => setTitleInput(e.target.value)}
-              className="search-input"
-            />
+            <input type="text" placeholder="Search title" value={titleInput} onChange={(e) => setTitleInput(e.target.value)} className="search-input"/>
           </div>
 
           <div className="search-field">
             <label>Author:</label>
-            <input
-              type="text"
-              placeholder="Search author name"
-              value={authorInput}
-              onChange={(e) => setAuthorInput(e.target.value)}
-              className="search-input"
-            />
+            <input type="text" placeholder="Search author name" value={authorInput} onChange={(e) => setAuthorInput(e.target.value)} className="search-input"/>
           </div>
 
           <div className="search-field" ref={tagRef}>
@@ -261,10 +248,7 @@ const ReadCategory = () => {
 
           <div className="search-field" ref={statusRef}>
             <label>Completion status:</label>
-            <div
-              className={`status-select ${showStatusDropdown ? "active" : ""}`}
-              onClick={() => setShowStatusDropdown((p) => !p)}
-            >
+            <div className={`status-select ${showStatusDropdown ? "active" : ""}`} onClick={() => setShowStatusDropdown((p) => !p)}>
               <span>{completionStatus === "All" ? "Search status" : completionStatus}</span>
               <span className="status-arrow">▾</span>
             </div>

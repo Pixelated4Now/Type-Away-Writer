@@ -21,50 +21,50 @@ const authFetch = (url, options = {}) => {
 };
 
 const MAX_SUMMARY = 1400;
-const MAX_TAGS    = 20;
+const MAX_TAGS = 20;
 const MAX_TAG_LEN = 100;
 
 const StorySettings = () => {
   useEffect(() => { document.title = "Story Details | Type-Away-Writer"; }, []);
 
-  const navigate          = useNavigate();
+  const navigate = useNavigate();
   const { id: storyId }   = useParams();       // undefined for /write/new
-  const [searchParams]    = useSearchParams();
-  const mode              = searchParams.get('mode');
+  const [searchParams]  = useSearchParams();
+  const mode  = searchParams.get('mode');
   useAuth();
 
-  // ── Form state
-  const [title,       setTitle]       = useState("");
-  const [summary,     setSummary]     = useState("");
-  const [workStatus,  setWorkStatus]  = useState("");   // "complete" | "ongoing"
-  const [categoryId,  setCategoryId]  = useState(null);
+  // Form state
+  const [title, setTitle] = useState("");
+  const [summary, setSummary] = useState("");
+  const [workStatus, setWorkStatus] = useState("");   // "complete" | "ongoing"
+  const [categoryId, setCategoryId] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]); // [{id, name}]
-  const [coverUrl,    setCoverUrl]    = useState(null);  // stored full URL
+  const [coverUrl, setCoverUrl] = useState(null);  // stored full URL
   const [coverPreview, setCoverPreview] = useState(null); // local or stored URL for display
 
-  // ── Reference data
+  // Data fetched from backend to populate the dropdowns.
   const [categories, setCategories] = useState([]);
-  const [allTags,    setAllTags]    = useState([]);
+  const [allTags, setAllTags] = useState([]);
 
-  // ── Dropdown open state
-  const [statusOpen,   setStatusOpen]   = useState(false);
+  // Dropdown open state
+  const [statusOpen, setStatusOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [tagOpen,      setTagOpen]      = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
 
-  // ── Tag input
-  const [tagInput,       setTagInput]       = useState("");
+  // Tag input
+  const [tagInput, setTagInput] = useState("");
   const [tagSuggestions, setTagSuggestions] = useState([]);
 
-  // ── Errors
-  const [errors,   setErrors]   = useState({});
+  // Errors
+  const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-  const fileInputRef  = useRef(null);
-  const statusRef     = useRef(null);
-  const categoryRef   = useRef(null);
-  const tagRef        = useRef(null);
+  const fileInputRef = useRef(null);
+  const statusRef = useRef(null);
+  const categoryRef = useRef(null);
+  const tagRef  = useRef(null);
 
-  // ── Load reference data + existing story if editing
+  // Load reference data + existing story if editing
   useEffect(() => {
     fetch(`${API}/categories`).then(r => r.json()).then(setCategories).catch(() => {});
     fetch(`${API}/tags`).then(r => r.json()).then(setAllTags).catch(() => {});
@@ -87,7 +87,7 @@ const StorySettings = () => {
     }
   }, [storyId]);
 
-  // ── Close dropdowns on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e) => {
       if (statusRef.current   && !statusRef.current.contains(e.target))   setStatusOpen(false);
@@ -102,7 +102,7 @@ const StorySettings = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── Cover image upload
+  // Cover image upload
   const handleCoverChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -118,21 +118,21 @@ const StorySettings = () => {
     }
   };
 
-  // ── Tag input filtering
+  // Filters tags as user types.
   const handleTagInput = (value) => {
     setTagInput(value);
     if (!value.trim()) {
       setTagSuggestions([]);
       return;
     }
-    const lower  = value.toLowerCase();
+    const lower = value.toLowerCase();
     const filtered = allTags.filter(t =>
       t.name.toLowerCase().includes(lower) &&
       !selectedTags.some(s => s.id === t.id)
     );
     setTagSuggestions(filtered);
   };
-
+ // Add existing tag.
   const addTag = (tag) => {
     if (selectedTags.length >= MAX_TAGS) return;
     if (!selectedTags.some(t => t.id === tag.id)) {
@@ -142,6 +142,7 @@ const StorySettings = () => {
     setTagSuggestions([]);
   };
 
+  // Create new tag.
   const createTag = async () => {
     const name = tagInput.trim();
     if (!name || name.length > MAX_TAG_LEN) return;
@@ -159,17 +160,17 @@ const StorySettings = () => {
 
   const removeTag = (id) => setSelectedTags(prev => prev.filter(t => t.id !== id));
 
-  // ── Validation
+  // Validation
   const validate = () => {
-    if (!title.trim())   return { title: "Title is required." };
+    if (!title.trim()) return { title: "Title is required." };
     if (!summary.trim()) return { summary: "Summary is required." };
-    if (!workStatus)     return { workStatus: "Work status is required." };
-    if (!categoryId)     return { category: "Category is required." };
+    if (!workStatus) return { workStatus: "Work status is required." };
+    if (!categoryId) return { category: "Category is required." };
     if (selectedTags.length === 0) return { tags: "At least one tag is required." };
     return null;
   };
 
-  // ── Submit
+  // When user clicks NEXT button
   const handleNext = async () => {
     const errs = validate();
     if (errs) { setErrors(errs); return; }
@@ -177,11 +178,11 @@ const StorySettings = () => {
     setSubmitting(true);
 
     const payload = {
-      title:           title.trim(),
-      summary:         summary.trim(),
-      work_status:     workStatus,
-      category_id:     categoryId,
-      tag_ids:         selectedTags.map(t => t.id),
+      title: title.trim(),
+      summary: summary.trim(),
+      work_status: workStatus,
+      category_id: categoryId,
+      tag_ids: selectedTags.map(t => t.id),
       cover_image_url: coverUrl || null,
     };
 
@@ -226,7 +227,7 @@ const StorySettings = () => {
 
         <div className="settings-body">
 
-          {/* ── Cover image ── */}
+          {/* Cover image */}
           <div className="cover-area" onClick={() => fileInputRef.current.click()}>
             {coverPreview ? (
               <div className="cover-preview-wrap">
@@ -248,7 +249,7 @@ const StorySettings = () => {
             />
           </div>
 
-          {/* ── Form ── */}
+          {/* Form */}
           <div className="settings-form">
 
             {/* Title */}

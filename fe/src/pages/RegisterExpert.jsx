@@ -57,17 +57,17 @@ const RegisterExpert = () => {
         email: '', agreedToTerms: false, verificationCode: '',
     });
 
-    const [errors, setErrors]           = useState({});
+    const [errors, setErrors] = useState({});
     const [serverError, setServerError] = useState('');
-    const [loading, setLoading]         = useState(false);
-    const [userId, setUserId]           = useState(null);
-    const [showPassword, setShowPassword]               = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [userId, setUserId]  = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [resendMessage, setResendMessage]             = useState({ text: '', type: '' });
+    const [resendMessage, setResendMessage] = useState({ text: '', type: '' });
 
     const update = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
-        setErrors((prev)   => ({ ...prev, [field]: '' }));
+        setErrors((prev) => ({ ...prev, [field]: '' }));
         setServerError('');
     };
 
@@ -150,10 +150,10 @@ const RegisterExpert = () => {
             setLoading(true);
             try {
                 const fd = new FormData();
-                fd.append('username',   formData.username);
-                fd.append('password',   formData.password);
-                fd.append('email',      formData.email);
-                fd.append('birthDay',   formData.birthDay);
+                fd.append('username', formData.username);
+                fd.append('password', formData.password);
+                fd.append('email', formData.email);
+                fd.append('birthDay', formData.birthDay);
                 fd.append('birthMonth', formData.birthMonth);
                 fd.append('birthYear',  formData.birthYear);
                 formData.qualificationFiles.forEach((file) => fd.append('files', file));

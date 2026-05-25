@@ -21,12 +21,12 @@ const authFetch = (url, options = {}) => {
 const formatTime = (ts) =>
   new Date(ts).toLocaleString("en-US", {
     timeZone: "Asia/Colombo",
-    month:    "short",
-    day:      "numeric",
-    year:     "numeric",
-    hour:     "numeric",
-    minute:   "2-digit",
-    hour12:   true,
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   });
 
 const Review = () => {
@@ -34,9 +34,9 @@ const Review = () => {
 
   const navigate = useNavigate();
 
-  const [requests,   setRequests]   = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [openMenuId, setOpenMenuId] = useState(null);
+  const [requests, setRequests] = useState([]);  // Array of request objects from backend.
+  const [loading, setLoading] = useState(true);  // TRUE while fetch is in progress.
+  const [openMenuId, setOpenMenuId] = useState(null); //ID of the review card whose three-dot dropdown is currently open.
 
   useEffect(() => {
     authFetch(`${API}/review-requests`)
@@ -54,6 +54,7 @@ const Review = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Chaneg status (Reviewd, Not Reviewed)
   const updateStatus = async (id, status) => {
     await authFetch(`${API}/review-requests/${id}`, {
       method:  "PATCH",
@@ -124,20 +125,20 @@ const Review = () => {
 
                   {openMenuId === req.id && (
                     <div className="review-dropdown">
-                      <button onClick={() => { navigate(`/read/story/${req.story_id}`); setOpenMenuId(null); }}>
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/read/story/${req.story_id}`); setOpenMenuId(null); }}>
                         View Request
                       </button>
                       {req.status !== "reviewed" && (
-                        <button onClick={() => updateStatus(req.id, "reviewed")}>
+                        <button onClick={(e) => { e.stopPropagation(); updateStatus(req.id, "reviewed"); }}>
                           Mark as Reviewed
                         </button>
                       )}
                       {req.status === "reviewed" && (
-                        <button onClick={() => updateStatus(req.id, "new")}>
+                        <button onClick={(e) => { e.stopPropagation(); updateStatus(req.id, "new"); }}>
                           Mark as Not Reviewed
                         </button>
                       )}
-                      <button className="review-dropdown-danger" onClick={() => handleDelete(req.id)}>
+                      <button className="review-dropdown-danger" onClick={(e) => { e.stopPropagation(); handleDelete(req.id); }}>
                         Delete Request
                       </button>
                     </div>

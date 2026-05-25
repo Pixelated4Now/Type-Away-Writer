@@ -71,13 +71,7 @@ const Login = () => {
             <form onSubmit={handleSubmit}>
                 <div className="input-box">
                     <label htmlFor="email">Email Address:</label>
-                    <input
-                        type="text"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        style={{ border: emailError ? '1px solid #FF1212' : '' }}
-                    />
+                    <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '1px solid #FF1212' : '' }}/>
                     {emailError && (
                         <p style={{ color: '#F64E4E', fontSize: '12px', marginTop: '3px' }}>{emailError}</p>
                     )}

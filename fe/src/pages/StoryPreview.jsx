@@ -30,17 +30,17 @@ const StoryPreview = () => {
   useEffect(() => { document.title = "Preview | Type-Away-Writer"; }, []);
 
   const { id: storyId } = useParams();
-  const navigate        = useNavigate();
+  const navigate = useNavigate();
   useAuth();
 
-  const [story,               setStory]               = useState(null);
-  const [loading,             setLoading]             = useState(true);
-  const [error,               setError]               = useState(null);
+  const [story, setStory] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
-  const [dropdownOpen,        setDropdownOpen]        = useState(false);
-  const [heroColor,           setHeroColor]           = useState("rgba(201, 212, 232, 0.4)");
-  const [publishError,        setPublishError]        = useState(null);
-  const [publishing,          setPublishing]          = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [heroColor, setHeroColor] = useState("rgba(201, 212, 232, 0.4)");
+  const [publishError, setPublishError] = useState(null);
+  const [publishing, setPublishing] = useState(false);
 
   const chapterDropdownRef = useRef(null);
 
@@ -116,10 +116,10 @@ const StoryPreview = () => {
     <Footer /></div>
   );
 
-  const chapter       = story.chapters[currentChapterIndex];
+  const chapter = story.chapters[currentChapterIndex];
   const totalChapters = story.chapters.length;
-  const isFirst       = currentChapterIndex === 0;
-  const isLast        = currentChapterIndex === totalChapters - 1;
+  const isFirst = currentChapterIndex === 0;
+  const isLast = currentChapterIndex === totalChapters - 1;
 
   return (
     <div className="story-page">
@@ -129,7 +129,7 @@ const StoryPreview = () => {
         PREVIEW: this is what your story will look like when published.
       </div>
 
-      {/* ── Hero ── */}
+      {/* Hero */}
       <section className="story-hero" style={{ background: heroColor }}>
         <div className="story-hero-inner">
           {story.cover_image_url && (
@@ -147,10 +147,10 @@ const StoryPreview = () => {
         <div className="story-hero-doodle" />
       </section>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div className="story-content-area">
 
-        {/* ── Sidebar ── */}
+        {/* Sidebar */}
         <aside className="story-sidebar">
           <p className="sidebar-label">Chapters</p>
           <div className="chapter-dropdown-wrapper" ref={chapterDropdownRef}>

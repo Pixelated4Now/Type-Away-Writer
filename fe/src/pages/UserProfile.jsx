@@ -25,7 +25,7 @@ const listCoverSrc = (url) => (!url ? null : url.startsWith("http") ? url : `${A
 
 const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
-// ── Story card — matches ReadCategory.jsx structure exactly ───────────────────
+// Story card
 
 const StoryCard = ({ story, isOwn, onEdit, onDelete, clickable = true, redDelete = false }) => {
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ const StoryCard = ({ story, isOwn, onEdit, onDelete, clickable = true, redDelete
   );
 };
 
-// ── User row (Following / Followers tabs) ────────────────────────────────────
+// User row (for Following and FOllowers)
 
 const UserRow = ({ u, onAction, actionLabel }) => {
   const navigate = useNavigate();
@@ -109,41 +109,39 @@ const UserRow = ({ u, onAction, actionLabel }) => {
   );
 };
 
-// ── Main component ─────────────────────────────────────────────────────────────
-
 const UserProfile = () => {
   const { username } = useParams();
-  const navigate     = useNavigate();
+  const navigate = useNavigate();
   const { user, login } = useAuth();
 
   const isOwnProfile = user?.username?.toLowerCase() === username?.toLowerCase();
 
-  const [profile,      setProfile]      = useState(null);
-  const [loading,      setLoading]      = useState(true);
-  const [activeTab,    setActiveTab]    = useState("about");
-  const [tabData,      setTabData]      = useState({});
-  const [tabLoaded,    setTabLoaded]    = useState({});
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("about");
+  const [tabData, setTabData] = useState({});
+  const [tabLoaded, setTabLoaded]  = useState({});
 
   // Edit profile
-  const [editMode,     setEditMode]     = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [editUsername, setEditUsername] = useState("");
-  const [editBio,      setEditBio]      = useState("");
-  const [editError,    setEditError]    = useState("");
-  const [saving,       setSaving]       = useState(false);
+  const [editBio, setEditBio] = useState("");
+  const [editError, setEditError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Logged-in user's following set (for button state on other profiles)
   const [myFollowingIds, setMyFollowingIds] = useState(new Set());
 
   // Reading list detail
-  const [openList,     setOpenList]     = useState(null);
+  const [openList, setOpenList] = useState(null);
 
   // Delete confirmations
-  const [deleteStory,  setDeleteStory]  = useState(null); // { id, isDraft }
+  const [deleteStory, setDeleteStory]  = useState(null); // { id, isDraft }
   const [deleteListId, setDeleteListId] = useState(null);
 
   // Reading list edit mode
-  const [listEditMode,   setListEditMode]   = useState(false);
-  const [listEditName,   setListEditName]   = useState("");
+  const [listEditMode, setListEditMode] = useState(false);
+  const [listEditName, setListEditName] = useState("");
   const [listEditPublic, setListEditPublic] = useState(true);
 
   const avatarInputRef = useRef(null);
@@ -153,7 +151,7 @@ const UserProfile = () => {
     document.title = `${username} | Type-Away-Writer`;
   }, [username]);
 
-  // Fetch profile on username change
+  // Fetch profile on mount and whenever the username URL parameter changes.
   useEffect(() => {
     let ignore = false;
     setLoading(true);
@@ -429,9 +427,9 @@ const UserProfile = () => {
   );
   if (!profile) return null;
 
-  const stories        = tabData.stories        || [];
+  const stories = tabData.stories || [];
   const collaborations = tabData.collaborations || [];
-  const drafts         = tabData.drafts         || [];
+  const drafts = tabData.drafts || [];
   const lists          = tabData.lists          || [];
   const following      = tabData.following      || [];
   const followers      = tabData.followers      || [];

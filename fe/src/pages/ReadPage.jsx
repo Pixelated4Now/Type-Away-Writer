@@ -18,7 +18,7 @@ const ReadPage = () => {
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading]       = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${API}/categories`)
