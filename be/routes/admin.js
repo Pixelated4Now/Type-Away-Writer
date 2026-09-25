@@ -17,7 +17,7 @@ router.get('/stats', guard, async (req, res) => {
     try {
         const { rows } = await pool.query(`
             SELECT
-                (SELECT COUNT(*)::int FROM users) AS total_users,
+                (SELECT COUNT(*)::int FROM users WHERE account_type != 'admin') AS total_users,
                 (SELECT COUNT(*)::int FROM users WHERE account_type = 'student') AS total_students,
                 (SELECT COUNT(*)::int FROM users WHERE account_type = 'expert')  AS total_experts,
                 (SELECT COUNT(*)::int FROM stories WHERE status = 'published')   AS total_stories
