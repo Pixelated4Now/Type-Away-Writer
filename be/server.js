@@ -47,12 +47,27 @@ const applySchema = async () => {
     console.log('Schema applied successfully.');
 };
 
+// Deletes notifications older than 14 days.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const cleanupOldNotifications = async () => {
+    try {
+        const { rowCount } = await pool.query(
+            "DELETE FROM notifications WHERE created_at < NOW() - INTERVAL '14 days'"
+        );
+        if (rowCount > 0) console.log(`Cleaned up ${rowCount} notification(s) older than 14 days.`);
+    } catch (err) {
+        console.error('Notification cleanup error:', err);
+    }
+};
+
 // Server only starts listening for requests after the database schema has been successfully applied.
 applySchema()
     .then(() => {
         app.listen(PORT, () => {
             console.log(`Server is running on PORT: ${PORT}`);
         });
+        cleanupOldNotifications();
+        setInterval(cleanupOldNotifications, DAY_MS);
     })
     .catch((err) => {
         console.error('Failed to apply schema:', err);
