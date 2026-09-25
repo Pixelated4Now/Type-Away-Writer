@@ -449,7 +449,7 @@ const ReadStory = () => {
       {/* Story Hero*/}
       <section className="story-hero" style={{ background: heroColor }}>
         <div className="story-hero-inner">
-          <img src={story.cover_image_url} alt={story.title} className="story-hero-cover" />
+          <img src={story.cover_image_url || "/assets/covers/default.png"} alt={story.title} className="story-hero-cover" />
           <div className="story-hero-info">
             <p className="story-hero-meta">
               {story.work_status === "complete" ? "Complete" : "Ongoing"} • {totalChapters} Chapter{totalChapters !== 1 ? "s" : ""}
