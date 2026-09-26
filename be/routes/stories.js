@@ -266,15 +266,23 @@ router.delete('/comments/:id', authenticateToken, async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT user_id FROM comments WHERE id = $1',
-            [commentId]
+            `SELECT c.user_id,
+                    (s.author_id = $2 OR EXISTS (
+                        SELECT 1 FROM story_collaborators sc
+                        WHERE sc.story_id = s.id AND sc.user_id = $2
+                    )) AS is_story_author
+             FROM comments c
+             JOIN stories s ON s.id = c.story_id
+             WHERE c.id = $1`,
+            [commentId, req.user.id]
         );
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Comment not found.' });
         }
-        // Only comment author can delete commnet.
-        if (result.rows[0].user_id !== req.user.id) {
+        // Comment owner or any author/collaborator of the story can delete a comment.
+        const { user_id, is_story_author } = result.rows[0];
+        if (user_id !== req.user.id && !is_story_author) {
             return res.status(403).json({ message: 'Not authorised to delete this comment.' });
         }
 
@@ -610,9 +618,17 @@ router.get('/stories/:id/chapters', authenticateToken, async (req, res) => {
 router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     try {
-        const check = await pool.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
+        // Both the original author and collaborators can add chapters.
+        const check = await pool.query(
+            `SELECT s.author_id,
+                    EXISTS(SELECT 1 FROM story_collaborators sc
+                           WHERE sc.story_id = s.id AND sc.user_id = $2) AS is_collaborator
+             FROM stories s WHERE s.id = $1`,
+            [storyId, req.user.id]
+        );
         if (check.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
-        if (check.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+        const { author_id, is_collaborator } = check.rows[0];
+        if (author_id !== req.user.id && !is_collaborator) return res.status(403).json({ message: 'Not authorised.' });
 
         const { rows: maxRows } = await pool.query(
             'SELECT COALESCE(MAX(chapter_number), 0) AS max FROM chapters WHERE story_id = $1',
@@ -639,12 +655,17 @@ router.put('/chapters/:chapterId', authenticateToken, async (req, res) => {
     const chapterId = parseInt(req.params.chapterId, 10);
     const { title, content } = req.body;
     try {
+        // Both the original author and collaborators can edit chapters.
         const chapRes = await pool.query(
-            'SELECT c.id, s.author_id FROM chapters c JOIN stories s ON s.id = c.story_id WHERE c.id = $1',
-            [chapterId]
+            `SELECT s.author_id,
+                    EXISTS(SELECT 1 FROM story_collaborators sc
+                           WHERE sc.story_id = c.story_id AND sc.user_id = $2) AS is_collaborator
+             FROM chapters c JOIN stories s ON s.id = c.story_id WHERE c.id = $1`,
+            [chapterId, req.user.id]
         );
         if (chapRes.rows.length === 0) return res.status(404).json({ message: 'Chapter not found.' });
-        if (chapRes.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
+        const { author_id, is_collaborator } = chapRes.rows[0];
+        if (author_id !== req.user.id && !is_collaborator) return res.status(403).json({ message: 'Not authorised.' });
 
         await pool.query(
             'UPDATE chapters SET title = $1, content = $2 WHERE id = $3',

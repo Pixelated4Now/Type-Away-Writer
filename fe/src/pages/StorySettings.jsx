@@ -31,7 +31,7 @@ const StorySettings = () => {
   const { id: storyId }   = useParams();       // undefined for /write/new
   const [searchParams]  = useSearchParams();
   const mode  = searchParams.get('mode');
-  useAuth();
+  const { user } = useAuth();
 
   // Form state
   const [title, setTitle] = useState("");
@@ -73,6 +73,11 @@ const StorySettings = () => {
       authFetch(`${API}/stories/${storyId}`)
         .then(r => r.json())
         .then(data => {
+          // Only the original author can edit story details; send collaborators to the chapter editor.
+          if (user && data.author_id && data.author_id !== user.id) {
+            navigate(`/write/${storyId}/chapters`, { replace: true });
+            return;
+          }
           setTitle(data.title || "");
           setSummary(data.summary || "");
           setWorkStatus(data.work_status || "");
@@ -85,7 +90,7 @@ const StorySettings = () => {
         })
         .catch(() => {});
     }
-  }, [storyId]);
+  }, [storyId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close dropdowns on outside click
   useEffect(() => {

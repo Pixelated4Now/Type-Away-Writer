@@ -287,20 +287,24 @@ const StoryEditor = () => {
     }
   };
 
-  // Back
+  // Back — collaborators can't edit story details, so they return to their profile instead.
+  const backPath = isAuthor ? `/write/${storyId}/settings` : `/profile/${user?.username}`;
   const handleBack = () => {
     if (hasUnsavedChanges()) { setBackConfirm(true); return; }
-    navigate(`/write/${storyId}/settings`);
+    navigate(backPath);
   };
 
   // Save as draft
   const handleSaveAsDraft = async () => {
     await saveCurrentChapter();
-    await authFetch(`${API}/stories/${storyId}`, {
-      method:  "PUT",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ status: "draft" }),
-    });
+    // Only the original author can change the story's status.
+    if (isAuthor) {
+      await authFetch(`${API}/stories/${storyId}`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ status: "draft" }),
+      });
+    }
     navigate(`/profile/${user?.username}`);
   };
 
@@ -450,7 +454,7 @@ const StoryEditor = () => {
             </p>
             <div className="editor-popup-actions">
               <button className="editor-btn editor-btn-outline" onClick={() => setBackConfirm(false)}>STAY</button>
-              <button className="editor-btn editor-btn-dark" onClick={() => navigate(`/write/${storyId}/settings`)}>GO BACK</button>
+              <button className="editor-btn editor-btn-dark" onClick={() => navigate(backPath)}>GO BACK</button>
             </div>
           </div>
         </div>

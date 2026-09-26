@@ -31,7 +31,7 @@ const StoryPreview = () => {
 
   const { id: storyId } = useParams();
   const navigate = useNavigate();
-  useAuth();
+  const { user } = useAuth();
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -175,9 +175,12 @@ const StoryPreview = () => {
             <button className="sidebar-btn sidebar-btn-primary" onClick={() => navigate(`/write/${storyId}/chapters`)}>
               EDIT
             </button>
-            <button className="sidebar-btn sidebar-btn-primary" onClick={handlePublish} disabled={publishing}>
-              {publishing ? "PUBLISHING…" : "PUBLISH"}
-            </button>
+            {/* Only the original author can publish; collaborators can only edit chapters. */}
+            {story.author_id === user?.id && (
+              <button className="sidebar-btn sidebar-btn-primary" onClick={handlePublish} disabled={publishing}>
+                {publishing ? "PUBLISHING…" : "PUBLISH"}
+              </button>
+            )}
             {publishError && <p style={{ color: "#e53e3e", fontSize: "12px", margin: 0 }}>{publishError}</p>}
           </div>
         </aside>

@@ -83,7 +83,7 @@ const RoleBadge = ({ role }) => {
 
 // Renders comment and all its replies.
 
-const CommentThread = ({ comment, allComments, depth, onReply, onDelete, currentUser }) => {
+const CommentThread = ({ comment, allComments, depth, onReply, onDelete, currentUser, canModerate }) => {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState("");
 
@@ -114,7 +114,7 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
           <p className="comment-text">{comment.text}</p>
           <div className="comment-actions">
             <button className="reply-btn" onClick={() => setReplyOpen((p) => !p)}>REPLY</button>
-            {comment.username === currentUser && (
+            {(comment.username === currentUser || canModerate) && (
               <button className="delete-btn" onClick={() => onDelete(comment.id)}>DELETE</button>
             )}
           </div>
@@ -136,7 +136,7 @@ const CommentThread = ({ comment, allComments, depth, onReply, onDelete, current
       </div>
       {children.map((child) => (
         <CommentThread key={child.id} comment={child} allComments={allComments}
-          depth={depth + 1} onReply={onReply} onDelete={onDelete} currentUser={currentUser} />
+          depth={depth + 1} onReply={onReply} onDelete={onDelete} currentUser={currentUser} canModerate={canModerate} />
       ))}
     </div>
   );
@@ -646,6 +646,7 @@ const ReadStory = () => {
                 onReply={handleReply}
                 onDelete={handleDelete}
                 currentUser={currentUser}
+                canModerate={!!isAuthor}
               />
             ))}
           </div>
