@@ -43,12 +43,12 @@ const formatDatetime = (isoString) =>
     hour: "2-digit", minute: "2-digit", hour12: true,
   });
 
-// Sort top-level comments: experts first (newest), then others (newest)
+// Sort top-level comments: experts first (oldest), then others (oldest)
 const sortTopLevel = (comments) => {
   const experts = comments.filter((c) => c.role === "expert")
-    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+    .sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
   const others  = comments.filter((c) => c.role !== "expert")
-    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+    .sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
   return [...experts, ...others];
 };
 
