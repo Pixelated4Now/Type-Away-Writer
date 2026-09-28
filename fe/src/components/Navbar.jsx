@@ -74,29 +74,54 @@ const Navbar = () => {
     const notifRef = useRef(null);
     const writeRef = useRef(null);
 
-    // Fetch notifications
-    useEffect(() => {
-        if (!user) return;
+    // Refs so the polling interval and the outside-click handler see current values, not stale closures.
+    const notifOpenRef = useRef(false);
+    const notificationsRef = useRef([]);
+    // Incremented on every markRead so responses from fetches started before it can be discarded.
+    const readVersion = useRef(0);
+
+    useEffect(() => { notifOpenRef.current = notifOpen; }, [notifOpen]);
+    useEffect(() => { notificationsRef.current = notifications; }, [notifications]);
+
+    const fetchNotifications = () => {
+        const startedAt = readVersion.current;
         const token = localStorage.getItem('authToken');
         fetch(`${API}/notifications`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(r => r.json())
             .then(data => {
+                // Stale: a markRead happened after this request started, so its unread flags are out of date.
+                if (startedAt !== readVersion.current) return;
                 setNotifications(data.notifications || []);
                 setUnread(data.unread || 0);
             })
             .catch(() => {});
-    }, [user]);
+    };
 
+    // Fetch notifications on load, then poll every 30s while the dropdown is closed.
+    useEffect(() => {
+        if (!user) return;
+        fetchNotifications();
+        const id = setInterval(() => {
+            if (!notifOpenRef.current) fetchNotifications();
+        }, 30000);
+        return () => clearInterval(id);
+    }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Marks only the notifications the user has seen, so ones created while the dropdown was open stay unread.
     const markRead = () => {
+        readVersion.current++;
+        const ids = notificationsRef.current.filter(n => !n.is_read).map(n => n.id);
+        if (ids.length === 0) return;
         const token = localStorage.getItem('authToken');
         fetch(`${API}/notifications/mark-read`, {
             method:  'POST',
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ ids }),
         }).catch(() => {});
-        setUnread(0);
-        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        setUnread(prev => Math.max(0, prev - ids.length));
+        setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n));
     };
 
     // Close dropdowns on outside click; mark notifications read when notif dropdown closes.
@@ -121,6 +146,8 @@ const Navbar = () => {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const toggleNotif = () => {
+        // Fetch fresh notifications when opening; polling is paused while the dropdown is open.
+        if (!notifOpen) fetchNotifications();
         setNotifOpen(v => {
             if (v) markRead();
             return !v;

@@ -30,12 +30,18 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-// POST request to mark all unread as read whe  user closes dropdown.
+// POST request to mark the notifications the user has seen as read when they close the dropdown.
 router.post('/mark-read', authenticateToken, async (req, res) => {
+    const ids = Array.isArray(req.body?.ids)
+        ? req.body.ids.map(id => parseInt(id, 10)).filter(Number.isInteger)
+        : [];
+    if (ids.length === 0) return res.json({ message: 'Nothing to mark.' });
+
     try {
+        // user_id check ensures users can only mark their own notifications.
         await pool.query(
-            'UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND is_read = FALSE',
-            [req.user.id]
+            'UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND id = ANY($2::int[]) AND is_read = FALSE',
+            [req.user.id, ids]
         );
         res.json({ message: 'Notifications marked as read.' });
     } catch (err) {
