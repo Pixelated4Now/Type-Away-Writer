@@ -8,12 +8,14 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT
-                n.id, n.type, n.is_read, n.created_at, n.invitation_id, 
+                n.id, n.type, n.is_read, n.created_at, n.invitation_id,
+                ci.status AS invitation_status,
                 a.username AS actor_username, a.avatar_url AS actor_avatar,
                 s.title AS story_title, s.id AS story_id
              FROM notifications n
              LEFT JOIN users   a ON a.id = n.actor_id
              LEFT JOIN stories s ON s.id = n.story_id
+             LEFT JOIN collaboration_invitations ci ON ci.id = n.invitation_id
              WHERE n.user_id = $1
              ORDER BY n.created_at DESC
              LIMIT 30`,

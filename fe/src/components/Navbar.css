@@ -382,6 +382,11 @@
   background: #f0f7ff;
 }
 
+/* Collaboration invite that has already been accepted or declined */
+.notif-item.answered {
+  opacity: 0.6;
+}
+
 .notif-icon {
   flex-shrink: 0;
   display: flex;

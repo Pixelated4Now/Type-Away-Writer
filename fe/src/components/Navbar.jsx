@@ -140,15 +140,23 @@ const Navbar = () => {
         navigate('/');
     };
 
-    const handleAcceptInvite = async () => {
+    // Accepts or declines an invite, then marks its notification as answered so it can't be opened again.
+    const respondToInvite = async (action) => {
         if (!inviteModal) return;
         setInviteActionLoading(true);
         try {
             const token = localStorage.getItem('authToken');
-            await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/accept`, {
+            const res = await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/${action}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
+            // 404 means the invite is no longer pending (already answered), so treat it as answered too.
+            if (res.ok || res.status === 404) {
+                const status = action === 'accept' ? 'accepted' : 'declined';
+                setNotifications(prev => prev.map(n =>
+                    n.invitation_id === inviteModal.invId ? { ...n, invitation_status: status } : n
+                ));
+            }
         } catch { /* silent */ }
         finally {
             setInviteActionLoading(false);
@@ -156,21 +164,8 @@ const Navbar = () => {
         }
     };
 
-    const handleDeclineInvite = async () => {
-        if (!inviteModal) return;
-        setInviteActionLoading(true);
-        try {
-            const token = localStorage.getItem('authToken');
-            await fetch(`${API}/stories/${inviteModal.storyId}/invitations/${inviteModal.invId}/decline`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-            });
-        } catch { /* silent */ }
-        finally {
-            setInviteActionLoading(false);
-            setInviteModal(null);
-        }
-    };
+    const handleAcceptInvite  = () => respondToInvite('accept');
+    const handleDeclineInvite = () => respondToInvite('decline');
 
     return (
         <nav className="navbar">
@@ -233,12 +228,16 @@ const Navbar = () => {
                                             <p className="notif-empty">No notifications yet.</p>
                                         ) : (
                                             <ul className="notif-list">
-                                                {notifications.map(n => (
+                                                {notifications.map(n => {
+                                                    // Invites that have already been accepted or declined can't be opened again.
+                                                    const answered = n.type === 'collab_invite' && n.invitation_status !== 'pending';
+                                                    return (
                                                     <li
                                                         key={n.id}
-                                                        className={`notif-item${!n.is_read ? ' unread' : ''}`}
-                                                        style={{ cursor: 'pointer' }}
+                                                        className={`notif-item${!n.is_read ? ' unread' : ''}${answered ? ' answered' : ''}`}
+                                                        style={{ cursor: answered ? 'default' : 'pointer' }}
                                                         onClick={() => {
+                                                            if (answered) return;
                                                             if (n.type === 'collab_invite') {
                                                                 setNotifOpen(false);
                                                                 markRead();
@@ -271,7 +270,8 @@ const Navbar = () => {
                                                             <span className="notif-time">{formatTime(n.created_at)}</span>
                                                         </div>
                                                     </li>
-                                                ))}
+                                                    );
+                                                })}
                                             </ul>
                                         )}
                                     </div>
