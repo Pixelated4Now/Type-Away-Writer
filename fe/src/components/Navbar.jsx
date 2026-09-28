@@ -120,7 +120,8 @@ const Navbar = () => {
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
             body:    JSON.stringify({ ids }),
         }).catch(() => {});
-        setUnread(prev => Math.max(0, prev - ids.length));
+        // Recount rather than subtract, so a repeated call (e.g. StrictMode double-invoking updaters) stays correct.
+        setUnread(notificationsRef.current.filter(n => !n.is_read && !ids.includes(n.id)).length);
         setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n));
     };
 
