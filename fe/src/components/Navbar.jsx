@@ -284,7 +284,12 @@ const Navbar = () => {
                                                             } else if (n.type === 'review_request' && user?.account_type === 'expert') {
                                                                 navigate('/review');
                                                             } else if (n.type === 'collab_accepted' || n.type === 'collab_declined') {
-                                                                if (n.story_id) navigate(`/read/story/${n.story_id}`);
+                                                                // Unpublished stories open in preview; published ones on the reading page.
+                                                                if (n.story_id) {
+                                                                    navigate(n.story_status === 'published'
+                                                                        ? `/read/story/${n.story_id}`
+                                                                        : `/write/${n.story_id}/preview`);
+                                                                }
                                                             } else if (n.story_id) {
                                                                 navigate(`/read/story/${n.story_id}`);
                                                             }
