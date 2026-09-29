@@ -265,7 +265,7 @@ const RegisterStudent = () => {
                         <div className="password-box" style={{ border: errors.password ? '1px solid #FF1212' : '' }}>
                             <input type={showPassword ? 'text' : 'password'} value={formData.password}
                                 onChange={(e) => update('password', e.target.value)} />
-                            <button className="password-eye" onClick={(e) => { e.preventDefault(); setShowPassword((v) => !v); }}>
+                            <button type="button" className="password-eye" onClick={() => setShowPassword((v) => !v)}>
                                 {showPassword ? <BsEyeSlash /> : <BsEye />}
                             </button>
                         </div>
@@ -279,7 +279,7 @@ const RegisterStudent = () => {
                         <div className="password-box" style={{ border: errors.confirmPassword ? '1px solid #FF1212' : '' }}>
                             <input type={showConfirmPassword ? 'text' : 'password'} value={formData.confirmPassword}
                                 onChange={(e) => update('confirmPassword', e.target.value)} />
-                            <button className="password-eye" onClick={(e) => { e.preventDefault(); setShowConfirmPassword((v) => !v); }}>
+                            <button type="button" className="password-eye" onClick={() => setShowConfirmPassword((v) => !v)}>
                                 {showConfirmPassword ? <BsEyeSlash /> : <BsEye />}
                             </button>
                         </div>

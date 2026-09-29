@@ -85,7 +85,7 @@ const ResetPassword = () => {
                         <div className="password-box" style={{ border: passwordError || fieldsError.newPassword ? '1px solid #FF1212' : 'none' }}>
                             <input type={showNew ? 'text' : 'password'} id="newPassword"
                                 value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                            <button className="password-eye" onClick={(e) => { e.preventDefault(); setShowNew(!showNew); }}>
+                            <button type="button" className="password-eye" onClick={() => setShowNew(!showNew)}>
                                 {showNew ? <BsEyeSlash /> : <BsEye />}
                             </button>
                         </div>
@@ -99,7 +99,7 @@ const ResetPassword = () => {
                         <div className="password-box" style={{ border: passwordError || fieldsError.confirmPassword ? '1px solid #FF1212' : 'none' }}>
                             <input type={showConfirm ? 'text' : 'password'} id="confirmPassword"
                                 value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                            <button className="password-eye" onClick={(e) => { e.preventDefault(); setShowConfirm(!showConfirm); }}>
+                            <button type="button" className="password-eye" onClick={() => setShowConfirm(!showConfirm)}>
                                 {showConfirm ? <BsEyeSlash /> : <BsEye />}
                             </button>
                         </div>

@@ -86,7 +86,7 @@ const Login = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        <button className="password-eye" onClick={(e) => { e.preventDefault(); setShow(!show); }}>
+                        <button type="button" className="password-eye" onClick={() => setShow(!show)}>
                             {show ? <BsEyeSlash /> : <BsEye />}
                         </button>
                     </div>
