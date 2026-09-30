@@ -2,7 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
-const { createNotification } = require('../utils/notifications');
+const { createNotification, notifyStoryAuthors } = require('../utils/notifications');
 
 // Shared SQL subqueries.
 
@@ -219,7 +219,6 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
     try {
         const storyRes = await pool.query('SELECT author_id FROM stories WHERE id = $1', [storyId]);
         if (storyRes.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
-        const storyAuthorId = storyRes.rows[0].author_id;
 
         let parentAuthorId = null;
         if (parent_id) {
@@ -249,9 +248,10 @@ router.post('/stories/:id/comments', authenticateToken, async (req, res) => {
             if (parentAuthorId && parentAuthorId !== req.user.id) {
                 createNotification(parentAuthorId, 'reply', req.user.id, storyId).catch(console.error);
             }
-        } else if (storyAuthorId !== req.user.id) {
+        } else {
+            // Top-level comments notify the original author and all collaborators (except the commenter).
             const type = comment.user.account_type === 'expert' ? 'review' : 'comment';
-            createNotification(storyAuthorId, type, req.user.id, storyId).catch(console.error);
+            notifyStoryAuthors(storyId, type, req.user.id).catch(console.error);
         }
     } catch (err) {
         console.error('POST /stories/:id/comments error:', err);
@@ -321,10 +321,11 @@ router.post('/stories/:id/like', authenticateToken, async (req, res) => {
         }
 
         // Returns new liked state and likes count.
-        const { rows } = await pool.query('SELECT likes_count, author_id FROM stories WHERE id = $1', [storyId]);
+        const { rows } = await pool.query('SELECT likes_count FROM stories WHERE id = $1', [storyId]);
         res.json({ liked, likes_count: rows[0].likes_count });
-        if (liked && rows[0].author_id !== userId) {
-            createNotification(rows[0].author_id, 'like', userId, storyId).catch(console.error);
+        // Notifies the original author and all collaborators (except the liker).
+        if (liked) {
+            notifyStoryAuthors(storyId, 'like', userId).catch(console.error);
         }
     } catch (err) {
         console.error('POST /stories/:id/like error:', err);
