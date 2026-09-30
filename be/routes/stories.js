@@ -400,17 +400,11 @@ router.post('/reading-lists/:id/stories', authenticateToken, async (req, res) =>
             'INSERT INTO reading_list_stories (reading_list_id, story_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [listId, story_id]
         );
 
-        let saveAuthorId = null;
-        if (insertRes.rowCount > 0) {
-            const storyRes = await pool.query('SELECT author_id FROM stories WHERE id = $1', [story_id]);
-            if (storyRes.rows.length > 0) saveAuthorId = storyRes.rows[0].author_id;
-        }
-
         res.status(204).send();
 
-        // Sends notification to story author.
-        if (saveAuthorId && saveAuthorId !== req.user.id) {
-            createNotification(saveAuthorId, 'save', req.user.id, story_id).catch(console.error);
+        // Notifies the original author and all collaborators (except the saver), only if the story was newly added.
+        if (insertRes.rowCount > 0) {
+            notifyStoryAuthors(parseInt(story_id, 10), 'save', req.user.id).catch(console.error);
         }
     } catch (err) {
         console.error('POST /reading-lists/:id/stories error:', err);
