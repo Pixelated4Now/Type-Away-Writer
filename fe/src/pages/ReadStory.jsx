@@ -456,7 +456,7 @@ const ReadStory = () => {
             </p>
             <h1 className="story-hero-title">{story.title}</h1>
             <p className="story-hero-author">
-              by {[...(story.authors || [])].sort().map((name, i, arr) => (
+              by {(story.authors || []).map((name, i, arr) => (
                 <span key={name}>
                   <Link to={`/profile/${name}`} className="author-link">{name}</Link>
                   {i < arr.length - 1 ? ", " : ""}

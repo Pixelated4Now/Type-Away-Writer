@@ -15,9 +15,9 @@ const TAGS_SUBQ = `
         ARRAY[]::TEXT[]
     )`;
 
-// Subquery to fetch all authors (original and collaborators) for a story as an array.
+// Subquery to fetch all authors for a story as an array: original author first, then collaborators alphabetically (case-insensitive).
 const AUTHORS_SUBQ = `
-    (SELECT ARRAY_AGG(u2.username ORDER BY u2.username)
+    (SELECT ARRAY_AGG(u2.username ORDER BY (combined.uid = s.author_id) DESC, LOWER(u2.username), u2.username)
      FROM (
          SELECT s2.author_id AS uid FROM stories s2 WHERE s2.id = s.id
          UNION

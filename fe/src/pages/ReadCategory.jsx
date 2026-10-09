@@ -168,7 +168,7 @@ const ReadCategory = () => {
                 <div className="story-info">
                   <h3 className="story-title">{story.title}</h3>
                   <p className="story-authors">
-                    by {[...(story.authors || [])].sort().join(", ")}
+                    by {(story.authors || []).join(", ")}
                   </p>
                   <p className="story-summary">{story.summary}</p>
                   <div className="story-tags">

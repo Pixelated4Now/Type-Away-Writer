@@ -140,7 +140,7 @@ const StoryPreview = () => {
               {story.work_status === "complete" ? "Complete" : "Ongoing"} • {totalChapters} Chapter{totalChapters !== 1 ? "s" : ""}
             </p>
             <h1 className="story-hero-title">{story.title}</h1>
-            <p className="story-hero-author">by {[...(story.authors || [])].sort().join(", ")}</p>
+            <p className="story-hero-author">by {(story.authors || []).join(", ")}</p>
             <p className="story-hero-summary">{story.summary}</p>
           </div>
         </div>
