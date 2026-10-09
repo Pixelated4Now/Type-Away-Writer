@@ -201,7 +201,11 @@ router.get('/:username', optionalAuth, async (req, res) => {
         const { rows } = await pool.query(
             `SELECT id, username, account_type, avatar_url, bio, header_image_url,
                     is_expert_verified, created_at,
-                    (SELECT COUNT(*) FROM stories WHERE author_id = u.id AND status = 'published') AS story_count,
+                    (SELECT COUNT(*) FROM stories s
+                     WHERE s.status = 'published'
+                       AND (s.author_id = u.id OR EXISTS (
+                           SELECT 1 FROM story_collaborators sc WHERE sc.story_id = s.id AND sc.user_id = u.id
+                       ))) AS story_count,
                     (SELECT COUNT(*) FROM follows WHERE following_id = u.id) AS follower_count,
                     (SELECT COUNT(*) FROM follows WHERE follower_id  = u.id) AS following_count
              FROM users u
@@ -236,9 +240,13 @@ router.get('/:username/stories', optionalAuth, async (req, res) => {
         if (!user.rows[0]) return res.status(404).json({ message: 'User not found.' });
         const authorId = user.rows[0].id;
 
+        // Published stories the user owns or collaborated on.
         const { rows } = await pool.query(
             `${STORY_SELECT}
-             WHERE s.author_id = $1 AND s.status = 'published'
+             WHERE s.status = 'published'
+               AND (s.author_id = $1 OR EXISTS (
+                   SELECT 1 FROM story_collaborators sc WHERE sc.story_id = s.id AND sc.user_id = $1
+               ))
              ORDER BY s.created_at DESC`,
             [authorId]
         );
@@ -249,7 +257,7 @@ router.get('/:username/stories', optionalAuth, async (req, res) => {
     }
 });
 
-// GET request to retrieve all drafts of stories with no collaborators belonging to user. 
+// GET request to retrieve all unpublished stories the user owns or collaborates on.
 
 router.get('/:username/drafts', authenticateToken, async (req, res) => {
     try {
@@ -260,11 +268,10 @@ router.get('/:username/drafts', authenticateToken, async (req, res) => {
 
         const { rows } = await pool.query(
             `${STORY_SELECT}
-             WHERE s.author_id = $1
-               AND s.status = 'draft'
-               AND NOT EXISTS (
-                   SELECT 1 FROM story_collaborators sc WHERE sc.story_id = s.id
-               )
+             WHERE s.status != 'published'
+               AND (s.author_id = $1 OR EXISTS (
+                   SELECT 1 FROM story_collaborators sc WHERE sc.story_id = s.id AND sc.user_id = $1
+               ))
              ORDER BY s.created_at DESC`,
             [req.user.id]
         );
@@ -502,41 +509,6 @@ router.delete('/:username/followers/:followerId', authenticateToken, async (req,
         res.sendStatus(204);
     } catch (err) {
         console.error('DELETE /users/:username/followers/:followerId error:', err);
-        res.status(500).json({ message: 'An error occurred.' });
-    }
-});
-
-// GET request to return all unpublished collaboration stories for the logged-in user.
-
-router.get('/:username/collaborations', authenticateToken, async (req, res) => {
-    try {
-        const user = await pool.query(`SELECT id FROM users WHERE LOWER(username) = LOWER($1)`, [req.params.username]);
-        if (!user.rows[0]) return res.status(404).json({ message: 'User not found.' });
-        // Only accessible by the profile owner.
-        if (user.rows[0].id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
-
-        // Stories where user is a collaborator, and where user is original author, but has collaborators working on story.
-        const { rows } = await pool.query(
-            `${STORY_SELECT}
-             WHERE (
-                 EXISTS (
-                     SELECT 1 FROM story_collaborators sc
-                     WHERE sc.story_id = s.id AND sc.user_id = $1
-                 )
-                 OR (
-                     s.author_id = $1
-                     AND s.status != 'published'
-                     AND EXISTS (
-                         SELECT 1 FROM story_collaborators sc2 WHERE sc2.story_id = s.id
-                     )
-                 )
-             )
-             ORDER BY s.created_at DESC`,
-            [req.user.id]
-        );
-        res.json(rows);
-    } catch (err) {
-        console.error('GET /users/:username/collaborations error:', err);
         res.status(500).json({ message: 'An error occurred.' });
     }
 });
