@@ -10,7 +10,6 @@ const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const MAX_TAGS = 20;
 
 // Maps the database completion status values to user-friendly labels.
-const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing" };
 
 const ReadCategory = () => {
   useEffect(() => { document.title = 'Read | Type-Away-Writer'; }, []);
@@ -178,7 +177,7 @@ const ReadCategory = () => {
                   </div>
                   <div className="story-meta">
                     <span className="story-status">
-                      {STATUS_DISPLAY[story.status] || story.status}
+                      {story.work_status === "complete" ? "Complete" : "Ongoing"}
                     </span>
                     <span>{story.chapter_count} chapter{story.chapter_count !== 1 ? "s" : ""}</span>
                   </div>

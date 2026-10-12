@@ -88,7 +88,7 @@ router.get('/stories', optionalAuth, async (req, res) => {
         // Order by likes so most liked story appears first.
         const { rows } = await pool.query(`
             SELECT
-                s.id, s.title, s.summary, s.cover_image_url, s.status,
+                s.id, s.title, s.summary, s.cover_image_url, s.status, s.work_status,
                 s.likes_count, s.created_at,
                 ${TAGS_SUBQ} AS tags,
                 ${AUTHORS_SUBQ} AS authors,

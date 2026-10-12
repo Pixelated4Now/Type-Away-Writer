@@ -23,7 +23,6 @@ const authFetch = (url, options = {}) => {
 const imgSrc = (path) => (path ? `${API}${path}` : null);
 const listCoverSrc = (url) => (!url ? null : url.startsWith("http") ? url : `${API}${url}`);
 
-const STATUS_DISPLAY = { published: "Complete", draft: "Ongoing", writing: "Ongoing" };
 
 // Story card
 
@@ -57,7 +56,7 @@ const StoryCard = ({ story, isOwn, onEdit, onDelete, clickable = true, redDelete
           </div>
         )}
         <div className="story-meta">
-          <span className="story-status">{STATUS_DISPLAY[story.status] || story.status}</span>
+          <span className="story-status">{story.work_status === "complete" ? "Complete" : "Ongoing"}</span>
           <span>{story.chapter_count} chapter{story.chapter_count !== 1 ? "s" : ""}</span>
         </div>
         <div className="story-stats">

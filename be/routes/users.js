@@ -28,7 +28,7 @@ const AUTHORS_SUBQ = `
 //  Combines both subqueries along with chapter count and comment count. Ensures every story-shaped response has a consistent structure.
 const STORY_SELECT = `
     SELECT
-        s.id, s.title, s.summary, s.cover_image_url, s.status,
+        s.id, s.title, s.summary, s.cover_image_url, s.status, s.work_status,
         s.likes_count, s.created_at, s.author_id,
         ${TAGS_SUBQ}    AS tags,
         ${AUTHORS_SUBQ} AS authors,
