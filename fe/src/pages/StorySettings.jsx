@@ -207,6 +207,9 @@ const StorySettings = () => {
         });
         const data = await res.json();
         id = data.id;
+        // Replace /write/new in history with this story's settings page, so the browser's back
+        // button reopens the saved story instead of a blank form (which would create a duplicate).
+        navigate(`/write/${id}/settings${mode === 'collab' ? '?mode=collab' : ''}`, { replace: true });
       }
       navigate(`/write/${id}/chapters${mode === 'collab' ? '?mode=collab' : ''}`);
     } catch {
