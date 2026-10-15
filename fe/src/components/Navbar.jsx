@@ -359,7 +359,7 @@ const Navbar = () => {
                         <button className="collab-modal-close" onClick={() => setInviteModal(null)}>×</button>
                         <h2 className="collab-modal-title">Collaboration Invite</h2>
                         <p className="collab-modal-body">
-                            <strong>{inviteModal.actorUsername}</strong> has invited you to collaborate on{' '}
+                            How exciting! <strong>{inviteModal.actorUsername}</strong> has invited you to collaborate on{' '}
                             <strong>"{inviteModal.storyTitle}"</strong>.
                         </p>
                         <div className="collab-modal-actions">
