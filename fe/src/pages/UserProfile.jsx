@@ -118,6 +118,7 @@ const UserProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
+  const [storyFilter, setStoryFilter] = useState("all"); // "all" | "collaborative" | "individual"
   const [tabData, setTabData] = useState({});
   const [tabLoaded, setTabLoaded]  = useState({});
 
@@ -157,6 +158,7 @@ const UserProfile = () => {
     setTabData({});
     setTabLoaded({});
     setActiveTab("about");
+    setStoryFilter("all");
     setOpenList(null);
     setMyFollowingIds(new Set());
 
@@ -423,6 +425,18 @@ const UserProfile = () => {
   if (!profile) return null;
 
   const stories = tabData.stories || [];
+  // A story is collaborative if it has more than one author (owner plus collaborators).
+  const isCollaborative = (s) => (s.authors || []).length > 1;
+  const filteredStories = stories.filter((s) =>
+    storyFilter === "collaborative" ? isCollaborative(s)
+    : storyFilter === "individual"  ? !isCollaborative(s)
+    : true
+  );
+  const STORY_FILTER_EMPTY = {
+    all:           "No published stories yet.",
+    collaborative: "No published collaborative stories yet.",
+    individual:    "No published individual stories yet.",
+  };
   const drafts = tabData.drafts || [];
   const lists          = tabData.lists          || [];
   const following      = tabData.following      || [];
@@ -595,9 +609,24 @@ const UserProfile = () => {
         {/* Stories */}
         {activeTab === "stories" && (
           <div className="up-story-grid">
-            {stories.length === 0 ? (
-              <p className="up-empty">No published stories yet.</p>
-            ) : stories.map((s) => (
+            {stories.length > 0 && (
+              <div className="up-story-filter">
+                <label htmlFor="up-story-filter" className="up-story-filter-label">Show:</label>
+                <select
+                  id="up-story-filter"
+                  className="up-list-edit-select"
+                  value={storyFilter}
+                  onChange={(e) => setStoryFilter(e.target.value)}
+                >
+                  <option value="all">All Stories</option>
+                  <option value="collaborative">Collaborative Stories</option>
+                  <option value="individual">Individual Stories</option>
+                </select>
+              </div>
+            )}
+            {filteredStories.length === 0 ? (
+              <p className="up-empty">{STORY_FILTER_EMPTY[storyFilter]}</p>
+            ) : filteredStories.map((s) => (
               <StoryCard
                 key={s.id}
                 story={s}

@@ -459,6 +459,21 @@
   gap: 0;
 }
 
+/* Stories tab filter (All / Collaborative / Individual) */
+.up-story-filter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.up-story-filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
 .story-card-static {
   cursor: default;
 }
