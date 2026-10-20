@@ -67,7 +67,7 @@ const signToken = (user) =>
     jwt.sign(
         { id: user.id, username: user.username, email: user.email, account_type: user.account_type },
         process.env.JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: '30d' }
     );
 
 //  Sends a formatted email containing the verification code.

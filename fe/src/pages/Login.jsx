@@ -20,6 +20,10 @@ const Login = () => {
     const [serverError, setServerError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Set by AuthContext when a 30-day session runs out; shown once, then cleared.
+    const [sessionExpired] = useState(() => sessionStorage.getItem('sessionExpired') === '1');
+    useEffect(() => { sessionStorage.removeItem('sessionExpired'); }, []);
+
     const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
     const handleSubmit = async (e) => {
@@ -69,6 +73,11 @@ const Login = () => {
             </div>
 
             <form onSubmit={handleSubmit}>
+                {sessionExpired && (
+                    <p style={{ color: '#555', fontSize: '13px', marginBottom: '12px' }}>
+                        Your session has expired. Please log in again.
+                    </p>
+                )}
                 <div className="input-box">
                     <label htmlFor="email">Email Address:</label>
                     <input type="text" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ border: emailError ? '1px solid #FF1212' : '' }}/>

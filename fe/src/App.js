@@ -44,8 +44,11 @@ const ExpertRoute = ({ children }) => {
 };
 
 const AdminRoute = ({ children }) => {
+  // Subscribing to auth state makes this re-check (and redirect) when the session expires.
+  const { user, loading } = useAuth();
+  if (loading) return null;
   const token = localStorage.getItem('authToken');
-  if (!token) return <Navigate to="/login" replace />;
+  if (!user || !token) return <Navigate to="/login" replace />;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
     if (payload.account_type !== 'admin') return <Navigate to="/login" replace />;
