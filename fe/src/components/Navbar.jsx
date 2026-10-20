@@ -15,7 +15,7 @@ const notificationText = (n, accountType) => {
     const title = n.story_title   || 'a story';
     switch (n.type) {
         case 'like': return `${actor} liked ${title}`;
-        case 'comment': return `${actor} commted on ${title}`;
+        case 'comment': return `${actor} commented on ${title}`;
         case 'reply': return `${actor} replied to your comment on ${title}`;
         case 'save': return `${actor} added ${title} to a reading list`;
         case 'review': return `Language expert ${actor} reviewed ${title}`;
