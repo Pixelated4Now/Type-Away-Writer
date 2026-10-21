@@ -27,7 +27,7 @@ Type-Away-Writer offers a plethora of features to ensure an environment that enc
 - Tagging system (to streamline story filtering and discovering)
 
 **Features for language experts (people who are fluent in English, who review stories and offer constructive feedback to young authors):**
-- Receive review requests submitted by students.
+- Receive review requests submitted by students
 - Story reading (and filtering)
 - Story interaction (they can like stories, too!)
 - Story review (language experts can review both stories willingly submitted to them by authors, and any stories they stumble across and decide to review of their own accord)
@@ -68,24 +68,37 @@ Follow this guide to figure out how to clone this repository and make it _work_.
 
 ### 🪴 Platform Requirements
 The following items of software must be installed on your device before you can successfully run Type-Away-Writer:
-perating System: Windows 10/11, macOS, or Linux 
 - **Docker Desktop:** Version 4.0 or later
 - **Git:** for cloning the repository the Git repository
+- **A Gmail account with an app password**[^1]
 - **Web browser:** any web browser of the user’s choice
 - **Minimum RAM:** 4GB (8GB recommended)
 - **Disk space:** at least 2GB free
+
 No additional software installations are required. All dependencies, including Node.js, PostgreSQL, and npm packages, are managed within the Docker containers to ensure user convenience.
 
 ### ⬇️ Installation and Set-Up
 1. Clone the repository from GitHub.
-2. Create the environment file by copying the provided example (`env.example`).
+   ```
+   git clone https://github.com/Pixelated4Now/Type-Away-Writer.git
+   cd Type-Away-Writer
+   ```
+
+2. Create the environment file by copying the provided example (`env.example`):
+   ```
+   cp .env.example .env
+   ```
+   
 3. Open the `.env` file and fill in the required values:
    - `POSTGRES_PASSWORD`: a password of your choice for the database
    - `JWT_SECRET`: a random string used for authentication tokens (for instance, `taw_secret_2026`)
    - `GMAIL_USER`: a Gmail address for sending verification emails
    - `GMAIL_APP_PASSWORD`: the Gmail App Password for the email address provided for `GMAIL_USER`[^1].
    - `FRONTEND_URL`: set to [http://localhost:3000]()
-  4. Start the application by keying in the following command into the terminal: `docker compose up ––build`
+  4. Start the application by keying in the following command into the terminal:
+     ```
+     docker compose up ––build
+     ```
   5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start[^2].
   6. Open a web browser and navigate to [http://localhost:3000](). 
 
@@ -116,76 +129,10 @@ As an admin:
   - **Password:** admin123
 ### 🛑 Stopping the Application
 - Press **Ctrl + C** in the terminal where Docker Compose is running.
-- Run `docker compose down`[^3]
+- Run the following command[^3]:
+  ```
+  docker compose down
+  ```
 
 [^3]: To stop the application while preserving the database data, use `docker compose down` without any additional flags. To reset the database completely, run `docker compose down v`. 
 
-## Getting Started with Create React App
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-### Available Scripts
-
-In the project directory, you can run:
-
-#### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-#### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-#### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-#### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-### Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-#### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-#### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-#### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-#### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-#### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-#### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
