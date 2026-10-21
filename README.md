@@ -10,6 +10,8 @@ The system was developed as a solution to address the subsequent identified gaps
 - All existing digital creative-writing platforms are primarily designed for Western users.
 - There is a lack of a platform that offers both expert review and creative freedom.
 
+This platform was developed by me for my Final Year Project for my Bsc (Hons) in Software Engineering degree. It contributes to the field of educational technology by illustrating how web-based platforms can be designed to support both creativity and language development in specific cultural contexts. 
+
 ## 🌟 Highlights
 
 Type-Away-Writer offers a plethora of features to ensure an environment that encourages children to engage in creative writing, while honing themselves in the craft, and in their literacy.
@@ -60,7 +62,63 @@ Type-Away-Writer offers a plethora of features to ensure an environment that enc
 - [GitHub Actions](https://github.com/features/actions) (for the CI/CD pipeline)
 - GitHub Container Registry
 
+## 🚀 Usage Instructions
 
+Follow this guide to figure out how to clone this repository and make it _work_.
+
+### 🪴 Platform Requirements
+The following items of software must be installed on your device before you can successfully run Type-Away-Writer:
+perating System: Windows 10/11, macOS, or Linux 
+- **Docker Desktop:** Version 4.0 or later
+- **Git:** for cloning the repository the Git repository
+- **Web browser:** any web browser of the user’s choice
+- **Minimum RAM:** 4GB (8GB recommended)
+- **Disk space:** at least 2GB free
+No additional software installations are required. All dependencies, including Node.js, PostgreSQL, and npm packages, are managed within the Docker containers to ensure user convenience.
+
+### ⬇️ Installation and Set-Up
+1. Clone the repository from GitHub.
+2. Create the environment file by copying the provided example (`env.example`).
+3. Open the `.env` file and fill in the required values:
+   - `POSTGRES_PASSWORD`: a password of your choice for the database
+   - `JWT_SECRET`: a random string used for authentication tokens (for instance, `taw_secret_2026`)
+   - `GMAIL_USER`: a Gmail address for sending verification emails
+   - `GMAIL_APP_PASSWORD`: the Gmail App Password for the email address provided for `GMAIL_USER`[^1].
+   - `FRONTEND_URL`: set to [http://localhost:3000]()
+  4. Start the application by keying in the following command into the terminal: `docker compose up ––build`
+  5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start[^2].
+  6. Open a web browser and navigate to [http://localhost:3000](). 
+
+  
+[^1]: To generate an App Password, go to the Google Account security settings, navigate to ‘2-Step Verification,’ select ‘App passwords’ at the bottom, name the app (Gmail), and click ‘Create’ to generate a 16-digit code.
+[^2]: This may take several minutes on the first run as Docker downloads and builds the required images. The application is ready when the terminal shows that all services have started successfully.
+
+### 🔍 Platform Operation
+> [!NOTE]
+> Useful information to know in order to use the system as each type of user (student, language expert, and admin).
+
+As a student:
+- Navigate to [http://localhost:3000]() and click the _Sign Up_ button to register a new student account.
+- Complete the four-step registration process and verify your email address using the code sent to your inbox.
+- Once logged in, you can:
+  - use the _Write_ menu to start a new story or collaboration.
+  - browse and read stories by clicking _Read_ in the navigation bar.
+  - manage your stories, drafts, reading lists, and profile from your profile page.
+
+As a language expert:
+- Register using the _Language Expert_ option on the registration page and upload your qualification documents.
+- An administrator must verify your account before expert privileges are granted.
+- Once verified, log in and navigate to the _Review_ page to manage review requests from students.
+
+As an admin:
+- Log in using the administrator credentials provided:
+  - **Email address:** admin@typeawaywriter.com
+  - **Password:** admin123
+### 🛑 Stopping the Application
+- Press **Ctrl + C** in the terminal where Docker Compose is running.
+- Run `docker compose down`[^3]
+
+[^3]: To stop the application while preserving the database data, use `docker compose down` without any additional flags. To reset the database completely, run `docker compose down v`. 
 
 ## Getting Started with Create React App
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
