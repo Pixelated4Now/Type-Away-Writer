@@ -100,6 +100,12 @@ No additional software installations are required. All dependencies, including N
      docker compose up ––build
      ```
   5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start[^2].
+     
+     <img width="500" alt="image" src="https://github.com/user-attachments/assets/dad1d74a-5300-486f-aad9-6f630683182f" /><br/>
+
+     <img width="2140" height="264" alt="image" src="https://github.com/user-attachments/assets/b8fdb5a8-d1c1-4df2-b4a9-c5b0a9900594" />
+
+
   6. Open a web browser and navigate to [http://localhost:3000](). 
 
   
