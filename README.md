@@ -10,7 +10,56 @@ The system was developed as a solution to address the subsequent identified gaps
 - All existing digital creative-writing platforms are primarily designed for Western users.
 - There is a lack of a platform that offers both expert review and creative freedom.
 
-Overall, the platform facilitates story creation, story publication, story reading, collaboration, reading list creation, interaction and expert review. The platform also allows language experts to register, review any submitted stories and offer advice that will help students improve in English proficiency.
+## 🌟 Highlights
+
+Type-Away-Writer offers a plethora of features to ensure an environment that encourages children to engage in creative writing, while honing themselves in the craft, and in their literacy.
+
+**Features for students (the target audience):**
+- Story creation using easy-to-use rich-text editor provided by [Vanilla Quill.js](https://quilljs.com/)
+- Story publication
+- Story reading (and filtering)
+- Collaboration
+- Reading list creation (think digital bookshelves!)
+- Story interaction (likes, comments, all the fun stuff!)
+- Submission for review by language experts
+- Tagging system (to streamline story filtering and discovering)
+
+**Features for language experts (people who are fluent in English, who review stories and offer constructive feedback to young authors):**
+- Receive review requests submitted by students.
+- Story reading (and filtering)
+- Story interaction (they can like stories, too!)
+- Story review (language experts can review both stories willingly submitted to them by authors, and any stories they stumble across and decide to review of their own accord)
+
+**Administrators (though not a huge focus of the system, they are important to keeping the platform and its ecosystem in check):**
+- User management
+- Expert approval (they verify all qualification documents submitted by experts during registration and decide if they can be made experts or not)
+- Content management
+- Story tag and genre management
+- Analytics
+
+## 🤖 Technology Stack
+🥞 **Front-end:**
+- [React.js](https://react.dev/)
+- Custom CSS files
+- [Vanilla Quill.js](https://quilljs.com/)
+
+🧱 **Back-end:**
+- [Node.js](https://nodejs.org/en)
+- [Express.js](https://expressjs.com/)
+- [Multer](https://www.npmjs.com/package/multer) (for file upload handling)
+- [Nodemailer](https://nodemailer.com/) (to handle automatic email sending)
+- [Jsonwebtoken](https://www.jwt.io/) (for session management)
+- [pg](https://www.npmjs.com/package/pg) library
+- [CORS](https://www.npmjs.com/package/cors) package
+
+🗄️ **Database:**
+- [PostreSQL](https://www.postgresql.org/)
+
+🚆 **Infrastructure:**
+- [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
+- [GitHub Actions](https://github.com/features/actions) (for the CI/CD pipeline)
+- GitHub Container Registry
+
 
 
 ## Getting Started with Create React App
