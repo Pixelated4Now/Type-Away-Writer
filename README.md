@@ -3,14 +3,14 @@
 <p align="center"><img width="525" height="168" alt="Type-Away-Writer logo" src="https://github.com/user-attachments/assets/44513b11-4509-4c67-8aa3-440bd1c79ae2" /></p>
 <br>
 
-Type-Away-Writer is a digital storytelling platform that allows children to engage in creative and language proficiency growth outside the classroom. Its **objective** is to provide a socially learning environment that offers Sri Lankan children within the age range of 6–15 years illimitable creative freedom and expert review to improve writing and literacy skills outside the classroom. 
+Type-Away-Writer is a digital storytelling platform that allows children to engage in creative and language proficiency growth outside the classroom. Its **objective** is to provide a social learning environment that offers Sri Lankan children within the age range of 6–15 years illimitable creative freedom and expert review to improve writing and literacy skills outside the classroom. 
 
 The system was developed as a solution to address the subsequent identified gaps:
 - Creative expression and exploration are not recognised as components of learning at school, despite evidence that they are conducive to a child's cognitive development.
 - All existing digital creative-writing platforms are primarily designed for Western users.
 - There is a lack of a platform that offers both expert review and creative freedom.
 
-This platform was developed by me for my Final Year Project for my Bsc (Hons) in Software Engineering degree. It contributes to the field of educational technology by illustrating how web-based platforms can be designed to support both creativity and language development in specific cultural contexts. 
+This platform was developed by me as the Final Year Project for my BSc (Hons) in Software Engineering degree. It contributes to the field of educational technology by illustrating how web-based platforms can be designed to support both creativity and language development in specific cultural contexts. 
 
 ## 🌟 Highlights
 
@@ -55,7 +55,7 @@ Type-Away-Writer offers a plethora of features to ensure an environment that enc
 - [CORS](https://www.npmjs.com/package/cors) package
 
 🗄️ **Database:**
-- [PostreSQL](https://www.postgresql.org/)
+- [PostgreSQL](https://www.postgresql.org/)
 
 🚆 **Infrastructure:**
 - [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
@@ -69,7 +69,7 @@ Follow this guide to figure out how to clone this repository and make it _work_.
 ### 🪴 Platform Requirements
 The following items of software must be installed on your device before you can successfully run Type-Away-Writer:
 - **Docker Desktop:** Version 4.0 or later
-- **Git:** for cloning the repository the Git repository
+- **Git:** for cloning the Git repository
 - **A Gmail account with an app password**[^1]
 - **Web browser:** any web browser of the user’s choice
 - **Minimum RAM:** 4GB (8GB recommended)
@@ -84,7 +84,7 @@ No additional software installations are required. All dependencies, including N
    cd Type-Away-Writer
    ```
 
-2. Create the environment file by copying the provided example (`env.example`):
+2. Create the environment file by copying the provided example (`.env.example`):
    ```
    cp .env.example .env
    ```
@@ -95,18 +95,18 @@ No additional software installations are required. All dependencies, including N
    - `GMAIL_USER`: a Gmail address for sending verification emails
    - `GMAIL_APP_PASSWORD`: the Gmail App Password for the email address provided for `GMAIL_USER`[^1].
    - `FRONTEND_URL`: set to [http://localhost:3000]()
-  4. Start the application by keying in the following command into the terminal:
+4. Start the application by keying in the following command into the terminal:
      ```
-     docker compose up ––build
+     docker compose up --build
      ```
-  5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start[^2].
+5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start[^2].
      
-     <img width="500" alt="image" src="https://github.com/user-attachments/assets/dad1d74a-5300-486f-aad9-6f630683182f" /><br/>
+   <img width="500" alt="Terminal output once all services have started" src="https://github.com/user-attachments/assets/dad1d74a-5300-486f-aad9-6f630683182f" /><br/>
 
-     <img width="2140" height="264" alt="image" src="https://github.com/user-attachments/assets/b8fdb5a8-d1c1-4df2-b4a9-c5b0a9900594" />
+   <img width="2140" alt="Docker Desktop showing the three running containers" src="https://github.com/user-attachments/assets/b8fdb5a8-d1c1-4df2-b4a9-c5b0a9900594" />
 
 
-  6. Open a web browser and navigate to [http://localhost:3000](). 
+6. Open a web browser and navigate to [http://localhost:3000](). 
 
   
 [^1]: To generate an App Password, go to the Google Account security settings, navigate to ‘2-Step Verification,’ select ‘App passwords’ at the bottom, name the app (Gmail), and click ‘Create’ to generate a 16-digit code.
@@ -133,6 +133,7 @@ As an admin:
 - Log in using the administrator credentials provided:
   - **Email address:** admin@typeawaywriter.com
   - **Password:** admin123
+
 ### 🛑 Stopping the Application
 - Press **Ctrl + C** in the terminal where Docker Compose is running.
 - Run the following command[^3]:
@@ -140,5 +141,5 @@ As an admin:
   docker compose down
   ```
 
-[^3]: To stop the application while preserving the database data, use `docker compose down` without any additional flags. To reset the database completely, run `docker compose down v`. 
+[^3]: To stop the application while preserving the database data, use `docker compose down` without any additional flags. To reset the database completely, run `docker compose down -v`. 
 
