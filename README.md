@@ -3,7 +3,7 @@
 <p align="center"><img width="525" height="168" alt="Type-Away-Writer logo" src="https://github.com/user-attachments/assets/44513b11-4509-4c67-8aa3-440bd1c79ae2" /></p>
 <br>
 
-Type-Away-Writer is a digital storytelling platform that allows children to engage in creative and language proficiency growth outside the classroom. Its **objective** is to provide a socially learning environment that offers Sri Lankan children within the age range of 6–15 years illimitable creative freedom and expert review to improve writing and literacy skills outside the classroom. 
+Type-Away-Writer is a digital storytelling platform that allows children to engage in creative and language proficiency growth outside the classroom.
 
 The system was developed as a solution to address the subsequent identified gaps:
 - Creative expression and exploration are not recognised as components of learning at school, despite evidence that they are conducive to a child's cognitive development.
