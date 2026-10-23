@@ -130,9 +130,11 @@ As a language expert:
 - Once verified, log in and navigate to the _Review_ page to manage review requests from students.
 
 As an admin:
-- Log in using the administrator credentials provided:
+- A default admin account is created automatically the first time the application starts. Log in with these test credentials:
   - **Email address:** admin@typeawaywriter.com
   - **Password:** admin123
+
+These credentials are for local testing only. To use different ones, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your `.env` file before the first start.
 
 ### 🛑 Stopping the Application
 - Press **Ctrl + C** in the terminal where Docker Compose is running.
@@ -142,4 +144,3 @@ As an admin:
   ```
 
 [^3]: To stop the application while preserving the database data, use `docker compose down` without any additional flags. To reset the database completely, run `docker compose down -v`. 
-
