@@ -110,6 +110,14 @@ INSERT INTO categories (name) VALUES
     ('Adventure'), ('Animal Stories'), ('Dreams'), ('Family'), ('Friendship'), ('Funny'), ('Horror'), ('Magic'), ('Mystery'), ('Romance'), ('School Life'), ('Science Fiction'),  ('Sports Fiction'), ('Superheroes')
 ON CONFLICT DO NOTHING;
 
+-- Link the built-in categories to their images in uploads/covers (only where no image is set yet).
+UPDATE categories c
+SET image_path = '/uploads/covers/' || v.file
+FROM (VALUES
+    ('Adventure', 'adventure.jpg'), ('Animal Stories', 'animal-stories.jpg'), ('Dreams', 'dreams.jpg'), ('Family', 'family.jpg'), ('Friendship', 'friendship.jpg'), ('Funny', 'funny.jpg'), ('Horror', 'horror.jpg'), ('Magic', 'magic.jpg'), ('Mystery', 'mystery.jpg'), ('Romance', 'romance.jpg'), ('School Life', 'school-life.jpg'), ('Science Fiction', 'science-fiction.jpg'), ('Sports Fiction', 'sports-fiction.jpg'), ('Superheroes', 'superheroes.jpg')
+) AS v(name, file)
+WHERE c.name = v.name AND c.image_path IS NULL;
+
 CREATE TABLE IF NOT EXISTS notifications (
     id         SERIAL PRIMARY KEY,
     user_id    INT NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
