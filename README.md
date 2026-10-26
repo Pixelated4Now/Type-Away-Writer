@@ -93,7 +93,7 @@ No additional software installations are required. All dependencies, including N
    - `JWT_SECRET`: a random string used for authentication tokens (for instance, `taw_secret_2026`)
    - `GMAIL_USER`: a Gmail address for sending verification emails
    - `GMAIL_APP_PASSWORD`: the Gmail App Password for the email address provided for `GMAIL_USER` [^1].
-   - `FRONTEND_URL`: set to [http://localhost:3000]()
+   - `FRONTEND_URL`: leave it as [http://localhost:3000]()
 4. Start the application by keying the following command into the terminal:
      ```
      docker compose up --build
@@ -129,7 +129,7 @@ As a language expert:
 - Once verified, log in and navigate to the _Review_ page to manage review requests from students.
 
 As an admin:
-- A default admin account is created automatically the first time _Type-Away-Writer_ starts. Log in with these test credentials:
+- A default admin account is created automatically the first time Type-Away-Writer starts. Log in with these test credentials:
   - **Email address:** admin@typeawaywriter.com
   - **Password:** admin123
 
