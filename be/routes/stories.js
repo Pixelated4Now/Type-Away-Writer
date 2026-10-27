@@ -84,6 +84,14 @@ router.get('/stories', optionalAuth, async (req, res) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
+    // Reviewed status is only exposed to language experts. A story counts as reviewed once an expert has left a top-level comment on it.
+    const reviewedCol = req.user?.account_type === 'expert'
+        ? `, EXISTS (
+                SELECT 1 FROM comments c JOIN users u ON u.id = c.user_id
+                WHERE c.story_id = s.id AND c.parent_id IS NULL AND u.account_type = 'expert'
+            ) AS is_reviewed`
+        : '';
+
     try {
         // Order by likes so most liked story appears first.
         const { rows } = await pool.query(`
@@ -94,6 +102,7 @@ router.get('/stories', optionalAuth, async (req, res) => {
                 ${AUTHORS_SUBQ} AS authors,
                 (SELECT COUNT(*)::INT FROM chapters  WHERE story_id = s.id) AS chapter_count,
                 (SELECT COUNT(*)::INT FROM comments  WHERE story_id = s.id) AS comment_count
+                ${reviewedCol}
             FROM stories s
             ${where}
             ORDER BY s.likes_count DESC

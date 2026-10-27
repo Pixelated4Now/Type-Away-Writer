@@ -65,7 +65,11 @@ const ReadCategory = () => {
         if (filters.tags) params.set("tags", filters.tags);
         if (filters.status) params.set("status", filters.status);
 
-        const res = await fetch(`${API}/stories?${params}`);
+        // Send the token so experts receive each story's reviewed status.
+        const token = localStorage.getItem("authToken");
+        const res = await fetch(`${API}/stories?${params}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = await res.json();
         setStories(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -165,7 +169,12 @@ const ReadCategory = () => {
                   />
                 </div>
                 <div className="story-info">
-                  <h3 className="story-title">{story.title}</h3>
+                  <div className="story-title-row">
+                    <h3 className="story-title">{story.title}</h3>
+                    {user?.account_type === "expert" && story.is_reviewed && (
+                      <span className="badge badge-reviewed">REVIEWED</span>
+                    )}
+                  </div>
                   <p className="story-authors">
                     by {(story.authors || []).join(", ")}
                   </p>
