@@ -69,7 +69,7 @@ Follow this guide to figure out how to clone this repository and make it _work_.
 ### 🪴 Platform Requirements
 The following items of software must be installed on your device before you can successfully run Type-Away-Writer:
 - **Docker Desktop:** Version 4.0 or later
-- **A Gmail account with an app password** [^1]
+- **A Gmail account with an app password**[^1]
 - **Web browser:** any web browser of the user's choice
 - **Minimum RAM:** 4GB (8GB recommended)
 - **Disk space:** at least 2GB free
@@ -92,13 +92,13 @@ No additional software installations are required. All dependencies, including N
    - `POSTGRES_PASSWORD`: a password of your choice for the database
    - `JWT_SECRET`: a random string used for authentication tokens (for instance, `taw_secret_2026`)
    - `GMAIL_USER`: a Gmail address for sending verification emails
-   - `GMAIL_APP_PASSWORD`: the Gmail App Password for the email address provided for `GMAIL_USER` [^1].
+   - `GMAIL_APP_PASSWORD`: the Gmail App Password for the email address provided for `GMAIL_USER`[^1].
    - `FRONTEND_URL`: leave it as [http://localhost:3000]()
 4. Start the application by keying the following command into the terminal:
      ```
      docker compose up --build
      ```
-5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start [^2].
+5. Wait for all three containers (`taw_db` for the database, `taw_backend` for the back-end, and `taw_frontend` for the front-end) to start[^2].
      
    <img width="500" alt="Terminal output once all services have started" src="https://github.com/user-attachments/assets/dad1d74a-5300-486f-aad9-6f630683182f" /><br/>
 
@@ -137,7 +137,7 @@ These credentials are for local testing only. To use different ones, set `ADMIN_
 
 ### 🛑 Stopping the Application
 - Press **Ctrl + C** in the terminal where Docker Compose is running.
-- Run the following command [^3]:
+- Run the following command[^3]:
   ```
   docker compose down
   ```
