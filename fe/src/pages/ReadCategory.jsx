@@ -196,6 +196,11 @@ const ReadCategory = () => {
                 </div>
               </div>
             ))
+          ) : user?.account_type === "expert" ? (
+            <p className="no-results">
+              There are currently no stories matching your search criteria.<br />
+              Try adjusting your search!
+            </p>
           ) : (
             <p className="no-results">
               There are currently no stories matching your search criteria.<br />
