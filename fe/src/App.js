@@ -43,6 +43,15 @@ const ExpertRoute = ({ children }) => {
   return children;
 };
 
+// Checks if the user is logged in and not an expert, since experts cannot write stories.
+const WriterRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.account_type === 'expert') return <Navigate to="/" replace />;
+  return children;
+};
+
 const AdminRoute = ({ children }) => {
   // Subscribing to auth state makes this re-check (and redirect) when the session expires.
   const { user, loading } = useAuth();
@@ -82,10 +91,10 @@ function App() {
           <Route path="/read/story/:storyId" element={<ReadStory />} />
 
           {/* Protected writing flow */}
-          <Route path="/write/new" element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
-          <Route path="/write/:id/settings" element={<ProtectedRoute><StorySettings /></ProtectedRoute>} />
-          <Route path="/write/:id/chapters" element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
-          <Route path="/write/:id/preview" element={<ProtectedRoute><StoryPreview /></ProtectedRoute>} />
+          <Route path="/write/new" element={<WriterRoute><StorySettings /></WriterRoute>} />
+          <Route path="/write/:id/settings" element={<WriterRoute><StorySettings /></WriterRoute>} />
+          <Route path="/write/:id/chapters" element={<WriterRoute><StoryEditor /></WriterRoute>} />
+          <Route path="/write/:id/preview" element={<WriterRoute><StoryPreview /></WriterRoute>} />
 
           {/* Expert only */}
           <Route path="/review" element={<ExpertRoute><Review /></ExpertRoute>} />

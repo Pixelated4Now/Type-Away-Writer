@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
-const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { authenticateToken, optionalAuth, requireRole } = require('../middleware/auth');
 const { createNotification, notifyStoryAuthors } = require('../utils/notifications');
 
 // Shared SQL subqueries.
@@ -449,7 +449,7 @@ router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (r
 
 
 // POST request to create new story record.
-router.post('/stories', authenticateToken, async (req, res) => {
+router.post('/stories', authenticateToken, requireRole('student'), async (req, res) => {
     const { title, summary, work_status, category_id, tag_ids, cover_image_url } = req.body;
     if (!title || !title.trim()) return res.status(400).json({ message: 'Title is required.' });
 
@@ -619,7 +619,7 @@ router.get('/stories/:id/chapters', authenticateToken, async (req, res) => {
 
 
 // POST request to create new empty chapter.
-router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
+router.post('/stories/:id/chapters', authenticateToken, requireRole('student'), async (req, res) => {
     const storyId = parseInt(req.params.id, 10);
     try {
         // Both the original author and collaborators can add chapters.
@@ -655,7 +655,7 @@ router.post('/stories/:id/chapters', authenticateToken, async (req, res) => {
 
 
 // PUT request to save chapter title and content.
-router.put('/chapters/:chapterId', authenticateToken, async (req, res) => {
+router.put('/chapters/:chapterId', authenticateToken, requireRole('student'), async (req, res) => {
     const chapterId = parseInt(req.params.chapterId, 10);
     const { title, content } = req.body;
     try {
