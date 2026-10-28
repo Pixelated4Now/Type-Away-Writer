@@ -28,7 +28,11 @@ const Footer = () => {
       </div>
 
       <nav className="footer-links">
-        <span onClick={() => handleNavigate(user ? "/write/new" : "/login")}>Write</span>
+        {user?.account_type === "expert" ? (
+          <span onClick={() => handleNavigate("/review")}>Review</span>
+        ) : (
+          <span onClick={() => handleNavigate(user ? "/write/new" : "/login")}>Write</span>
+        )}
         <span onClick={() => handleNavigate("/read")}>Read</span>
         <span onClick={() => handleNavigate("/guidelines")}>Guidelines</span>
       </nav>

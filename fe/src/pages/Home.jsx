@@ -50,7 +50,11 @@ const Home = () => {
             Write captivating stories, read enchanting novels, and
             discover hidden talents
           </p>
-          <button className="btn-start-writing" onClick={() => navigate(user ? "/write/new" : "/login")}>START WRITING</button>
+          {user?.account_type === "expert" ? (
+            <button className="btn-start-writing" onClick={() => navigate("/read")}>START READING</button>
+          ) : (
+            <button className="btn-start-writing" onClick={() => navigate(user ? "/write/new" : "/login")}>START WRITING</button>
+          )}
         </div>
       </section>
 
