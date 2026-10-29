@@ -763,6 +763,13 @@ router.post('/stories/:id/invitations', authenticateToken, async (req, res) => {
         if (storyRes.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
         if (storyRes.rows[0].author_id !== req.user.id) return res.status(403).json({ message: 'Not authorised.' });
 
+        // Only students can collaborate on stories.
+        const inviteeRes = await pool.query('SELECT account_type FROM users WHERE id = $1', [invitee_id]);
+        if (inviteeRes.rows.length === 0) return res.status(404).json({ message: 'User not found.' });
+        if (inviteeRes.rows[0].account_type !== 'student') {
+            return res.status(400).json({ message: 'Only students can be invited to collaborate.' });
+        }
+
         const existingCollab = await pool.query(
             'SELECT 1 FROM story_collaborators WHERE story_id = $1 AND user_id = $2',
             [storyId, invitee_id]
