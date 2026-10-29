@@ -377,25 +377,6 @@ router.delete('/reading-lists/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// DELLETE request to remove a story from a list.
-
-router.delete('/reading-lists/:id/stories/:storyId', authenticateToken, async (req, res) => {
-    try {
-        const list = await pool.query(`SELECT user_id FROM reading_lists WHERE id = $1`, [req.params.id]);
-        if (!list.rows[0]) return res.status(404).json({ message: 'Reading list not found.' });
-        if (list.rows[0].user_id !== req.user.id) return res.status(403).json({ message: 'Forbidden.' });
-
-        await pool.query(
-            `DELETE FROM reading_list_stories WHERE reading_list_id = $1 AND story_id = $2`,
-            [req.params.id, req.params.storyId]
-        );
-        res.sendStatus(204);
-    } catch (err) {
-        console.error('DELETE /reading-lists/:id/stories/:storyId error:', err);
-        res.status(500).json({ message: 'An error occurred.' });
-    }
-});
-
 // GET request to retrieve the list of following users, ordered by most recently followed first.
 
 router.get('/:username/following', optionalAuth, async (req, res) => {
