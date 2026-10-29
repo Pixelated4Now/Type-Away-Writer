@@ -9,6 +9,17 @@ import "./StorySettings.css";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+// Turns a failed save response into a message students can understand.
+const saveErrorMessage = async (res) => {
+  const { message } = await res.json().catch(() => ({}));
+  if (res.status === 401 || message === "Invalid or expired token.") {
+    return "Your session has expired. Please log in again.";
+  }
+  if (res.status === 403) return "You don't have permission to save this story.";
+  if (res.status === 404) return "This story could not be found.";
+  return "Something went wrong. Please try again.";
+};
+
 const authFetch = (url, options = {}) => {
   const token = localStorage.getItem("authToken");
   return fetch(url, {
@@ -194,17 +205,20 @@ const StorySettings = () => {
     try {
       let id = storyId;
       if (storyId) {
-        await authFetch(`${API}/stories/${storyId}`, {
+        const res = await authFetch(`${API}/stories/${storyId}`, {
           method:  "PUT",
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify(payload),
         });
+        // Stay on the form if the save was refused.
+        if (!res.ok) { setErrors({ submit: await saveErrorMessage(res) }); return; }
       } else {
         const res  = await authFetch(`${API}/stories`, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify(payload),
         });
+        if (!res.ok) { setErrors({ submit: await saveErrorMessage(res) }); return; }
         const data = await res.json();
         id = data.id;
         // Replace /write/new in history with this story's settings page, so the browser's back
