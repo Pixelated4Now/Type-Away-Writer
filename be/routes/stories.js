@@ -117,6 +117,8 @@ router.get('/stories', optionalAuth, async (req, res) => {
 
 // GET request to fetch a story with all details and content.
 router.get('/stories/:id', optionalAuth, async (req, res) => {
+    // IDs must be whole numbers; anything else (e.g. "abc" or "12abc") cannot be a story.
+    if (!/^\d+$/.test(req.params.id)) return res.status(404).json({ message: 'Story not found.' });
     const storyId = parseInt(req.params.id, 10);
 
     try {

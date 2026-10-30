@@ -27,6 +27,8 @@ import AccountSettings from "./pages/AccountSettings";
 
 import AdminDashboard from "./pages/AdminDashboard";
 
+import NotFound from './pages/NotFound';
+
 // Checks if the user is logged in.
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -104,6 +106,11 @@ function App() {
           <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+
+          {/* Catch-all route*/}
+          <Route path="*" element={<NotFound />} />
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>

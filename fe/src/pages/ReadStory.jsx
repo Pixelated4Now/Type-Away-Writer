@@ -11,6 +11,7 @@ import likeImg from "../assets/likeAChapter.png";
 import likedImg from "../assets/likedAChapter.png";
 import reviewImg from "../assets/reviewSubmit.png";
 import { ImPencil } from "react-icons/im";
+import NotFound from "./NotFound";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -165,6 +166,7 @@ const ReadStory = () => {
   const [story, setStory]  = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notFound, setNotFound] = useState(false);
 
   // Chapter navigation
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
@@ -195,8 +197,13 @@ const ReadStory = () => {
   // Fetch story on mount
   useEffect(() => {
     setLoading(true);
+    setNotFound(false);
     authFetch(`${API}/stories/${storyId}`)
-      .then((r) => { if (!r.ok) throw new Error("Story not found"); return r.json(); })
+      .then((r) => {
+        if (r.status === 404) setNotFound(true);
+        if (!r.ok) throw new Error("Story not found");
+        return r.json();
+      })
       .then((data) => {
         setStory(data);
         setLiked(data.user_liked);
@@ -284,6 +291,7 @@ const ReadStory = () => {
       <p style={{ padding: "60px 40px", color: "#888" }}>Loading story…</p>
     <Footer /></div>
   );
+  if (notFound) return <NotFound />;
   if (error || !story) return (
     <div className="story-page"><Navbar />
       <p style={{ padding: "60px 40px", color: "#c00" }}>{error || "Story not found."}</p>

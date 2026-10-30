@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import "./UserProfile.css";
 import "./ReadCategory.css";
+import NotFound from "./NotFound";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -117,6 +118,7 @@ const UserProfile = () => {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState("about");
   const [storyFilter, setStoryFilter] = useState("all"); // "all" | "collaborative" | "individual"
   const [tabData, setTabData] = useState({});
@@ -155,6 +157,7 @@ const UserProfile = () => {
   useEffect(() => {
     let ignore = false;
     setLoading(true);
+    setNotFound(false);
     setTabData({});
     setTabLoaded({});
     setActiveTab("about");
@@ -163,9 +166,11 @@ const UserProfile = () => {
     setMyFollowingIds(new Set());
 
     authFetch(`${API}/users/${username}`)
-      .then((r) => r.json())
-      .then((data) => {
+      .then((r) => r.json().then((data) => ({ status: r.status, data })))
+      .then(({ status, data }) => {
         if (ignore) return;
+        // Unknown usernames show the 404 page; other errors still return home.
+        if (status === 404) { setNotFound(true); setLoading(false); return; }
         if (data.message) { navigate("/", { replace: true }); return; }
         setProfile(data);
         setLoading(false);
@@ -422,6 +427,7 @@ const UserProfile = () => {
   if (loading) return (
     <div className="up-page"><Navbar /><p className="up-loading">Loading…</p><Footer /></div>
   );
+  if (notFound) return <NotFound />;
   if (!profile) return null;
 
   const stories = tabData.stories || [];

@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./ReadCategory.css";
 import bannerImg from "../assets/readBanner.jpg";
+import NotFound from "./NotFound";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const MAX_TAGS = 20;
@@ -21,6 +22,8 @@ const ReadCategory = () => {
   const { user } = useAuth();
 
   const [category, setCategory] = useState(null); // Category object from backend
+  // Result of checking the URL's category against the database, tied to the ID it was checked for.
+  const [categoryCheck, setCategoryCheck] = useState({ id: null, found: false });
   const [allTags, setAllTags] = useState([]);   // Full list of tags in the DB
 
   // Search form states
@@ -43,15 +46,24 @@ const ReadCategory = () => {
 
   //  Fetch categories and tags when page loads.
   useEffect(() => {
+    let ignore = false; // Drops results from a previous category if the URL changed mid-request.
     Promise.all([
       fetch(`${API}/categories`).then((r) => r.json()),
       fetch(`${API}/tags`).then((r) => r.json()),
     ])
       .then(([cats, tags]) => {
-        setCategory(cats.find((c) => c.id === parseInt(categoryId, 10)) || null);
+        if (ignore) return;
+        const match = Array.isArray(cats) ? cats.find((c) => String(c.id) === categoryId) : null;
+        setCategory(match || null);
+        setCategoryCheck({ id: categoryId, found: !Array.isArray(cats) || !!match });
         setAllTags(tags.map((t) => t.name));
       })
-      .catch(console.error);
+      .catch((err) => {
+        console.error(err);
+        // If the check fails, show the page anyway rather than leaving it stuck on loading.
+        if (!ignore) setCategoryCheck({ id: categoryId, found: true });
+      });
+    return () => { ignore = true; };
   }, [categoryId]);
 
   // Fetch stories (called on page load and on search)
@@ -125,6 +137,17 @@ const ReadCategory = () => {
     if (completionStatus !== "All") filters.status = completionStatus.toLowerCase();
     fetchStories(filters);
   };
+
+  // Category IDs are whole numbers, so anything else is a 404 straight away.
+  if (!/^\d+$/.test(categoryId)) return <NotFound />;
+
+  // Wait until this category is confirmed, so a missing one never flashes the category page first.
+  if (categoryCheck.id !== categoryId) return (
+    <div className="category-page"><Navbar />
+      <p style={{ color: "#888", padding: "60px 40px" }}>Loading…</p>
+    <Footer /></div>
+  );
+  if (!categoryCheck.found) return <NotFound />;
 
   const categoryName = category?.name || "Stories";
 
