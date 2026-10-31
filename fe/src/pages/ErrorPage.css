@@ -1,0 +1,50 @@
+.not-found-page {
+    font-family: 'Manrope', sans-serif;
+    color: #111;
+    background: #fff;
+    width: 100vw;
+}
+
+.not-found-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto;
+    padding: 0px 48px 72px;
+}
+
+.not-found-content img {
+    width: 624px;
+    height: auto;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.not-found-content h2 {
+    font-size: 40px;
+    font-weight: 900;
+    color: #0E72E5;
+    margin: 0 0 12px;
+}
+
+.not-found-content p {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.55;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+    .not-found-content h2 {
+        font-size: 28px;
+    }
+
+    .not-found-content img {
+        width: 280px;
+    }
+
+}
