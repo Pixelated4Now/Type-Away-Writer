@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Home.css";
+import "./ErrorPage.css";
 
 import errorImg from "../assets/errorNotFound.png"; 
 
