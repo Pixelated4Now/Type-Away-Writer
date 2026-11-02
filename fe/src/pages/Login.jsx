@@ -74,7 +74,7 @@ const Login = () => {
 
             <form onSubmit={handleSubmit}>
                 {sessionExpired && (
-                    <p style={{ color: '#555', fontSize: '13px', marginBottom: '12px' }}>
+                    <p style={{ color: '#F64E4E', fontSize: '13px', marginBottom: '12px' }}>
                         Your session has expired. Please log in again.
                     </p>
                 )}
