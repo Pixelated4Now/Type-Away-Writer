@@ -142,10 +142,9 @@ const ReadCategory = () => {
   if (!/^\d+$/.test(categoryId)) return <NotFound />;
 
   // Wait until this category is confirmed, so a missing one never flashes the category page first.
+  // Only the navbar shows while waiting; the footer is left out so it doesn't jump when content arrives.
   if (categoryCheck.id !== categoryId) return (
-    <div className="category-page"><Navbar />
-      <p style={{ color: "#888", padding: "60px 40px" }}>Loading…</p>
-    <Footer /></div>
+    <div className="category-page"><Navbar /></div>
   );
   if (!categoryCheck.found) return <NotFound />;
 
