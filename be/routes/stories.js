@@ -606,8 +606,21 @@ router.post('/stories/:id/publish', authenticateToken, async (req, res) => {
 
 // GET request to retrieve all chapters for a story ordered by chapter number for story editor.
 router.get('/stories/:id/chapters', authenticateToken, async (req, res) => {
+    if (!/^\d+$/.test(req.params.id)) return res.status(404).json({ message: 'Story not found.' });
     const storyId = parseInt(req.params.id, 10);
     try {
+        // Only the original author and collaborators can open a story's chapters for editing.
+        const check = await pool.query(
+            `SELECT s.author_id,
+                    EXISTS(SELECT 1 FROM story_collaborators sc
+                           WHERE sc.story_id = s.id AND sc.user_id = $2) AS is_collaborator
+             FROM stories s WHERE s.id = $1`,
+            [storyId, req.user.id]
+        );
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        const { author_id, is_collaborator } = check.rows[0];
+        if (author_id !== req.user.id && !is_collaborator) return res.status(403).json({ message: 'Not authorised.' });
+
         const { rows } = await pool.query(
             'SELECT id, chapter_number, title, content FROM chapters WHERE story_id = $1 ORDER BY chapter_number ASC',
             [storyId]

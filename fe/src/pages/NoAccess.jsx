@@ -18,7 +18,7 @@ const NoAccess = () => {
             <Navbar />
 
             <div className="error-content">
-                <img src={errorImg} alt="Access not allowed error image" />
+                <img src={errorImg} style={{ width: "450px", maxWidth: "100%", height: "auto" }} alt="Access not allowed error image"/>
 
             
                 <h2>Who dares trip trap over my bridge?</h2>
