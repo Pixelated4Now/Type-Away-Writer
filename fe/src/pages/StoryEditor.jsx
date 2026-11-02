@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { BsTrash } from "react-icons/bs";
 import "./StoryEditor.css";
 import "quill/dist/quill.snow.css"; // Import Quill's CSS stylesheet
+import NoAccess from "./NoAccess";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -43,6 +44,7 @@ const StoryEditor = () => {
   const [quillReady,  setQuillReady]  = useState(false); // Set to TRUE after Quill finishes initialising.
 
   const [isAuthor, setIsAuthor]  = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [isCollabStory, setIsCollabStory]  = useState(false);
 
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -119,6 +121,8 @@ const StoryEditor = () => {
       try {
         const r = await authFetch(`${API}/stories/${storyId}/chapters`);
         if (ignore) return;
+        // Only the author and collaborators can open the editor.
+        if (r.status === 403) { setAccessDenied(true); return; }
         const data = await r.json();
         if (ignore) return;
 
@@ -354,6 +358,8 @@ const StoryEditor = () => {
   };
 
   const currentIndex = chapters.findIndex(c => c.id === currentChapterId);
+
+  if (accessDenied) return <NoAccess />;
 
   return (
     <div className="editor-page">

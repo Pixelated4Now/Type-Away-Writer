@@ -28,6 +28,7 @@ import AccountSettings from "./pages/AccountSettings";
 import AdminDashboard from "./pages/AdminDashboard";
 
 import NotFound from './pages/NotFound';
+import NoAccess from './pages/NoAccess';
 
 // Checks if the user is logged in.
 const ProtectedRoute = ({ children }) => {
@@ -41,7 +42,8 @@ const ProtectedRoute = ({ children }) => {
 const ExpertRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user || user.account_type !== 'expert') return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.account_type !== 'expert') return <NoAccess />;
   return children;
 };
 
@@ -50,7 +52,7 @@ const WriterRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.account_type === 'expert') return <Navigate to="/" replace />;
+  if (user.account_type === 'expert') return <NoAccess />;
   return children;
 };
 
@@ -62,7 +64,8 @@ const AdminRoute = ({ children }) => {
   if (!user || !token) return <Navigate to="/login" replace />;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.account_type !== 'admin') return <Navigate to="/login" replace />;
+    // Logged in, but not as an admin.
+    if (payload.account_type !== 'admin') return <NoAccess />;
   } catch {
     return <Navigate to="/login" replace />;
   }

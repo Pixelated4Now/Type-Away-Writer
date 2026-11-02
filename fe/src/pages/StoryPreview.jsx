@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import "./ReadStory.css";
+import NoAccess from "./NoAccess";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -115,6 +116,10 @@ const StoryPreview = () => {
       <p style={{ padding: "60px 40px", color: "#c00" }}>{error || "Story not found."}</p>
     <Footer /></div>
   );
+
+  // Only the author and collaborators (listed in authors) can preview a story.
+  const canPreview = story.author_id === user?.id || (story.authors || []).includes(user?.username);
+  if (!canPreview) return <NoAccess />;
 
   const chapter = story.chapters[currentChapterIndex];
   const totalChapters = story.chapters.length;

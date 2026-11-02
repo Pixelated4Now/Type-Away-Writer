@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { RiImageAddFill } from "react-icons/ri";
 import { useAuth } from "../context/AuthContext";
 import "./StorySettings.css";
+import NoAccess from "./NoAccess";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -69,6 +70,7 @@ const StorySettings = () => {
   // Errors
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const fileInputRef = useRef(null);
   const statusRef = useRef(null);
@@ -86,7 +88,11 @@ const StorySettings = () => {
         .then(data => {
           // Only the original author can edit story details; send collaborators to the chapter editor.
           if (user && data.author_id && data.author_id !== user.id) {
-            navigate(`/write/${storyId}/chapters`, { replace: true });
+            if ((data.authors || []).includes(user.username)) {
+              navigate(`/write/${storyId}/chapters`, { replace: true });
+            } else {
+              setAccessDenied(true); // Not on this story at all.
+            }
             return;
           }
           setTitle(data.title || "");
@@ -239,6 +245,8 @@ const StorySettings = () => {
     tagInput.trim().length > 0 &&
     tagInput.trim().length <= MAX_TAG_LEN &&
     !allTags.some(t => t.name.toLowerCase() === tagInput.trim().toLowerCase());
+
+  if (accessDenied) return <NoAccess />;
 
   return (
     <div className="settings-page">
