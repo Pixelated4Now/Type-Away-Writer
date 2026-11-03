@@ -18,7 +18,7 @@ const NotFound = () => {
             <Navbar />
 
             <div className="error-content">
-                <img src={errorImg} alt="Page not found error image" />
+                <img src={errorImg} width="1286" height="906" alt="Page not found error image" />
 
             
                 <h2>Whoops, looks like you wandered off the map!</h2>
