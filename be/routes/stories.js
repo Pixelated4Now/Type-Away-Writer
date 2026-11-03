@@ -34,15 +34,11 @@ router.get('/stories', optionalAuth, async (req, res) => {
     let p = 1;
     const conditions = [];
 
-    // Published stories only
-    if (status === 'complete') {
-        conditions.push(`s.status = $${p++}`);
-        params.push('published');
-    } else if (status === 'ongoing') {
-        conditions.push(`s.status = $${p++}`);
-        params.push('draft');
-    } else {
-        conditions.push(`s.status = 'published'`);
+    // Published stories only; the status filter narrows by work status (complete / ongoing).
+    conditions.push(`s.status = 'published'`);
+    if (status === 'complete' || status === 'ongoing') {
+        conditions.push(`s.work_status = $${p++}`);
+        params.push(status);
     }
 
     // Optional parameters for filtering.
@@ -144,6 +140,22 @@ router.get('/stories/:id', optionalAuth, async (req, res) => {
         }
 
         const story = storyResult.rows[0];
+
+        // Unpublished stories are only visible to their author and collaborators.
+        // Everyone else gets 404, so the response doesn't reveal that a hidden draft exists.
+        if (story.status !== 'published') {
+            let isMember = false;
+            if (req.user) {
+                const member = await pool.query(
+                    `SELECT 1 FROM stories WHERE id = $1 AND author_id = $2
+                     UNION
+                     SELECT 1 FROM story_collaborators WHERE story_id = $1 AND user_id = $2`,
+                    [storyId, req.user.id]
+                );
+                isMember = member.rows.length > 0;
+            }
+            if (!isMember) return res.status(404).json({ message: 'Story not found.' });
+        }
 
         // Chapters in order.
         const chapResult = await pool.query(
