@@ -751,6 +751,20 @@ router.post('/stories/:id/review-requests', authenticateToken, async (req, res) 
     if (!expert_id) return res.status(400).json({ message: 'expert_id is required.' });
 
     try {
+        // Only the original author and collaborators can submit a story for review.
+        const check = await pool.query(
+            `SELECT s.author_id,
+                    EXISTS(SELECT 1 FROM story_collaborators sc
+                           WHERE sc.story_id = s.id AND sc.user_id = $2) AS is_collaborator
+             FROM stories s WHERE s.id = $1`,
+            [storyId, req.user.id]
+        );
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Story not found.' });
+        const { author_id, is_collaborator } = check.rows[0];
+        if (author_id !== req.user.id && !is_collaborator) {
+            return res.status(403).json({ message: 'Only the authors of this story can submit it for review.' });
+        }
+
         // Checks that expert exists and is verified.
         const expertRes = await pool.query(
             "SELECT id FROM users WHERE id = $1 AND account_type = 'expert' AND is_expert_verified = TRUE",
